@@ -25,10 +25,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - uses: actions/configure-pages@v5
-        with:
-          static_site_generator: other
-
       - run: npm ci
 
       - run: npm run check
