@@ -25,6 +25,7 @@ import {
 import "./styles.css";
 
 type CaseFilter = "all" | "supervised" | "unsupervised";
+type Page = "overview" | "cases" | "form";
 const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
 function caseSummary(entry: LogbookCase) {
@@ -52,7 +53,8 @@ function App() {
     heart: true,
   });
   const [isReady, setIsReady] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activePage, setActivePage] = useState<Page>("overview");
+  const [returnPage, setReturnPage] = useState<Exclude<Page, "form">>("overview");
   const [draft, setDraft] = useState<CaseDraft | null>(null);
   const [search, setSearch] = useState("");
   const [caseFilter, setCaseFilter] = useState<CaseFilter>("all");
@@ -157,20 +159,27 @@ function App() {
   }, [caseFilter, pathwayEntries, search]);
 
   function startNewCase() {
+    setReturnPage(activePage === "cases" ? "cases" : "overview");
     setDraft(createDraft(activePathway));
-    setIsFormOpen(true);
+    setActivePage("form");
   }
 
   function startEditing(entry: LogbookCase) {
+    setReturnPage("cases");
     setDraft({ ...entry });
-    setIsFormOpen(true);
+    setActivePage("form");
+  }
+
+  function cancelForm() {
+    setActivePage(returnPage);
+    setDraft(null);
   }
 
   async function handleSave(draftToSave: CaseDraft): Promise<boolean> {
     try {
       await saveCase(draftToSave);
       await refreshEntries();
-      setIsFormOpen(false);
+      setActivePage("cases");
       setDraft(null);
       return true;
     } catch (cause) {
@@ -298,75 +307,118 @@ function App() {
           </span>
           <span>POCUS Logbook</span>
         </a>
-        <button
-          className="button button-primary topbar-action"
-          onClick={startNewCase}
-          disabled={!isReady}
-        >
-          <span aria-hidden="true">+</span> New case
-        </button>
+        {activePage === "form" ? (
+          <button
+            className="button button-secondary topbar-action"
+            onClick={cancelForm}
+          >
+            Cancel
+          </button>
+        ) : (
+          <button
+            className="button button-primary topbar-action"
+            onClick={startNewCase}
+            disabled={!isReady}
+          >
+            <span aria-hidden="true">+</span> New case
+          </button>
+        )}
       </header>
 
-      <section className="page-content" aria-labelledby="page-title">
-        <div className="page-heading">
-          <div>
-            <p className="eyebrow">Your practice, your record</p>
-            <h1 id="page-title">A logbook that grows with you.</h1>
-            <p className="page-intro">
-              Record scans during training and keep logging after certification.
-              Your entries stay on this device.
-            </p>
-          </div>
-        </div>
+      <section
+        className="page-content"
+        aria-labelledby={activePage === "form" ? "form-title" : "page-title"}
+      >
+        {activePage !== "form" && (
+          <>
+            <div className="page-heading">
+              <div>
+                <p className="eyebrow">
+                  {activePage === "overview"
+                    ? "Your practice, your record"
+                    : `${pathway.label} logbook`}
+                </p>
+                <h1 id="page-title">
+                  {activePage === "overview"
+                    ? "A logbook that grows with you."
+                    : "Your cases"}
+                </h1>
+                <p className="page-intro">
+                  {activePage === "overview"
+                    ? "Record scans during training and keep logging after certification. Your entries stay on this device."
+                    : "Search, review, and update your de-identified scan records."}
+                </p>
+              </div>
+            </div>
+            <nav className="page-navigation" aria-label="Main navigation">
+              <button
+                className={`page-navigation-link ${activePage === "overview" ? "is-active" : ""}`}
+                onClick={() => setActivePage("overview")}
+                aria-current={activePage === "overview" ? "page" : undefined}
+              >
+                Overview
+              </button>
+              <button
+                className={`page-navigation-link ${activePage === "cases" ? "is-active" : ""}`}
+                onClick={() => setActivePage("cases")}
+                aria-current={activePage === "cases" ? "page" : undefined}
+              >
+                Cases <span>{pathwayEntries.length}</span>
+              </button>
+            </nav>
+          </>
+        )}
 
-        <nav className="pathway-tabs" aria-label="Choose a pathway">
-          {(Object.keys(PATHWAYS) as Pathway[]).map((key) => (
-            <button
-              className={`pathway-tab ${activePathway === key ? "is-active" : ""}`}
-              key={key}
-              onClick={() => {
-                setActivePathway(key);
-                setSearch("");
-                setCaseFilter("all");
-                setIsFormOpen(false);
-                setDraft(null);
-              }}
-              aria-pressed={activePathway === key}
-            >
-              <span>{PATHWAYS[key].label}</span>
-              <span className="tab-count">
-                {entries.filter((entry) => entry.pathway === key).length}
+        {activePage !== "form" && (
+          <nav className="pathway-tabs" aria-label="Choose a pathway">
+            {(Object.keys(PATHWAYS) as Pathway[]).map((key) => (
+              <button
+                className={`pathway-tab ${activePathway === key ? "is-active" : ""}`}
+                key={key}
+                onClick={() => {
+                  setActivePathway(key);
+                  setSearch("");
+                  setCaseFilter("all");
+                }}
+                aria-pressed={activePathway === key}
+              >
+                <span>{PATHWAYS[key].label}</span>
+                <span className="tab-count">
+                  {entries.filter((entry) => entry.pathway === key).length}
+                </span>
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {activePage !== "form" && (
+          <section className="pathway-heading" aria-labelledby="pathway-title">
+            <div>
+              <p className="eyebrow">Personal logbook</p>
+              <h2 id="pathway-title">{pathway.label}</h2>
+              <p className="pathway-description">{pathway.description}</p>
+            </div>
+            <label className="mode-switch">
+              <span>
+                <strong>Training progress</strong>
+                <small>
+                  {trainingModes[activePathway]
+                    ? "Targets are visible"
+                    : "Targets are hidden"}
+                </small>
               </span>
-            </button>
-          ))}
-        </nav>
-
-        <section className="pathway-heading" aria-labelledby="pathway-title">
-          <div>
-            <p className="eyebrow">Personal logbook</p>
-            <h2 id="pathway-title">{pathway.label}</h2>
-            <p className="pathway-description">{pathway.description}</p>
-          </div>
-          <label className="mode-switch">
-            <span>
-              <strong>Training progress</strong>
-              <small>
-                {trainingModes[activePathway]
-                  ? "Targets are visible"
-                  : "Targets are hidden"}
-              </small>
-            </span>
-            <input
-              type="checkbox"
-              role="switch"
-              checked={trainingModes[activePathway]}
-              onChange={(event) =>
-                void handleTrainingModeChange(event.currentTarget.checked)
-              }
-              aria-label={`Show ${pathway.label} training progress`}
-            />
-          </label>
-        </section>
+              <input
+                type="checkbox"
+                role="switch"
+                checked={trainingModes[activePathway]}
+                onChange={(event) =>
+                  void handleTrainingModeChange(event.currentTarget.checked)
+                }
+                aria-label={`Show ${pathway.label} training progress`}
+              />
+            </label>
+          </section>
+        )}
 
         {error && (
           <div className="error-banner" role="alert">
@@ -397,7 +449,7 @@ function App() {
           </p>
         )}
 
-        {isReady && (
+        {isReady && activePage === "overview" && (
           <>
             <section
               className="stats-grid"
@@ -462,18 +514,6 @@ function App() {
               </p>
             )}
 
-            {isFormOpen && draft && (
-              <CaseForm
-                draft={draft}
-                onChange={setDraft}
-                onSave={handleSave}
-                onCancel={() => {
-                  setIsFormOpen(false);
-                  setDraft(null);
-                }}
-              />
-            )}
-
             <section className="backup-panel" aria-labelledby="backup-title">
               <div className="backup-copy">
                 <p className="eyebrow">Recovery</p>
@@ -518,12 +558,24 @@ function App() {
                 </p>
               )}
             </section>
+          </>
+        )}
 
-            <section className="entries-section" aria-labelledby="entries-title">
+        {isReady && activePage === "form" && draft && (
+          <CaseForm
+            draft={draft}
+            onChange={setDraft}
+            onSave={handleSave}
+            onCancel={cancelForm}
+          />
+        )}
+
+        {isReady && activePage === "cases" && (
+          <section className="entries-section" aria-labelledby="entries-title">
               <div className="section-heading">
                 <div>
                   <p className="eyebrow">Your record</p>
-                  <h2 id="entries-title">Recent cases</h2>
+                  <h2 id="entries-title">Cases</h2>
                 </div>
                 <button
                   className="button button-secondary desktop-add"
@@ -665,8 +717,7 @@ function App() {
                 other identifying details. This is a personal training and
                 reflection log, not a clinical record.
               </p>
-            </section>
-          </>
+          </section>
         )}
       </section>
 
