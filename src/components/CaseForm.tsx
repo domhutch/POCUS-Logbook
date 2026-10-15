@@ -138,64 +138,81 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
               <option value="healthy_volunteer">Healthy volunteer</option>
             </select>
           </label>
-          <label className="form-field">
-            <span>Indication <span className="optional-mark">Optional</span></span>
-            <input
-              type="text"
-              maxLength={160}
-              placeholder="e.g. breathlessness"
-              value={draft.indication}
-              onChange={(event) =>
-                updateField("indication", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label className="form-field">
-            <span>Diagnosis / impression <span className="optional-mark">Optional</span></span>
-            <input
-              type="text"
-              maxLength={160}
-              placeholder="A brief, de-identified summary"
-              value={draft.diagnosis}
-              onChange={(event) =>
-                updateField("diagnosis", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label className="form-field">
-            <span>Impression category <span className="optional-mark">Optional</span></span>
-            <select
-              value={draft.impressionCategory}
-              onChange={(event) =>
-                updateField(
-                  "impressionCategory",
-                  event.currentTarget.value as ImpressionCategory,
-                )
-              }
-            >
-              <option value="not_recorded">Not recorded</option>
-              <option value="normal">Normal</option>
-              <option value="abnormal">Abnormal / pathology</option>
-              <option value="indeterminate">Indeterminate</option>
-            </select>
-          </label>
-          <label className="form-field">
-            <span>Management impact <span className="optional-mark">Optional</span></span>
-            <select
-              value={draft.managementImpact}
-              onChange={(event) =>
-                updateField(
-                  "managementImpact",
-                  event.currentTarget.value as ManagementImpact,
-                )
-              }
-            >
-              <option value="not_recorded">Not recorded</option>
-              <option value="changed">Changed</option>
-              <option value="unchanged">Unchanged</option>
-            </select>
-          </label>
         </div>
+
+        <details
+          className="structured-details optional-details"
+          open={
+            "createdAt" in draft &&
+            Boolean(
+              draft.indication ||
+                draft.diagnosis ||
+                draft.impressionCategory !== "not_recorded" ||
+                draft.managementImpact !== "not_recorded",
+            )
+          }
+        >
+          <summary>Case context and review markers <span>Optional</span></summary>
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Indication <span className="optional-mark">Optional</span></span>
+              <input
+                type="text"
+                maxLength={160}
+                placeholder="e.g. breathlessness"
+                value={draft.indication}
+                onChange={(event) =>
+                  updateField("indication", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label className="form-field">
+              <span>Diagnosis / impression <span className="optional-mark">Optional</span></span>
+              <input
+                type="text"
+                maxLength={160}
+                placeholder="A brief, de-identified summary"
+                value={draft.diagnosis}
+                onChange={(event) =>
+                  updateField("diagnosis", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label className="form-field">
+              <span>Impression category <span className="optional-mark">Optional</span></span>
+              <select
+                value={draft.impressionCategory}
+                onChange={(event) =>
+                  updateField(
+                    "impressionCategory",
+                    event.currentTarget.value as ImpressionCategory,
+                  )
+                }
+              >
+                <option value="not_recorded">Not recorded</option>
+                <option value="normal">Normal</option>
+                <option value="abnormal">Abnormal / pathology</option>
+                <option value="indeterminate">Indeterminate</option>
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Management impact <span className="optional-mark">Optional</span></span>
+              <select
+                value={draft.managementImpact}
+                onChange={(event) =>
+                  updateField(
+                    "managementImpact",
+                    event.currentTarget.value as ManagementImpact,
+                  )
+                }
+              >
+                <option value="not_recorded">Not recorded</option>
+                <option value="changed">Changed</option>
+                <option value="unchanged">Unchanged</option>
+              </select>
+            </label>
+          </div>
+        </details>
 
         <label className="supervision-control">
           <input
@@ -247,32 +264,38 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
           )}
         </details>
 
-        <div className="form-notes-grid">
-          <label className="form-field">
-            <span>Summary of findings <span className="optional-mark">Optional</span></span>
-            <textarea
-              rows={3}
-              maxLength={2000}
-              placeholder="Findings, conclusion and any suggested follow-up"
-              value={draft.summary}
-              onChange={(event) =>
-                updateField("summary", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label className="form-field">
-            <span>Reflection <span className="optional-mark">Optional</span></span>
-            <textarea
-              rows={3}
-              maxLength={2000}
-              placeholder="What went well? What would you review or practise?"
-              value={draft.reflection}
-              onChange={(event) =>
-                updateField("reflection", event.currentTarget.value)
-              }
-            />
-          </label>
-        </div>
+        <details
+          className="structured-details optional-details"
+          open={"createdAt" in draft && Boolean(draft.summary || draft.reflection)}
+        >
+          <summary>Notes and reflection <span>Optional</span></summary>
+          <div className="form-notes-grid">
+            <label className="form-field">
+              <span>Summary of findings <span className="optional-mark">Optional</span></span>
+              <textarea
+                rows={3}
+                maxLength={2000}
+                placeholder="Findings, conclusion and any suggested follow-up"
+                value={draft.summary}
+                onChange={(event) =>
+                  updateField("summary", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label className="form-field">
+              <span>Reflection <span className="optional-mark">Optional</span></span>
+              <textarea
+                rows={3}
+                maxLength={2000}
+                placeholder="What went well? What would you review or practise?"
+                value={draft.reflection}
+                onChange={(event) =>
+                  updateField("reflection", event.currentTarget.value)
+                }
+              />
+            </label>
+          </div>
+        </details>
 
         <p className="form-privacy">
           Keep this record de-identified. Don’t enter patient names, dates of

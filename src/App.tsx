@@ -29,10 +29,15 @@ type Page = "overview" | "cases" | "form";
 const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
 function caseSummary(entry: LogbookCase) {
-  const scanDetails =
+  const hasStructuredDetails =
     entry.pathway === "lung"
+      ? entry.regions.length > 0
+      : entry.views.length > 0;
+  const scanDetails = hasStructuredDetails
+    ? entry.pathway === "lung"
       ? `${entry.regions.length} of 6 regions recorded`
-      : `${entry.views.length} views recorded`;
+      : `${entry.views.length} views recorded`
+    : "Structured details not added";
 
   return [entry.indication, scanDetails].filter(Boolean).join(" · ");
 }
@@ -62,6 +67,7 @@ function App() {
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isHandlingBackup, setIsHandlingBackup] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
+  const pathwayMenuRef = useRef<HTMLDetailsElement>(null);
 
   async function refreshEntries() {
     const [storedEntries, storedModes] = await Promise.all([
@@ -96,6 +102,30 @@ function App() {
           "pocus-logbook-upgrade-blocked",
           handleBlockedUpgrade,
       );
+    };
+  }, []);
+
+  useEffect(() => {
+    function closePathwayMenu(event: PointerEvent) {
+      const menu = pathwayMenuRef.current;
+      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) {
+        menu.open = false;
+      }
+    }
+
+    function handlePathwayMenuKeydown(event: KeyboardEvent) {
+      const menu = pathwayMenuRef.current;
+      if (event.key === "Escape" && menu?.open) {
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", closePathwayMenu);
+    document.addEventListener("keydown", handlePathwayMenuKeydown);
+    return () => {
+      document.removeEventListener("pointerdown", closePathwayMenu);
+      document.removeEventListener("keydown", handlePathwayMenuKeydown);
     };
   }, []);
 
@@ -173,6 +203,17 @@ function App() {
   function cancelForm() {
     setActivePage(returnPage);
     setDraft(null);
+  }
+
+  function goToOverview() {
+    if (
+      activePage === "form" &&
+      !window.confirm("Discard this case without saving and return to Overview?")
+    ) {
+      return;
+    }
+    setDraft(null);
+    setActivePage("overview");
   }
 
   async function handleSave(draftToSave: CaseDraft): Promise<boolean> {
@@ -301,12 +342,17 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="#" aria-label="POCUS Logbook home">
+        <button
+          className="brand"
+          type="button"
+          onClick={goToOverview}
+          aria-label="Go to POCUS Logbook overview"
+        >
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
           <span>POCUS Logbook</span>
-        </a>
+        </button>
         {activePage === "form" ? (
           <button
             className="button button-secondary topbar-action"
@@ -333,21 +379,20 @@ function App() {
           <>
             <div className="page-heading">
               <div>
-                <p className="eyebrow">
-                  {activePage === "overview"
-                    ? "Your practice, your record"
-                    : `${pathway.label} logbook`}
-                </p>
+                {activePage === "cases" && (
+                  <p className="eyebrow">{pathway.label} logbook</p>
+                )}
                 <h1 id="page-title">
                   {activePage === "overview"
-                    ? "A logbook that grows with you."
+                    ? "Overview"
                     : "Your cases"}
                 </h1>
-                <p className="page-intro">
-                  {activePage === "overview"
-                    ? "Record scans during training and keep logging after certification. Your entries stay on this device."
-                    : "Search, review, and update your de-identified scan records."}
-                </p>
+                {activePage === "overview" && (
+                  <p className="page-intro">
+                    Record scans during training and keep logging after
+                    certification.
+                  </p>
+                )}
               </div>
             </div>
             <nav className="page-navigation" aria-label="Main navigation">
@@ -370,28 +415,48 @@ function App() {
         )}
 
         {activePage !== "form" && (
-          <nav className="pathway-tabs" aria-label="Choose a pathway">
-            {(Object.keys(PATHWAYS) as Pathway[]).map((key) => (
-              <button
-                className={`pathway-tab ${activePathway === key ? "is-active" : ""}`}
-                key={key}
-                onClick={() => {
-                  setActivePathway(key);
-                  setSearch("");
-                  setCaseFilter("all");
-                }}
-                aria-pressed={activePathway === key}
-              >
-                <span>{PATHWAYS[key].label}</span>
-                <span className="tab-count">
-                  {entries.filter((entry) => entry.pathway === key).length}
+          <div className="pathway-picker">
+            <span className="pathway-picker-label">Logbook type</span>
+            <details className="pathway-menu" ref={pathwayMenuRef}>
+              <summary aria-label={`Choose logbook type. Current: ${pathway.label}`}>
+                <span>{pathway.label}</span>
+                <span className="pathway-menu-count">
+                  {pathwayEntries.length}{" "}
+                  {pathwayEntries.length === 1 ? "case" : "cases"}
                 </span>
-              </button>
-            ))}
-          </nav>
+                <span className="pathway-menu-chevron" aria-hidden="true" />
+              </summary>
+              <div className="pathway-menu-options">
+                {(Object.keys(PATHWAYS) as Pathway[]).map((key) => {
+                  const caseCount = entries.filter(
+                    (entry) => entry.pathway === key,
+                  ).length;
+                  return (
+                    <button
+                      className="pathway-menu-option"
+                      type="button"
+                      key={key}
+                      onClick={(event) => {
+                        setActivePathway(key);
+                        setSearch("");
+                        setCaseFilter("all");
+                        event.currentTarget.closest("details")?.removeAttribute("open");
+                      }}
+                      aria-pressed={activePathway === key}
+                    >
+                      <span>{PATHWAYS[key].label}</span>
+                      <span className="pathway-menu-option-count">
+                        {caseCount} {caseCount === 1 ? "case" : "cases"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
+          </div>
         )}
 
-        {activePage !== "form" && (
+        {activePage === "overview" && (
           <section className="pathway-heading" aria-labelledby="pathway-title">
             <div>
               <p className="eyebrow">Personal logbook</p>
@@ -547,11 +612,14 @@ function App() {
                   onChange={(event) => void handleBackupRestore(event)}
                 />
               </div>
-              <p className="backup-privacy">
-                The JSON backup is readable and not encrypted. Store it
-                somewhere private; don’t upload it to a shared server until
-                encrypted backup support is available.
-              </p>
+              <details className="backup-privacy">
+                <summary>Backup privacy</summary>
+                <p>
+                  The JSON backup is readable and not encrypted. Store it
+                  somewhere private; don’t upload it to a shared server until
+                  encrypted backup support is available.
+                </p>
+              </details>
               {backupStatus && (
                 <p className="backup-status" role="status">
                   {backupStatus}
@@ -571,20 +639,8 @@ function App() {
         )}
 
         {isReady && activePage === "cases" && (
-          <section className="entries-section" aria-labelledby="entries-title">
-              <div className="section-heading">
-                <div>
-                  <p className="eyebrow">Your record</p>
-                  <h2 id="entries-title">Cases</h2>
-                </div>
-                <button
-                  className="button button-secondary desktop-add"
-                  onClick={startNewCase}
-                >
-                  <span aria-hidden="true">+</span> Add a case
-                </button>
-              </div>
-
+          <section className="entries-section" aria-label="Cases">
+            {pathwayEntries.length > 0 && (
               <div className="list-toolbar">
                 <label className="search-field">
                   <span className="sr-only">Search cases</span>
@@ -617,6 +673,7 @@ function App() {
                   ))}
                 </div>
               </div>
+            )}
 
               {filteredEntries.length === 0 ? (
                 <div className="empty-state">

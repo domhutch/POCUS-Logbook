@@ -45,7 +45,7 @@ Browser storage is isolated by site origin. Cases saved at `localhost` will not 
 
 Lung and Heart cases are stored locally in this browser's IndexedDB; they are not uploaded or synced. Training targets can be hidden independently for each pathway without changing its saved cases.
 
-The app has separate **Overview** and **Cases** pages for pathway progress and case history. Create or edit a case on its own screen; saving returns to the Cases page. Backup and restore controls are on Overview.
+Choose one pathway at a time from the **Logbook type** selector. The app has separate **Overview** and **Cases** pages for pathway progress and case history. Create or edit a case on its own screen; saving returns to the Cases page. Backup and restore controls are on Overview.
 
 Use **Download backup** to save a versioned JSON copy of all cases and pathway preferences. Use **Restore backup** to merge a copy into this device: new case IDs are added, existing IDs and local preferences are kept, and repeated restores do not duplicate cases. Restore validates the whole file before saving it; files larger than 10 MB are not accepted. Backups from versions 1 and 2 are upgraded on restore. Restore does not replace or delete existing cases.
 

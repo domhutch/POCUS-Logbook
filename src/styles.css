@@ -66,11 +66,14 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--ink);
   font-family: "Avenir Next", ui-sans-serif, system-ui, sans-serif;
   font-size: 0.96rem;
   font-weight: 800;
-  text-decoration: none;
+  text-align: left;
 }
 
 .brand-mark {
@@ -222,52 +225,108 @@ h3 {
   font-size: 0.68rem;
 }
 
-.pathway-tabs {
+.pathway-picker {
+  position: relative;
+  width: min(100%, 440px);
+  margin-bottom: 1.35rem;
+}
+
+.pathway-picker-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.pathway-menu > summary {
   display: flex;
-  gap: 0.35rem;
-  padding: 0.35rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #eef1ed;
-}
-
-.pathway-tab {
-  display: inline-flex;
-  min-height: 42px;
-  flex: 1;
+  min-height: 46px;
   align-items: center;
-  justify-content: center;
-  gap: 0.7rem;
-  padding: 0.5rem 0.9rem;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #69766f;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.pathway-tab.is-active {
+  gap: 0.55rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   background: white;
-  box-shadow: 0 2px 5px rgb(31 55 45 / 8%);
   color: var(--teal-dark);
-}
-
-.tab-count {
-  display: grid;
-  min-width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 7px;
-  background: #eef2ee;
-  color: #68736c;
-  font-size: 0.72rem;
+  cursor: pointer;
+  font-size: 0.88rem;
   font-weight: 700;
+  list-style: none;
 }
 
-.is-active .tab-count {
+.pathway-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pathway-menu[open] > summary {
+  border-color: #bdd2c8;
+  border-radius: 10px 10px 0 0;
+}
+
+.pathway-menu-count {
+  padding: 0.22rem 0.42rem;
+  border-radius: 6px;
   background: var(--teal-wash);
+  color: #527067;
+  font-size: 0.67rem;
+  font-weight: 600;
+}
+
+.pathway-menu-chevron {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  transform: rotate(45deg) translateY(-2px);
+  border-right: 1.5px solid #74857b;
+  border-bottom: 1.5px solid #74857b;
+  margin-left: auto;
+  transition: transform 140ms ease;
+}
+
+.pathway-menu[open] .pathway-menu-chevron {
+  transform: rotate(225deg) translate(-2px, -1px);
+}
+
+.pathway-menu-options {
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #bdd2c8;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  background: white;
+  box-shadow: 0 12px 24px rgb(31 55 45 / 12%);
+}
+
+.pathway-menu-option {
+  display: flex;
+  width: 100%;
+  min-height: 45px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 0;
+  border-top: 1px solid #edf0ec;
+  background: white;
+  color: #53645b;
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pathway-menu-option:hover,
+.pathway-menu-option[aria-pressed="true"] {
+  background: #f1f7f3;
   color: var(--teal-dark);
+}
+
+.pathway-menu-option-count {
+  color: #79867e;
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 .pathway-heading {
@@ -459,7 +518,7 @@ summary:focus-visible {
 }
 
 .entries-section {
-  margin-top: 2.4rem;
+  margin-top: 1.2rem;
 }
 
 .section-heading {
@@ -788,6 +847,16 @@ summary:focus-visible {
   line-height: 1.5;
 }
 
+.backup-privacy summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.backup-privacy p {
+  margin: 0.35rem 0 0;
+}
+
 .backup-status {
   color: #27674e;
   font-weight: 600;
@@ -833,6 +902,14 @@ summary:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem 1rem;
+}
+
+.optional-details .form-grid {
+  padding: 0.85rem 0 1rem;
+}
+
+.optional-details .form-notes-grid {
+  padding-bottom: 1rem;
 }
 
 .form-field {
@@ -1271,6 +1348,10 @@ summary:focus-visible {
     padding: 1rem;
   }
 
+  .backup-copy > p:last-child {
+    display: none;
+  }
+
   .backup-actions {
     justify-content: flex-start;
   }
@@ -1306,39 +1387,92 @@ summary:focus-visible {
 
   .page-content {
     width: min(100% - 1.5rem, 440px);
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
   }
 
-  .pathway-tab {
-    min-height: 39px;
-    gap: 0.4rem;
-    padding: 0.4rem 0.55rem;
-    font-size: 0.78rem;
+  .page-heading {
+    margin-bottom: 1rem;
   }
 
   .pathway-heading {
-    flex-direction: column;
-    margin-top: 1.6rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .pathway-heading > div {
+    min-width: 0;
+  }
+
+  .pathway-heading .eyebrow {
+    display: none;
   }
 
   .pathway-heading h2 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+  }
+
+  .pathway-description {
+    display: none;
   }
 
   .mode-switch {
-    width: 100%;
+    width: auto;
+    min-width: 0;
+    max-width: 55%;
+    flex: 0 0 auto;
+    gap: 0.4rem;
+    padding: 0.6rem;
+  }
+
+  .mode-switch strong {
+    font-size: 0.7rem;
+  }
+
+  .mode-switch small {
+    font-size: 0.63rem;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
   }
 
   .stat-card {
-    min-height: 112px;
+    display: grid;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.15rem 0.75rem;
+    padding: 0.65rem 0.8rem;
+  }
+
+  .stat-label {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .stat-value,
+  .stat-value-small {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    margin: 0;
+    font-size: 1.3rem;
+  }
+
+  .stat-note {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+    padding-top: 0;
+    font-size: 0.64rem;
   }
 
   .stat-card:last-child {
-    grid-column: 1 / -1;
-    min-height: 94px;
+    grid-column: auto;
+    min-height: 0;
   }
 
   .list-toolbar {
@@ -1367,6 +1501,20 @@ summary:focus-visible {
 
   .entry-form-panel {
     padding: 1rem;
+  }
+
+  .form-actions {
+    position: sticky;
+    z-index: 2;
+    bottom: 0;
+    margin: 1rem -1rem -1rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: rgb(255 255 255 / 96%);
+  }
+
+  .form-actions .button {
+    flex: 1;
   }
 
   .form-grid,
