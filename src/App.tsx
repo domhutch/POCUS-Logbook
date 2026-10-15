@@ -7,6 +7,7 @@ import {
 } from "react";
 import CaseForm from "./components/CaseForm";
 import { createBackup, parseBackup } from "./domain/backup";
+import { createCasePrintDocument } from "./domain/case-print";
 import {
   createDraft,
   PATHWAYS,
@@ -247,6 +248,34 @@ function App() {
     }
   }
 
+  function handlePrintCase(entry: LogbookCase) {
+    setError(null);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      setError(
+        "The print window was blocked. Allow pop-ups for this app, then try again.",
+      );
+      return;
+    }
+
+    try {
+      printWindow.document.open();
+      printWindow.document.write(createCasePrintDocument(entry));
+      printWindow.document.close();
+      window.setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 250);
+    } catch (cause) {
+      printWindow.close();
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The printable case sheet could not be opened.",
+      );
+    }
+  }
+
   async function handleTrainingModeChange(enabled: boolean) {
     try {
       await savePathwayMode(activePathway, enabled);
@@ -377,24 +406,9 @@ function App() {
       >
         {activePage !== "form" && (
           <>
-            <div className="page-heading">
-              <div>
-                {activePage === "cases" && (
-                  <p className="eyebrow">{pathway.label} logbook</p>
-                )}
-                <h1 id="page-title">
-                  {activePage === "overview"
-                    ? "Overview"
-                    : "Your cases"}
-                </h1>
-                {activePage === "overview" && (
-                  <p className="page-intro">
-                    Record scans during training and keep logging after
-                    certification.
-                  </p>
-                )}
-              </div>
-            </div>
+            <h1 className="sr-only" id="page-title">
+              {activePage === "overview" ? "Overview" : "Your cases"}
+            </h1>
             <nav className="page-navigation" aria-label="Main navigation">
               <button
                 className={`page-navigation-link ${activePage === "overview" ? "is-active" : ""}`}
@@ -750,6 +764,13 @@ function App() {
                         )}
                       </div>
                       <div className="case-actions">
+                        <button
+                          className="text-button"
+                          onClick={() => handlePrintCase(entry)}
+                          aria-label={`Print or save case from ${formatDate(entry.date)} as PDF`}
+                        >
+                          Print / PDF
+                        </button>
                         <button
                           className="text-button"
                           onClick={() => startEditing(entry)}

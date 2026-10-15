@@ -53,6 +53,8 @@ Backups are readable, unencrypted files and may contain everything entered in op
 
 Cases can optionally be tagged with a normal, abnormal/pathology, or indeterminate impression and whether the scan changed management. These are personal review markers, not clinical advice or accreditation claims. Training mode shows total and directly supervised counts; with training targets hidden, the summary focuses on abnormal impressions and changed management.
 
+Each case can be opened as a print-ready sheet with **Print / PDF** from the Cases list. Use the browser or device print dialog to print it or choose **Save as PDF**. The sheet contains the case’s pathway-specific fields and leaves space for handwritten notes where optional reflections are blank.
+
 ## Capacitor
 
 The Capacitor configuration points to the local `dist/` directory. Build the web app before syncing native projects:

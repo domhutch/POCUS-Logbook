@@ -137,14 +137,7 @@ button:disabled {
 .page-content {
   width: min(100% - 3rem, 1060px);
   margin: 0 auto;
-  padding: 3.3rem 0 4rem;
-}
-
-.page-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 2rem;
+  padding: 1.4rem 0 4rem;
 }
 
 .eyebrow {
@@ -169,37 +162,20 @@ h3 {
   font-family: "Avenir Next", ui-sans-serif, system-ui, sans-serif;
 }
 
-.page-heading h1 {
-  max-width: 700px;
-  margin: 0;
-  color: #203a35;
-  font-size: clamp(2rem, 4.2vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.055em;
-  line-height: 1.12;
-}
-
-.page-intro {
-  max-width: 570px;
-  margin: 0.95rem 0 0;
-  color: var(--muted);
-  font-size: 0.97rem;
-  line-height: 1.65;
-}
-
 .page-navigation {
   display: flex;
-  gap: 1.5rem;
-  margin: -0.65rem 0 1.4rem;
+  gap: 1rem;
+  margin: 0 0 1.1rem;
+  padding: 0 0.35rem;
   border-bottom: 1px solid var(--line);
 }
 
 .page-navigation-link {
   display: inline-flex;
-  min-height: 42px;
+  min-height: 48px;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.45rem 0.1rem;
+  padding: 0.55rem 0.25rem;
   border: 0;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -612,7 +588,7 @@ summary:focus-visible {
 
 .case-card {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) minmax(115px, 155px) 91px;
+  grid-template-columns: 110px minmax(0, 1fr) minmax(115px, 155px) 150px;
   align-items: center;
   gap: 0.9rem;
   min-height: 94px;
@@ -728,11 +704,11 @@ summary:focus-visible {
 .case-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .text-button {
-  padding: 0.3rem 0;
+  padding: 0.3rem 0.1rem;
   border: 0;
   background: transparent;
   color: var(--teal);
@@ -1231,21 +1207,7 @@ summary:focus-visible {
 
   .page-content {
     width: min(100% - 2rem, 620px);
-    padding: 2.1rem 0 3rem;
-  }
-
-  .page-heading {
-    margin-bottom: 1.55rem;
-  }
-
-  .page-heading h1 {
-    max-width: 540px;
-    font-size: clamp(2rem, 8vw, 2.65rem);
-  }
-
-  .page-intro {
-    margin-top: 0.7rem;
-    font-size: 0.87rem;
+    padding: 1rem 0 3rem;
   }
 
   .pathway-heading {
@@ -1290,6 +1252,7 @@ summary:focus-visible {
     grid-column: 2 / -1;
     justify-content: flex-start;
     gap: 0.8rem;
+    flex-wrap: wrap;
   }
 
   .case-meta {
@@ -1387,12 +1350,8 @@ summary:focus-visible {
 
   .page-content {
     width: min(100% - 1.5rem, 440px);
-    padding-top: 1.5rem;
+    padding-top: 0.75rem;
     padding-bottom: 2rem;
-  }
-
-  .page-heading {
-    margin-bottom: 1rem;
   }
 
   .pathway-heading {

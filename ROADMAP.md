@@ -65,6 +65,7 @@ The native apps must include the built web assets in the app package. They must 
 
 - [ ] Export a logbook as CSV for spreadsheets.
 - [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
+- [x] Produce a print-ready PDF sheet for an individual case using the browser/device print dialog.
 - [ ] Produce a printable PDF logbook/report.
 - [ ] Use native share/save flows where supported and provide clear errors when an export cannot be created.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
