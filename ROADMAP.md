@@ -23,38 +23,38 @@ The native apps must include the built web assets in the app package. They must 
 - [x] Create the initial roadmap.
 - [x] Establish a TypeScript, React, and Vite app shell.
 - [x] Add PWA offline configuration and a Capacitor configuration that targets bundled build output.
-- [ ] Install dependencies and verify web and production builds when Node.js/npm are available.
-- [ ] Decide which pathways are in the first usable release.
-- [ ] Decide whether training/post-certification mode is per pathway or a single app-wide setting.
-- [ ] Review the current official training packs and resolve any differences between training and assessment documents before encoding rules.
+- [x] Install dependencies and verify web and production builds when Node.js/npm are available.
+- [x] Decide which pathways are in the first usable release: FUSIC Lung and FUSIC Heart.
+- [x] Decide whether training/post-certification mode is per pathway or a single app-wide setting: per pathway.
+- [x] Review the supplied 2025 Lung v10 and Heart v13 training and assessment packs. Training-pack pages provide the 30/10 Lung and 50/10 Heart logbook references; assessment packs provide compatible report fields, rather than separate competing scan totals.
 
-**Exit criteria:** the scaffold builds; its production output can be packaged locally; scope and source versions for the first pathways are agreed.
+**Exit criteria:** the scaffold builds; its production output can be packaged locally; scope and source versions for the first pathways are agreed. Met for the initial web scaffold.
 
 ### 1. Curriculum and data model
 
-- [ ] Define a versioned pathway requirements catalogue, including total cases, directly supervised minimums, scan-type quotas, case-mix constraints, and any collection window that is in scope.
-- [ ] Record the source document and version for each configured rule.
-- [ ] Define a de-identified case record: date, pathway, scan/study type, supervision status, optional supervisor, required pathway-specific fields, and optional reflection.
-- [ ] Decide how edits, deletion, duplicate dates, time zones, and app upgrades affect records.
-- [ ] Set a clear warning and validation policy for fields that could identify a patient.
+- [ ] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. The initial total/direct-supervision references are shown in the app, with their source versions.
+- [x] Record the source document and version for the initial total and directly supervised references.
+- [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
+- [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
+- [ ] Validate potentially identifying text beyond the in-form privacy warning.
 
-**Exit criteria:** rules and fields are traceable to documents; records can be validated without storing patient identifiers.
+**Exit criteria:** remaining rules and fields are traceable to documents; records can be validated without storing patient identifiers.
 
 ### 2. Core logbook
 
-- [ ] Add and edit a case using pathway-specific forms.
-- [ ] Browse, search, sort, and filter logs by date, pathway, scan type, and supervision status.
-- [ ] Show supervised and unsupervised counts alongside total cases.
-- [ ] Persist records locally and keep case entry and retrieval working offline.
-- [ ] Handle local storage errors visibly; do not silently report a case as saved when persistence fails.
+- [x] Add and edit a case using pathway-specific forms.
+- [x] Browse and search case details, sort by scan date, and filter by pathway and supervision status.
+- [x] Show supervised and unsupervised counts alongside total cases.
+- [x] Persist records locally in IndexedDB and keep case entry and retrieval available offline.
+- [x] Show local storage errors; do not report a case as saved when persistence fails.
 
 **Exit criteria:** a user can record, find, inspect, and edit cases offline, with counts matching the stored records.
 
 ### 3. Progress, mode, and review
 
-- [ ] Add a training view that compares recorded cases with the selected pathway's configured requirements.
-- [ ] Show total and supervised progress separately, plus pathway-specific quotas and case-mix summaries where applicable.
-- [ ] Add a post-certification setting that hides logbook target/progress figures without deleting cases.
+- [x] Add a training view that compares recorded cases with the selected pathway's initial total and supervised references.
+- [ ] Show pathway-specific quotas and case-mix summaries when the full catalogue has been verified.
+- [x] Add an independent post-certification setting for each pathway that hides targets without deleting cases.
 - [ ] Add a review dashboard with useful activity and case-mix statistics.
 - [ ] Test boundary conditions: no cases, exactly at target, over target, switching modes, and changing pathways.
 
@@ -63,19 +63,31 @@ The native apps must include the built web assets in the app package. They must 
 ### 4. Export and recovery
 
 - [ ] Export a logbook as CSV for spreadsheets.
-- [ ] Export and restore a complete JSON backup.
+- [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, and is idempotent.
 - [ ] Produce a printable PDF logbook/report.
 - [ ] Use native share/save flows where supported and provide clear errors when an export cannot be created.
-- [ ] Ensure exports do not include patient-identifiable data or hidden internal fields.
+- [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
 
-**Exit criteria:** exported records can be inspected, and a backup can be restored into a clean installation without data loss.
+**Exit criteria:** exported records can be inspected, and a backup can be restored into a clean installation without data loss. JSON backup/restore is implemented for the web app; native save/share flows remain to be verified.
+
+### Stretch goals
+
+These are optional follow-ons after reliable local backup and restore:
+
+1. **Encrypted home-server backups:** client-side encryption before transfer, authenticated access, explicit server configuration, and a tested key recovery/export process. Do not send readable case data to a server.
+2. **Backup reminders and history:** show the last successful backup date and let users set a local reminder; never claim a server copy exists until its upload is confirmed.
+3. **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
+4. **Printable review reports:** produce a user-selected, de-identified PDF summary.
+5. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
+6. **Additional pathways:** add DVT, Abdomen, Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed.
 
 ### 5. Mobile packaging and release readiness
 
 - [ ] Generate and check in the iOS and Android Capacitor platform projects when platform tooling is available.
 - [ ] Verify the native app loads from assets packaged inside the app, with no hosted-app URL configured.
 - [ ] Test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
-- [ ] Add automated tests for calculations, pathway rules, persistence, and export formats.
+- [x] Add automated tests for JSON backup validation and restore merge behavior.
+- [ ] Add automated tests for progress calculations, pathway rules, persistence failures, and CSV/PDF export formats.
 - [ ] Document build, release, data-backup, and privacy expectations.
 
 **Exit criteria:** installed native builds work in airplane mode and preserve user data across supported upgrades.

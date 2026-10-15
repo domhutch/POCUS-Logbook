@@ -1,0 +1,111 @@
+import { openDB, type DBSchema } from "idb";
+import type { LogbookBackup } from "../domain/backup";
+import {
+  addTimestamps,
+  type CaseDraft,
+  type LogbookCase,
+  type Pathway,
+} from "../domain/logbook";
+
+interface PathwayMode {
+  pathway: Pathway;
+  trainingMode: boolean;
+}
+
+interface LogbookDatabase extends DBSchema {
+  cases: {
+    key: string;
+    value: LogbookCase;
+  };
+  settings: {
+    key: Pathway;
+    value: PathwayMode;
+  };
+}
+
+const database = openDB<LogbookDatabase>("pocus-logbook", 1, {
+  upgrade(db) {
+    db.createObjectStore("cases", { keyPath: "id" });
+    db.createObjectStore("settings", { keyPath: "pathway" });
+  },
+});
+
+export async function getCases(): Promise<LogbookCase[]> {
+  return (await database).getAll("cases");
+}
+
+export async function saveCase(draft: CaseDraft): Promise<void> {
+  const db = await database;
+  const existing = await db.get("cases", draft.id);
+  await db.put("cases", addTimestamps(draft, existing));
+}
+
+export async function deleteCase(id: string): Promise<void> {
+  await (await database).delete("cases", id);
+}
+
+export async function getPathwayModes(): Promise<
+  Partial<Record<Pathway, boolean>>
+> {
+  const settings = await (await database).getAll("settings");
+  return Object.fromEntries(
+    settings.map(({ pathway, trainingMode }) => [pathway, trainingMode]),
+  );
+}
+
+export async function savePathwayMode(
+  pathway: Pathway,
+  trainingMode: boolean,
+): Promise<void> {
+  await (await database).put("settings", { pathway, trainingMode });
+}
+
+export interface RestoreResult {
+  addedCases: number;
+  skippedCases: number;
+  importedPathwayModes: number;
+}
+
+export async function restoreBackup(
+  backup: LogbookBackup,
+): Promise<RestoreResult> {
+  const db = await database;
+  const transaction = db.transaction(["cases", "settings"], "readwrite");
+  const [existingCases, existingModes] = await Promise.all([
+    transaction.objectStore("cases").getAll(),
+    transaction.objectStore("settings").getAll(),
+  ]);
+  const existingIds = new Set(existingCases.map((entry) => entry.id));
+  const existingPathways = new Set(
+    existingModes.map((entry) => entry.pathway),
+  );
+  let addedCases = 0;
+  let skippedCases = 0;
+  let importedPathwayModes = 0;
+  const writes: Promise<unknown>[] = [];
+
+  for (const entry of backup.cases) {
+    if (existingIds.has(entry.id)) {
+      skippedCases += 1;
+      continue;
+    }
+    writes.push(transaction.objectStore("cases").add(entry));
+    existingIds.add(entry.id);
+    addedCases += 1;
+  }
+
+  for (const pathway of ["lung", "heart"] as const) {
+    if (existingPathways.has(pathway)) continue;
+    writes.push(
+      transaction.objectStore("settings").add({
+        pathway,
+        trainingMode: backup.pathwayModes[pathway],
+      }),
+    );
+    importedPathwayModes += 1;
+  }
+
+  await Promise.all(writes);
+  await transaction.done;
+  return { addedCases, skippedCases, importedPathwayModes };
+}
