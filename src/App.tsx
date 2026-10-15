@@ -531,7 +531,7 @@ function App() {
         {isReady && activePage === "overview" && (
           <>
             <section
-              className="stats-grid"
+              className={`stats-grid ${trainingModes[activePathway] ? "stats-grid-training" : ""}`}
               aria-label={`${pathway.label} ${
                 trainingModes[activePathway] ? "training totals" : "review summary"
               }`}
@@ -540,28 +540,22 @@ function App() {
                 <>
                   <article className="stat-card stat-card-featured">
                     <span className="stat-label">Cases logged</span>
-                    <strong className="stat-value">{pathwayEntries.length}</strong>
-                    <span className="stat-note">
-                      {Math.max(0, pathway.totalTarget - pathwayEntries.length)} to
-                      training reference
-                    </span>
+                    <strong className="stat-value">
+                      {pathwayEntries.length}
+                      <span className="stat-reference"> / {pathway.totalTarget}</span>
+                    </strong>
+                    <span className="stat-note">Training case reference</span>
                   </article>
                   <article className="stat-card">
                     <span className="stat-label">Directly supervised</span>
-                    <strong className="stat-value">{supervisedCount}</strong>
-                    <span className="stat-note">
-                      {pathway.supervisedTarget} direct supervision reference
-                    </span>
-                  </article>
-                  <article className="stat-card">
-                    <span className="stat-label">Unsupervised cases</span>
-                    <strong className="stat-value stat-value-small">
-                      {pathwayEntries.length - supervisedCount}
+                    <strong className="stat-value">
+                      {supervisedCount}
+                      <span className="stat-reference">
+                        {" "}
+                        / {pathway.supervisedTarget}
+                      </span>
                     </strong>
-                    <span className="stat-note">
-                      {pathwayEntries.length - supervisedCount} without direct
-                      supervision
-                    </span>
+                    <span className="stat-note">Direct supervision reference</span>
                   </article>
                 </>
               ) : (

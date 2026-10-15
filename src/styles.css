@@ -441,6 +441,10 @@ summary:focus-visible {
   gap: 0.85rem;
 }
 
+.stats-grid-training {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .stat-card {
   display: flex;
   min-height: 134px;
@@ -473,9 +477,11 @@ summary:focus-visible {
   line-height: 1.1;
 }
 
-.stat-value-small {
-  font-size: 1.25rem;
-  letter-spacing: -0.03em;
+.stat-reference {
+  color: #748078;
+  font-size: 0.58em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .stat-note {
@@ -1238,10 +1244,6 @@ summary:focus-visible {
     font-size: 1.7rem;
   }
 
-  .stat-value-small {
-    font-size: 1rem;
-  }
-
   .case-card {
     grid-template-columns: 82px minmax(0, 1fr) 105px;
     gap: 0.65rem;
@@ -1413,8 +1415,7 @@ summary:focus-visible {
     grid-row: 1;
   }
 
-  .stat-value,
-  .stat-value-small {
+  .stat-value {
     grid-column: 2;
     grid-row: 1 / span 2;
     margin: 0;
