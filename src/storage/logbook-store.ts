@@ -23,10 +23,34 @@ interface LogbookDatabase extends DBSchema {
   };
 }
 
-const database = openDB<LogbookDatabase>("pocus-logbook", 1, {
-  upgrade(db) {
-    db.createObjectStore("cases", { keyPath: "id" });
-    db.createObjectStore("settings", { keyPath: "pathway" });
+const database = openDB<LogbookDatabase>("pocus-logbook", 3, {
+  blocked() {
+    window.dispatchEvent(new Event("pocus-logbook-upgrade-blocked"));
+  },
+  upgrade(db, oldVersion, _newVersion, transaction) {
+    if (oldVersion < 1) {
+      db.createObjectStore("cases", { keyPath: "id" });
+      db.createObjectStore("settings", { keyPath: "pathway" });
+    }
+    if (oldVersion < 3) {
+      const store = transaction.objectStore("cases");
+      const migration = (cursor: Awaited<ReturnType<typeof store.openCursor>>) => {
+        if (!cursor) return;
+        const migrated = { ...cursor.value };
+        if (oldVersion < 2) {
+          migrated.impressionCategory ??= "not_recorded";
+          migrated.managementImpact ??= "not_recorded";
+        }
+        delete (migrated as LogbookCase & { curriculumPlus?: boolean })
+          .curriculumPlus;
+        cursor.update(migrated);
+        void cursor.continue().then(migration);
+      };
+      void store.openCursor().then(migration);
+    }
+  },
+  blocking() {
+    window.location.reload();
   },
 });
 

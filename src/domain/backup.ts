@@ -8,14 +8,20 @@ import {
   type HeartFinding,
   type HeartView,
   type ImageQuality,
+  type ImpressionCategory,
   type LogbookCase,
   type LungFinding,
   type LungRegion,
+  type ManagementImpact,
   type Pathway,
+  type HeartCaseFields,
+  type LungCaseFields,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 1;
+export const BACKUP_SCHEMA_VERSION = 3;
 export const BACKUP_APP_ID = "pocus-logbook";
+const VERSION_ONE_BACKUP = 1;
+const VERSION_TWO_BACKUP = 2;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -25,7 +31,28 @@ export interface LogbookBackup {
   pathwayModes: Record<Pathway, boolean>;
 }
 
-const caseFields = [
+type VersionOneLogbookCase =
+  | Omit<
+      LungCaseFields,
+      "impressionCategory" | "managementImpact"
+    >
+  | Omit<
+      HeartCaseFields,
+      "impressionCategory" | "managementImpact"
+    >;
+type VersionTwoLogbookCase =
+  | (LungCaseFields & { curriculumPlus: boolean })
+  | (HeartCaseFields & { curriculumPlus: boolean });
+
+interface BackupEnvelope {
+  app: typeof BACKUP_APP_ID;
+  schemaVersion: number;
+  exportedAt: string;
+  cases: unknown[];
+  pathwayModes: Record<Pathway, boolean>;
+}
+
+const legacyCaseFields = [
   "id",
   "date",
   "caseType",
@@ -41,9 +68,59 @@ const caseFields = [
   "pathway",
 ] as const;
 
-const lungCaseFields = [...caseFields, "ventilatorySupport", "regions", "findings"];
+const caseFields = [
+  ...legacyCaseFields.slice(0, 7),
+  "impressionCategory",
+  "managementImpact",
+  ...legacyCaseFields.slice(7),
+] as const;
+const versionTwoCaseFields = [
+  ...legacyCaseFields.slice(0, 7),
+  "impressionCategory",
+  "managementImpact",
+  "curriculumPlus",
+  ...legacyCaseFields.slice(7),
+] as const;
+const lungCaseFields = [
+  ...caseFields,
+  "ventilatorySupport",
+  "regions",
+  "findings",
+];
 const heartCaseFields = [
   ...caseFields,
+  "ventilatorySupport",
+  "cardiovascularSupport",
+  "heartRate",
+  "bloodPressure",
+  "centralVenousPressure",
+  "views",
+  "findings",
+];
+const versionOneLungCaseFields = [
+  ...legacyCaseFields,
+  "ventilatorySupport",
+  "regions",
+  "findings",
+];
+const versionOneHeartCaseFields = [
+  ...legacyCaseFields,
+  "ventilatorySupport",
+  "cardiovascularSupport",
+  "heartRate",
+  "bloodPressure",
+  "centralVenousPressure",
+  "views",
+  "findings",
+];
+const versionTwoLungCaseFields = [
+  ...versionTwoCaseFields,
+  "ventilatorySupport",
+  "regions",
+  "findings",
+];
+const versionTwoHeartCaseFields = [
+  ...versionTwoCaseFields,
   "ventilatorySupport",
   "cardiovascularSupport",
   "heartRate",
@@ -55,6 +132,17 @@ const heartCaseFields = [
 
 const assessments: Assessment[] = ["not_assessed", "yes", "no", "unable"];
 const caseTypes: CaseType[] = ["clinical", "healthy_volunteer"];
+const impressionCategories: ImpressionCategory[] = [
+  "not_recorded",
+  "normal",
+  "abnormal",
+  "indeterminate",
+];
+const managementImpacts: ManagementImpact[] = [
+  "not_recorded",
+  "changed",
+  "unchanged",
+];
 const imageQualities: ImageQuality[] = [
   "not_recorded",
   "good",
@@ -144,7 +232,10 @@ function isHeartFindings(value: unknown): boolean {
   );
 }
 
-function isCommonCase(value: Record<string, unknown>): boolean {
+function isCommonCase(
+  value: Record<string, unknown>,
+  schemaVersion: number,
+): boolean {
   return (
     typeof value.id === "string" &&
     value.id.length > 0 &&
@@ -155,6 +246,11 @@ function isCommonCase(value: Record<string, unknown>): boolean {
     isString(value.supervisorName, 100) &&
     isString(value.indication, 160) &&
     isString(value.diagnosis, 160) &&
+    (schemaVersion === VERSION_ONE_BACKUP ||
+      (isEnum(value.impressionCategory, impressionCategories) &&
+        isEnum(value.managementImpact, managementImpacts))) &&
+    (schemaVersion !== VERSION_TWO_BACKUP ||
+      typeof value.curriculumPlus === "boolean") &&
     isEnum(value.imageQuality, imageQualities) &&
     isString(value.summary) &&
     isString(value.reflection) &&
@@ -164,12 +260,22 @@ function isCommonCase(value: Record<string, unknown>): boolean {
   );
 }
 
-function isLogbookCase(value: unknown): value is LogbookCase {
-  if (!isRecord(value) || !isCommonCase(value)) return false;
+function isLogbookCase(
+  value: unknown,
+  schemaVersion: number,
+): value is LogbookCase | VersionOneLogbookCase | VersionTwoLogbookCase {
+  if (!isRecord(value) || !isCommonCase(value, schemaVersion)) return false;
 
   if (value.pathway === "lung") {
     return (
-      hasExactKeys(value, lungCaseFields) &&
+      hasExactKeys(
+        value,
+        schemaVersion === VERSION_ONE_BACKUP
+          ? versionOneLungCaseFields
+          : schemaVersion === VERSION_TWO_BACKUP
+            ? versionTwoLungCaseFields
+            : lungCaseFields,
+      ) &&
       isUniqueEnumArray(value.regions, lungRegions) &&
       isLungFindings(value.findings)
     );
@@ -177,7 +283,14 @@ function isLogbookCase(value: unknown): value is LogbookCase {
 
   if (value.pathway === "heart") {
     return (
-      hasExactKeys(value, heartCaseFields) &&
+      hasExactKeys(
+        value,
+        schemaVersion === VERSION_ONE_BACKUP
+          ? versionOneHeartCaseFields
+          : schemaVersion === VERSION_TWO_BACKUP
+            ? versionTwoHeartCaseFields
+            : heartCaseFields,
+      ) &&
       isString(value.cardiovascularSupport, 120) &&
       isString(value.heartRate, 40) &&
       isString(value.bloodPressure, 40) &&
@@ -190,7 +303,7 @@ function isLogbookCase(value: unknown): value is LogbookCase {
   return false;
 }
 
-function isLogbookBackup(value: unknown): value is LogbookBackup {
+function isBackupEnvelope(value: unknown): value is BackupEnvelope {
   return (
     isRecord(value) &&
     hasExactKeys(value, [
@@ -201,10 +314,9 @@ function isLogbookBackup(value: unknown): value is LogbookBackup {
       "pathwayModes",
     ]) &&
     value.app === BACKUP_APP_ID &&
-    value.schemaVersion === BACKUP_SCHEMA_VERSION &&
+    typeof value.schemaVersion === "number" &&
     isIsoTimestamp(value.exportedAt) &&
     Array.isArray(value.cases) &&
-    value.cases.every(isLogbookCase) &&
     isRecord(value.pathwayModes) &&
     hasExactKeys(value.pathwayModes, ["lung", "heart"]) &&
     typeof value.pathwayModes.lung === "boolean" &&
@@ -234,9 +346,19 @@ export function parseBackup(serialized: string): LogbookBackup {
     throw new Error("This file is not valid JSON.");
   }
 
-  if (!isLogbookBackup(value)) {
+  if (
+    !isBackupEnvelope(value) ||
+    ![
+      VERSION_ONE_BACKUP,
+      VERSION_TWO_BACKUP,
+      BACKUP_SCHEMA_VERSION,
+    ].includes(value.schemaVersion) ||
+    !value.cases.every((entry) =>
+      isLogbookCase(entry, value.schemaVersion as number),
+    )
+  ) {
     throw new Error(
-      "This file is not a valid POCUS Logbook backup (supported format: version 1).",
+      `This file is not a valid POCUS Logbook backup (supported formats: versions 1–${BACKUP_SCHEMA_VERSION}).`,
     );
   }
 
@@ -245,5 +367,37 @@ export function parseBackup(serialized: string): LogbookBackup {
     throw new Error("This backup contains duplicate case IDs.");
   }
 
-  return value;
+  if (value.schemaVersion === VERSION_ONE_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases.map(
+        (entry): LogbookCase => ({
+          ...entry,
+          impressionCategory: "not_recorded",
+          managementImpact: "not_recorded",
+        }),
+      ),
+      pathwayModes: value.pathwayModes,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_TWO_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases.map((entry): LogbookCase => {
+        const {
+          curriculumPlus: _curriculumPlus,
+          ...currentEntry
+        } = entry as VersionTwoLogbookCase;
+        return currentEntry;
+      }),
+      pathwayModes: value.pathwayModes,
+    };
+  }
+
+  return value as LogbookBackup;
 }

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createBackup, parseBackup } from "./backup";
+import {
+  BACKUP_SCHEMA_VERSION,
+  createBackup,
+  parseBackup,
+} from "./backup";
 import {
   addTimestamps,
   createDraft,
@@ -26,7 +30,7 @@ describe("POCUS Logbook backups", () => {
 
     expect(parseBackup(makeBackup(cases))).toEqual({
       app: "pocus-logbook",
-      schemaVersion: 1,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt,
       cases,
       pathwayModes,
@@ -39,10 +43,10 @@ describe("POCUS Logbook backups", () => {
 
   it("rejects unsupported backup versions before restore", () => {
     const backup = JSON.parse(makeBackup());
-    backup.schemaVersion = 2;
+    backup.schemaVersion = BACKUP_SCHEMA_VERSION + 1;
 
     expect(() => parseBackup(JSON.stringify(backup))).toThrow(
-      "supported format: version 1",
+      `supported formats: versions 1–${BACKUP_SCHEMA_VERSION}`,
     );
   });
 
@@ -53,7 +57,7 @@ describe("POCUS Logbook backups", () => {
     backup.cases[0].patientName = "Unexpected field";
 
     expect(() => parseBackup(JSON.stringify(backup))).toThrow(
-      "supported format: version 1",
+      `supported formats: versions 1–${BACKUP_SCHEMA_VERSION}`,
     );
   });
 
@@ -64,7 +68,7 @@ describe("POCUS Logbook backups", () => {
     backup.cases[0].findings.lvDilated = "maybe";
 
     expect(() => parseBackup(JSON.stringify(backup))).toThrow(
-      "supported format: version 1",
+      `supported formats: versions 1–${BACKUP_SCHEMA_VERSION}`,
     );
   });
 
@@ -74,5 +78,58 @@ describe("POCUS Logbook backups", () => {
     expect(() => parseBackup(makeBackup([entry, entry]))).toThrow(
       "duplicate case IDs",
     );
+  });
+
+  it("upgrades version 1 backups with default review markers", () => {
+    const backup = JSON.parse(
+      makeBackup([
+        addTimestamps(createDraft("lung")),
+        addTimestamps(createDraft("heart")),
+      ]),
+    );
+    backup.schemaVersion = 1;
+    for (const entry of backup.cases) {
+      delete entry.impressionCategory;
+      delete entry.managementImpact;
+      delete entry.curriculumPlus;
+    }
+
+    const restored = parseBackup(JSON.stringify(backup));
+    expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
+    expect(
+      restored.cases.map(
+        ({ impressionCategory, managementImpact }) => ({
+          impressionCategory,
+          managementImpact,
+        }),
+      ),
+    ).toEqual([
+      {
+        impressionCategory: "not_recorded",
+        managementImpact: "not_recorded",
+      },
+      {
+        impressionCategory: "not_recorded",
+        managementImpact: "not_recorded",
+      },
+    ]);
+  });
+
+  it("upgrades version 2 backups and removes the obsolete marker", () => {
+    const backup = JSON.parse(
+      makeBackup([addTimestamps(createDraft("lung"))]),
+    );
+    backup.schemaVersion = 2;
+    backup.cases[0].curriculumPlus = true;
+    backup.cases[0].impressionCategory = "abnormal";
+    backup.cases[0].managementImpact = "changed";
+
+    const restored = parseBackup(JSON.stringify(backup));
+    expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
+    expect(restored.cases[0]).toMatchObject({
+      impressionCategory: "abnormal",
+      managementImpact: "changed",
+    });
+    expect(restored.cases[0]).not.toHaveProperty("curriculumPlus");
   });
 });

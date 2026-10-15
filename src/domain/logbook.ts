@@ -3,6 +3,12 @@ export type Pathway = "lung" | "heart";
 export type CaseType = "clinical" | "healthy_volunteer";
 export type ImageQuality = "not_recorded" | "good" | "acceptable" | "poor";
 export type Assessment = "not_assessed" | "yes" | "no" | "unable";
+export type ImpressionCategory =
+  | "not_recorded"
+  | "normal"
+  | "abnormal"
+  | "indeterminate";
+export type ManagementImpact = "not_recorded" | "changed" | "unchanged";
 
 export const PATHWAYS = {
   lung: {
@@ -77,6 +83,8 @@ interface CaseFields {
   supervisorName: string;
   indication: string;
   diagnosis: string;
+  impressionCategory: ImpressionCategory;
+  managementImpact: ManagementImpact;
   imageQuality: ImageQuality;
   summary: string;
   reflection: string;
@@ -141,6 +149,8 @@ function newCaseFields() {
     supervisorName: "",
     indication: "",
     diagnosis: "",
+    impressionCategory: "not_recorded" as const,
+    managementImpact: "not_recorded" as const,
     imageQuality: "not_recorded" as const,
     summary: "",
     reflection: "",

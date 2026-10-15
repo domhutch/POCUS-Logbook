@@ -73,6 +73,15 @@ function App() {
   }
 
   useEffect(() => {
+    const handleBlockedUpgrade = () => {
+      setError(
+        "Close other POCUS Logbook tabs or app windows, then retry the database upgrade.",
+      );
+    };
+    window.addEventListener(
+      "pocus-logbook-upgrade-blocked",
+      handleBlockedUpgrade,
+    );
     void refreshEntries().catch((cause: unknown) => {
       setError(
         cause instanceof Error
@@ -80,6 +89,12 @@ function App() {
           : "The on-device logbook could not be opened.",
       );
     });
+    return () => {
+      window.removeEventListener(
+          "pocus-logbook-upgrade-blocked",
+          handleBlockedUpgrade,
+      );
+    };
   }, []);
 
   const pathway = PATHWAYS[activePathway];
@@ -89,6 +104,12 @@ function App() {
   );
   const supervisedCount = pathwayEntries.filter(
     (entry) => entry.supervised,
+  ).length;
+  const abnormalCount = pathwayEntries.filter(
+    (entry) => entry.impressionCategory === "abnormal",
+  ).length;
+  const changedManagementCount = pathwayEntries.filter(
+    (entry) => entry.managementImpact === "changed",
   ).length;
   const filteredEntries = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
@@ -378,38 +399,59 @@ function App() {
 
         {isReady && (
           <>
-            <section className="stats-grid" aria-label={`${pathway.label} totals`}>
-              <article className="stat-card stat-card-featured">
-                <span className="stat-label">Cases logged</span>
-                <strong className="stat-value">{pathwayEntries.length}</strong>
-                <span className="stat-note">
-                  {trainingModes[activePathway]
-                    ? `${Math.max(0, pathway.totalTarget - pathwayEntries.length)} to training reference`
-                    : "All your recorded scans"}
-                </span>
-              </article>
-              <article className="stat-card">
-                <span className="stat-label">Directly supervised</span>
-                <strong className="stat-value">{supervisedCount}</strong>
-                <span className="stat-note">
-                  {trainingModes[activePathway]
-                    ? `${pathway.supervisedTarget} direct supervision reference`
-                    : "Cases with direct supervision"}
-                </span>
-              </article>
-              <article className="stat-card">
-                <span className="stat-label">
-                  {trainingModes[activePathway] ? "Unsupervised cases" : "Independent cases"}
-                </span>
-                <strong className="stat-value stat-value-small">
-                  {pathwayEntries.length - supervisedCount}
-                </strong>
-                <span className="stat-note">
-                  {trainingModes[activePathway]
-                    ? `${pathwayEntries.length - supervisedCount} without direct supervision`
-                    : "Unsupervised or independently logged"}
-                </span>
-              </article>
+            <section
+              className="stats-grid"
+              aria-label={`${pathway.label} ${
+                trainingModes[activePathway] ? "training totals" : "review summary"
+              }`}
+            >
+              {trainingModes[activePathway] ? (
+                <>
+                  <article className="stat-card stat-card-featured">
+                    <span className="stat-label">Cases logged</span>
+                    <strong className="stat-value">{pathwayEntries.length}</strong>
+                    <span className="stat-note">
+                      {Math.max(0, pathway.totalTarget - pathwayEntries.length)} to
+                      training reference
+                    </span>
+                  </article>
+                  <article className="stat-card">
+                    <span className="stat-label">Directly supervised</span>
+                    <strong className="stat-value">{supervisedCount}</strong>
+                    <span className="stat-note">
+                      {pathway.supervisedTarget} direct supervision reference
+                    </span>
+                  </article>
+                  <article className="stat-card">
+                    <span className="stat-label">Unsupervised cases</span>
+                    <strong className="stat-value stat-value-small">
+                      {pathwayEntries.length - supervisedCount}
+                    </strong>
+                    <span className="stat-note">
+                      {pathwayEntries.length - supervisedCount} without direct
+                      supervision
+                    </span>
+                  </article>
+                </>
+              ) : (
+                <>
+                  <article className="stat-card stat-card-featured">
+                    <span className="stat-label">Cases logged</span>
+                    <strong className="stat-value">{pathwayEntries.length}</strong>
+                    <span className="stat-note">All recorded scans</span>
+                  </article>
+                  <article className="stat-card">
+                    <span className="stat-label">Abnormal impressions</span>
+                    <strong className="stat-value">{abnormalCount}</strong>
+                    <span className="stat-note">Marked abnormal for review</span>
+                  </article>
+                  <article className="stat-card">
+                    <span className="stat-label">Management changed</span>
+                    <strong className="stat-value">{changedManagementCount}</strong>
+                    <span className="stat-note">Marked as changing management</span>
+                  </article>
+                </>
+              )}
             </section>
 
             {trainingModes[activePathway] && (
@@ -577,6 +619,24 @@ function App() {
                         {entry.supervised && entry.supervisorName && (
                           <span className="supervisor-name">
                             with {entry.supervisorName}
+                          </span>
+                        )}
+                      </div>
+                      <div className="case-tags" aria-label="Case review markers">
+                        {entry.impressionCategory !== "not_recorded" && (
+                          <span
+                            className={`review-tag ${
+                              entry.impressionCategory === "abnormal"
+                                ? "review-tag-highlight"
+                                : ""
+                            }`}
+                          >
+                            {entry.impressionCategory}
+                          </span>
+                        )}
+                        {entry.managementImpact === "changed" && (
+                          <span className="review-tag review-tag-highlight">
+                            Changed management
                           </span>
                         )}
                       </div>

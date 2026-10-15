@@ -19,6 +19,7 @@ npm run dev
 ## Build and check
 
 ```sh
+npm run check
 npm run typecheck
 npm run build
 npm run preview
@@ -26,13 +27,29 @@ npm run preview
 
 The production web app is written to `dist/`. The PWA service worker caches the built app shell for offline use.
 
+## Deploy a GitHub Pages test
+
+The included GitHub Actions workflow runs `npm run check` and publishes the production app when changes are pushed to `main` (or when the workflow is run manually). To enable it:
+
+1. Push this project to a GitHub repository. If its default branch is not `main`, update the branch filter in `.github/workflows/deploy-pages.yml`.
+2. In the repository's **Settings → Pages**, choose **GitHub Actions** as the build and deployment source.
+3. Push to `main` or manually run **Deploy GitHub Pages** from the Actions tab.
+
+The build automatically uses the correct base path for project pages and user/organization pages. For other static hosts, run `npm run check` and publish `dist/` over HTTPS.
+
+GitHub Pages can make the app itself publicly reachable; site access controls depend on the GitHub plan and repository settings. The app does not upload or sync case data, but use only non-identifying test data on a hosted deployment. Generated backup files are excluded by `.gitignore`; keep them out of source control.
+
+Browser storage is isolated by site origin. Cases saved at `localhost` will not appear automatically at the hosted address (or on another device). Before moving test data, download a backup from the current site and restore it on the destination site. Keep a separate copy of the backup; deleting browser site data or removing the app can permanently remove local cases.
+
 ## Logbook data
 
 Lung and Heart cases are stored locally in this browser's IndexedDB; they are not uploaded or synced. Training targets can be hidden independently for each pathway without changing its saved cases.
 
-Use **Download backup** to save a versioned JSON copy of all cases and pathway preferences. Use **Restore backup** to merge a copy into this device: new case IDs are added, existing IDs and local preferences are kept, and repeated restores do not duplicate cases. Restore validates the whole file before saving it; files larger than 10 MB are not accepted.
+Use **Download backup** to save a versioned JSON copy of all cases and pathway preferences. Use **Restore backup** to merge a copy into this device: new case IDs are added, existing IDs and local preferences are kept, and repeated restores do not duplicate cases. Restore validates the whole file before saving it; files larger than 10 MB are not accepted. Backups from versions 1 and 2 are upgraded on restore. Restore does not replace or delete existing cases.
 
 Backups are readable, unencrypted files and may contain everything entered in optional notes. Keep them somewhere private, and do not upload or email them to a shared service. The app does not yet connect to a home server or any other backup service. Clearing browser site data or removing the app can still remove locally stored cases, so save backups somewhere separate. Do not enter patient names, dates of birth, record numbers, or other identifying information. This is a personal training and reflection log, not a clinical record.
+
+Cases can optionally be tagged with a normal, abnormal/pathology, or indeterminate impression and whether the scan changed management. These are personal review markers, not clinical advice or accreditation claims. Training mode shows total and directly supervised counts; with training targets hidden, the summary focuses on abnormal impressions and changed management.
 
 ## Capacitor
 

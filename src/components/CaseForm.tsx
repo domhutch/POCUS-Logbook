@@ -11,9 +11,11 @@ import {
   type HeartFinding,
   type HeartView,
   type ImageQuality,
+  type ImpressionCategory,
   type LungCaseFields,
   type LungFinding,
   type LungRegion,
+  type ManagementImpact,
 } from "../domain/logbook";
 
 interface CaseFormProps {
@@ -159,6 +161,39 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
                 updateField("diagnosis", event.currentTarget.value)
               }
             />
+          </label>
+          <label className="form-field">
+            <span>Impression category <span className="optional-mark">Optional</span></span>
+            <select
+              value={draft.impressionCategory}
+              onChange={(event) =>
+                updateField(
+                  "impressionCategory",
+                  event.currentTarget.value as ImpressionCategory,
+                )
+              }
+            >
+              <option value="not_recorded">Not recorded</option>
+              <option value="normal">Normal</option>
+              <option value="abnormal">Abnormal / pathology</option>
+              <option value="indeterminate">Indeterminate</option>
+            </select>
+          </label>
+          <label className="form-field">
+            <span>Management impact <span className="optional-mark">Optional</span></span>
+            <select
+              value={draft.managementImpact}
+              onChange={(event) =>
+                updateField(
+                  "managementImpact",
+                  event.currentTarget.value as ManagementImpact,
+                )
+              }
+            >
+              <option value="not_recorded">Not recorded</option>
+              <option value="changed">Changed</option>
+              <option value="unchanged">Unchanged</option>
+            </select>
           </label>
         </div>
 

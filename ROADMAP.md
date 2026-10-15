@@ -36,6 +36,7 @@ The native apps must include the built web assets in the app package. They must 
 - [x] Record the source document and version for the initial total and directly supervised references.
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
+- [x] Add optional impression and management-impact review markers.
 - [ ] Validate potentially identifying text beyond the in-form privacy warning.
 
 **Exit criteria:** remaining rules and fields are traceable to documents; records can be validated without storing patient identifiers.
@@ -55,7 +56,7 @@ The native apps must include the built web assets in the app package. They must 
 - [x] Add a training view that compares recorded cases with the selected pathway's initial total and supervised references.
 - [ ] Show pathway-specific quotas and case-mix summaries when the full catalogue has been verified.
 - [x] Add an independent post-certification setting for each pathway that hides targets without deleting cases.
-- [ ] Add a review dashboard with useful activity and case-mix statistics.
+- [x] Add a post-certification review summary for abnormal impressions and management changes.
 - [ ] Test boundary conditions: no cases, exactly at target, over target, switching modes, and changing pathways.
 
 **Exit criteria:** progress is calculated from versioned pathway rules; changing mode changes presentation only, not stored case data.
@@ -63,7 +64,7 @@ The native apps must include the built web assets in the app package. They must 
 ### 4. Export and recovery
 
 - [ ] Export a logbook as CSV for spreadsheets.
-- [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, and is idempotent.
+- [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
 - [ ] Produce a printable PDF logbook/report.
 - [ ] Use native share/save flows where supported and provide clear errors when an export cannot be created.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
@@ -83,10 +84,11 @@ These are optional follow-ons after reliable local backup and restore:
 
 ### 5. Mobile packaging and release readiness
 
+- [x] Add a GitHub Pages build/deploy workflow and document site-origin storage, local backup/restore, and test-data privacy.
 - [ ] Generate and check in the iOS and Android Capacitor platform projects when platform tooling is available.
 - [ ] Verify the native app loads from assets packaged inside the app, with no hosted-app URL configured.
 - [ ] Test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
-- [x] Add automated tests for JSON backup validation and restore merge behavior.
+- [x] Add automated tests for JSON backup validation, v1 migration, and restore merge behavior.
 - [ ] Add automated tests for progress calculations, pathway rules, persistence failures, and CSV/PDF export formats.
 - [ ] Document build, release, data-backup, and privacy expectations.
 
