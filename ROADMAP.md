@@ -57,6 +57,7 @@ The native apps must include the built web assets in the app package. They must 
 - [ ] Show pathway-specific quotas and case-mix summaries when the full catalogue has been verified.
 - [x] Add an independent post-certification setting for each pathway that hides targets without deleting cases.
 - [x] Add a post-certification review summary for abnormal impressions and management changes.
+- [x] Prototype descriptive pathway metrics for activity, recorded scan details and findings, image quality, and review markers; development sample data remains in memory only.
 - [ ] Test boundary conditions: no cases, exactly at target, over target, switching modes, and changing pathways.
 
 **Exit criteria:** progress is calculated from versioned pathway rules; changing mode changes presentation only, not stored case data.

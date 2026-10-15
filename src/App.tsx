@@ -6,8 +6,10 @@ import {
   type ChangeEvent,
 } from "react";
 import CaseForm from "./components/CaseForm";
+import MetricsPage from "./components/MetricsPage";
 import { createBackup, parseBackup } from "./domain/backup";
 import { createCasePrintDocument } from "./domain/case-print";
+import { createSampleCases } from "./domain/metrics";
 import {
   createDraft,
   PATHWAYS,
@@ -26,7 +28,7 @@ import {
 import "./styles.css";
 
 type CaseFilter = "all" | "supervised" | "unsupervised";
-type Page = "overview" | "cases" | "form";
+type Page = "overview" | "cases" | "metrics" | "form";
 const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
 function caseSummary(entry: LogbookCase) {
@@ -67,6 +69,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [backupStatus, setBackupStatus] = useState<string | null>(null);
   const [isHandlingBackup, setIsHandlingBackup] = useState(false);
+  const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
+    useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
   const pathwayMenuRef = useRef<HTMLDetailsElement>(null);
 
@@ -134,6 +138,10 @@ function App() {
   const pathwayEntries = useMemo(
     () => entries.filter((entry) => entry.pathway === activePathway),
     [activePathway, entries],
+  );
+  const sampleMetricCases = useMemo(
+    () => createSampleCases(activePathway),
+    [activePathway],
   );
   const supervisedCount = pathwayEntries.filter(
     (entry) => entry.supervised,
@@ -407,7 +415,11 @@ function App() {
         {activePage !== "form" && (
           <>
             <h1 className="sr-only" id="page-title">
-              {activePage === "overview" ? "Overview" : "Your cases"}
+              {activePage === "overview"
+                ? "Overview"
+                : activePage === "cases"
+                  ? "Your cases"
+                  : "Metrics"}
             </h1>
             <nav className="page-navigation" aria-label="Main navigation">
               <button
@@ -423,6 +435,13 @@ function App() {
                 aria-current={activePage === "cases" ? "page" : undefined}
               >
                 Cases <span>{pathwayEntries.length}</span>
+              </button>
+              <button
+                className={`page-navigation-link ${activePage === "metrics" ? "is-active" : ""}`}
+                onClick={() => setActivePage("metrics")}
+                aria-current={activePage === "metrics" ? "page" : undefined}
+              >
+                Metrics
               </button>
             </nav>
           </>
@@ -643,6 +662,20 @@ function App() {
             onChange={setDraft}
             onSave={handleSave}
             onCancel={cancelForm}
+          />
+        )}
+
+        {isReady && activePage === "metrics" && (
+          <MetricsPage
+            cases={
+              isPreviewingSampleMetrics ? sampleMetricCases : pathwayEntries
+            }
+            pathway={activePathway}
+            isSampleData={isPreviewingSampleMetrics}
+            canPreviewSamples={import.meta.env.DEV}
+            onToggleSampleData={() =>
+              setIsPreviewingSampleMetrics((current) => !current)
+            }
           />
         )}
 
