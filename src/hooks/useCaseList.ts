@@ -1,0 +1,81 @@
+import { useMemo, useState } from "react";
+import type { LogbookCase, Pathway } from "../domain/logbook";
+
+export type CaseFilter = "all" | "supervised" | "unsupervised";
+
+function searchableClinicalDetails(entry: LogbookCase) {
+  if (entry.pathway === "lung") {
+    return [
+      ...entry.regions,
+      entry.ventilatorySupport,
+      ...Object.values(entry.findings).flatMap((findings) =>
+        Object.entries(findings).flat(),
+      ),
+    ];
+  }
+  return [
+    ...entry.views,
+    entry.ventilatorySupport,
+    entry.cardiovascularSupport,
+    ...Object.entries(entry.findings).flatMap(([finding, result]) => [
+      finding,
+      result,
+    ]),
+  ];
+}
+
+export function useCaseList(entries: LogbookCase[], pathway: Pathway) {
+  const [search, setSearch] = useState("");
+  const [caseFilter, setCaseFilter] = useState<CaseFilter>("all");
+
+  const pathwayEntries = useMemo(
+    () => entries.filter((entry) => entry.pathway === pathway),
+    [entries, pathway],
+  );
+
+  const filteredEntries = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    return pathwayEntries
+      .filter((entry) => {
+        if (caseFilter === "supervised" && !entry.supervised) return false;
+        if (caseFilter === "unsupervised" && entry.supervised) return false;
+        if (!query) return true;
+
+        const caseType =
+          entry.caseType === "healthy_volunteer" ? "healthy volunteer" : "clinical";
+        const searchableValues = [
+          entry.date,
+          caseType,
+          entry.diagnosis,
+          entry.indication,
+          entry.summary,
+          entry.reflection,
+          entry.supervisorName,
+          ...searchableClinicalDetails(entry),
+        ];
+        return searchableValues.some((value) =>
+          value.toLocaleLowerCase().includes(query),
+        );
+      })
+      .sort(
+        (first, second) =>
+          second.date.localeCompare(first.date) ||
+          second.updatedAt.localeCompare(first.updatedAt),
+      );
+  }, [caseFilter, pathwayEntries, search]);
+
+  function resetFilters() {
+    setSearch("");
+    setCaseFilter("all");
+  }
+
+  return {
+    pathwayEntries,
+    filteredEntries,
+    search,
+    setSearch,
+    caseFilter,
+    setCaseFilter,
+    resetFilters,
+  };
+}
