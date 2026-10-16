@@ -18,6 +18,8 @@ interface OverviewPageProps {
   backupStatus: string | null;
   onTrainingModeChange: (enabled: boolean) => void;
   onShowCases: () => void;
+  onPrintLogbook: () => void;
+  onExportCsv: () => void;
   onExportBackup: () => void;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>) => void;
   onPopulateTestCases: (pathway: Pathway) => void;
@@ -40,6 +42,8 @@ function OverviewPage({
   backupStatus,
   onTrainingModeChange,
   onShowCases,
+  onPrintLogbook,
+  onExportCsv,
   onExportBackup,
   onRestoreBackup,
   onPopulateTestCases,
@@ -169,6 +173,8 @@ function OverviewPage({
           <p>Download a portable backup or merge one into this logbook. Existing cases and preferences are kept on conflicts.</p>
         </div>
         <div className="backup-actions">
+          <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
+          <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
           <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Download backup</button>
           <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Restore backup</button>
           <input

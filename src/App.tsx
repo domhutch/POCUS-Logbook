@@ -399,6 +399,8 @@ function App() {
             backupStatus={backup.status}
             onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}
             onShowCases={() => setActivePage("cases")}
+            onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway)}
+            onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
             onExportBackup={() => void backup.exportBackup()}
             onRestoreBackup={(event) => void backup.restoreBackupFromFile(event)}
             onPopulateTestCases={(pathwayToPopulate) =>
@@ -467,7 +469,7 @@ function App() {
           aria-labelledby="print-preview-title"
         >
           <header className="print-preview-toolbar">
-            <h2 id="print-preview-title">Case print preview</h2>
+            <h2 id="print-preview-title">Print preview</h2>
             <div>
               <button
                 className="button button-secondary"

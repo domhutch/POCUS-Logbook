@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { createBackup, parseBackup } from "../domain/backup";
-import type { Pathway } from "../domain/logbook";
+import { csvFilename, createCasesCsv } from "../domain/case-csv";
+import type { LogbookCase, Pathway } from "../domain/logbook";
 import {
   getCases,
   getPathwayModes,
@@ -61,6 +62,29 @@ export function useLogbookBackup({
     }
   }
 
+  async function exportCsv(cases: LogbookCase[], pathway: Pathway) {
+    setIsBusy(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const csv = createCasesCsv(cases, pathway);
+      const file = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = csvFilename(pathway);
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus(`CSV exported with ${cases.length} ${cases.length === 1 ? "case" : "cases"}. Review free-text fields for patient-identifying details before sharing.`);
+    } catch (cause) {
+      setError(messageFrom(cause, "A CSV export could not be created or downloaded."));
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   async function restoreBackupFromFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
@@ -86,5 +110,5 @@ export function useLogbookBackup({
     }
   }
 
-  return { status, isBusy, exportBackup, restoreBackupFromFile };
+  return { status, isBusy, exportBackup, exportCsv, restoreBackupFromFile };
 }

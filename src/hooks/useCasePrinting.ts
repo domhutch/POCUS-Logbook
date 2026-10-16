@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { createCasePrintDocument } from "../domain/case-print";
-import type { LogbookCase } from "../domain/logbook";
+import { createLogbookPrintDocument } from "../domain/logbook-print";
+import type { LogbookCase, Pathway } from "../domain/logbook";
 
 function messageFrom(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback;
@@ -11,9 +12,8 @@ export function useCasePrinting(setError: (message: string | null) => void) {
   const [isFrameReady, setIsFrameReady] = useState(false);
   const frameRef = useRef<HTMLIFrameElement>(null);
 
-  function printCase(entry: LogbookCase) {
+  function printDocument(printableDocument: string, fallbackMessage: string) {
     setError(null);
-    const printableDocument = createCasePrintDocument(entry);
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
       setDocument(printableDocument);
@@ -31,8 +31,22 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       }, 250);
     } catch (cause) {
       printWindow.close();
-      setError(messageFrom(cause, "The printable case sheet could not be opened."));
+      setError(messageFrom(cause, fallbackMessage));
     }
+  }
+
+  function printCase(entry: LogbookCase) {
+    printDocument(
+      createCasePrintDocument(entry),
+      "The printable case sheet could not be opened.",
+    );
+  }
+
+  function printLogbook(cases: LogbookCase[], pathway: Pathway) {
+    printDocument(
+      createLogbookPrintDocument(cases, pathway),
+      "The printable logbook could not be opened.",
+    );
   }
 
   function closePreview() {
@@ -59,6 +73,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     isFrameReady,
     frameRef,
     printCase,
+    printLogbook,
     closePreview,
     printPreview,
     markFrameReady: () => setIsFrameReady(true),

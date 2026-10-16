@@ -74,10 +74,10 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 ### 4. Export and recovery
 
-- [ ] Export a logbook as CSV for spreadsheets.
+- [x] Export a selected pathway as CSV with stable columns, case numbers, pathway-specific findings, and no internal IDs or timestamps; CSV text is escaped and spreadsheet formulas are neutralized.
 - [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
 - [x] Produce a print-ready PDF sheet for an individual case using the browser/device print dialog.
-- [ ] Produce a printable PDF logbook/report.
+- [x] Produce a pathway-specific printable PDF logbook/report with the supplied training-logbook table layout, blank rows to the pathway reference, and continuation pages for extra cases.
 - [ ] Use native share/save flows where supported and provide clear errors when an export cannot be created.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
 
@@ -89,7 +89,7 @@ These are optional follow-ons after reliable local backup and restore:
 
 1. **Encrypted home-server backups:** client-side encryption before transfer, authenticated access, explicit server configuration, and a tested key recovery/export process. Do not send readable case data to a server.
 2. **Backup reminders and history:** show the last successful backup date and let users set a local reminder; never claim a server copy exists until its upload is confirmed.
-3. **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
+3. [x] **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
 4. **Printable review reports:** produce a user-selected, de-identified PDF summary.
 5. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
 6. **Additional pathways:** add DVT, Abdomen, Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed.

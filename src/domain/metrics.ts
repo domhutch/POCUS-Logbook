@@ -149,7 +149,7 @@ function countsFor<T extends string>(
 
 function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
   const draft = createDraft(pathway);
-  draft.caseType = index % 5 === 0 ? "healthy_volunteer" : "clinical";
+  draft.caseType = index === 0 ? "healthy_volunteer" : "clinical";
   draft.supervised = index % 3 !== 0;
   draft.indication =
     pathway === "lung"
