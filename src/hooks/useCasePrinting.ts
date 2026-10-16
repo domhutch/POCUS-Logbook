@@ -25,10 +25,6 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       printWindow.document.open();
       printWindow.document.write(printableDocument);
       printWindow.document.close();
-      window.setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-      }, 250);
     } catch (cause) {
       printWindow.close();
       setError(messageFrom(cause, fallbackMessage));
