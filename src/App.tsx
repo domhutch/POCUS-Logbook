@@ -178,7 +178,10 @@ function App() {
           <span className="brand-mark" aria-hidden="true">
             {pathway.icon}
           </span>
-          <span>{pathwayLogbookName}</span>
+          <span className="brand-name">POCUS Logbook</span>
+          <span className="brand-pathway">
+            {pathway.label.replace(/^FUSIC\s+/, "")}
+          </span>
         </button>
         {activePage === "form" ? (
           <button
@@ -382,17 +385,6 @@ function App() {
           />
         )}
       </section>
-
-      {(activePage === "overview" || activePage === "cases") && (
-        <button
-          className="button button-primary topbar-action floating-new-case"
-          type="button"
-          onClick={startNewCase}
-          disabled={!isReady}
-        >
-          <span aria-hidden="true">+</span> New case
-        </button>
-      )}
 
       {printing.document && (
         <section

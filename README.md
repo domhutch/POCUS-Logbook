@@ -20,6 +20,7 @@ npm run dev
 
 - [`src/App.tsx`](./src/App.tsx) connects the main screens and coordinates app state.
 - [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
+- [`src/hooks/`](./src/hooks) contains app behavior that is reused or easier to understand separately, such as loading local data, searching cases, backups, and printing.
 - [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
 - [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
 - [`src/styles.css`](./src/styles.css) contains the app layout and visual styles.

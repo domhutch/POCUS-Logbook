@@ -58,15 +58,16 @@ button:disabled {
   height: 72px;
   align-items: center;
   justify-content: space-between;
-  padding: 0 max(calc((100vw - 1120px) / 2), 1.5rem);
+  padding: 0 max(calc((100vw - 1060px) / 2), 1.5rem);
   border-bottom: 1px solid #e9ede8;
   background: rgb(255 255 255 / 92%);
 }
 
 .brand {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.5rem;
   padding: 0;
   border: 0;
   background: transparent;
@@ -75,6 +76,18 @@ button:disabled {
   font-size: 0.96rem;
   font-weight: 800;
   text-align: left;
+}
+
+.brand-name {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.brand-pathway {
+  color: var(--muted);
+  font-size: 0.82em;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -133,10 +146,6 @@ button:disabled {
 .desktop-add > span {
   font-size: 1.15rem;
   line-height: 1;
-}
-
-.floating-new-case {
-  display: none;
 }
 
 .page-content {
@@ -1300,6 +1309,14 @@ summary:focus-visible {
   font-size: 0.78rem;
 }
 
+.form-field input[type="date"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .form-field textarea {
   min-height: 82px;
   resize: vertical;
@@ -1744,18 +1761,6 @@ summary:focus-visible {
     padding: env(safe-area-inset-top, 0px) 1rem 0;
   }
 
-  .topbar-action-new-case {
-    display: none;
-  }
-
-  .floating-new-case {
-    position: fixed;
-    z-index: 5;
-    right: 1rem;
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-    display: inline-flex;
-  }
-
   input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
@@ -1925,6 +1930,11 @@ summary:focus-visible {
 }
 
 @media (max-width: 520px) {
+  .topbar {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
   .topbar-action {
     min-height: 38px;
     padding: 0.55rem 0.7rem;
@@ -1932,8 +1942,12 @@ summary:focus-visible {
   }
 
   .brand {
-    gap: 0.5rem;
-    font-size: 0.83rem;
+    gap: 0.38rem;
+    font-size: 0.78rem;
+  }
+
+  .brand-pathway {
+    font-size: 0.78em;
   }
 
   .brand-mark {
