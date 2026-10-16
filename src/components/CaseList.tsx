@@ -140,7 +140,7 @@ function CaseList({
                 </div>
                 <div className="case-actions">
                   <button className="text-button" onClick={() => onReview(entry)} aria-label={`Review ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Review</button>
-                  <button className="text-button" onClick={() => onPrint(entry)} aria-label={`Print or save ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date} as PDF`}>Print / PDF</button>
+                  <button className="text-button" onClick={() => onPrint(entry)} aria-label={`Print or save ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date} as PDF`}>PDF</button>
                   <button className="text-button" onClick={() => onEdit(entry)} aria-label={`Edit ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Edit</button>
                   <button className="text-button text-button-danger" onClick={() => onDelete(entry)} aria-label={`Delete ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Delete</button>
                 </div>
