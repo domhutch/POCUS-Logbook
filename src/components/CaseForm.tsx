@@ -25,13 +25,6 @@ interface CaseFormProps {
   onCancel: () => void;
 }
 
-const ASSESSMENT_OPTIONS: [Assessment, string][] = [
-  ["not_assessed", "Not assessed"],
-  ["yes", "Yes"],
-  ["no", "No"],
-  ["unable", "Unable to assess"],
-];
-
 const VENTILATORY_SUPPORT = [
   "Not recorded",
   "None",
@@ -49,6 +42,7 @@ function updateArrayItem<T extends string>(values: T[], value: T) {
 
 function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const isNewCase = !("createdAt" in draft);
 
   function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields>(
     key: K,
@@ -110,7 +104,7 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
         <div>
           <p className="eyebrow">{draft.pathway === "lung" ? "Lung" : "Heart"} scan</p>
           <h2 id="form-title">
-            {"createdAt" in draft ? "Edit case" : "Record a case"}
+            {isNewCase ? "Record a case" : "Edit case"}
           </h2>
         </div>
         <button
@@ -151,7 +145,7 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
         <details
           className="structured-details optional-details"
           open={
-            "createdAt" in draft &&
+            isNewCase ||
             Boolean(
               draft.indication ||
                 draft.diagnosis ||
@@ -250,7 +244,7 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
           </label>
         )}
 
-        <details className="structured-details">
+        <details className="structured-details" open={isNewCase}>
           <summary>Structured scan details <span>Optional</span></summary>
           {draft.pathway === "lung" ? (
             <LungDetails
@@ -273,7 +267,7 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
 
         <details
           className="structured-details optional-details"
-          open={"createdAt" in draft && Boolean(draft.summary || draft.reflection)}
+          open={isNewCase || Boolean(draft.summary || draft.reflection)}
         >
           <summary>Notes and reflection <span>Optional</span></summary>
           <div className="form-notes-grid">
@@ -536,26 +530,40 @@ function HeartDetails({
       <fieldset className="checklist-fieldset">
         <legend>Assessment findings</legend>
         <div className="heart-findings-list">
-          {HEART_FINDINGS.map(([key, label]) => (
-            <label className="finding-control" key={key}>
-              <span>{label}</span>
-              <select
-                value={draft.findings[key]}
-                onChange={(event) =>
-                  onUpdateFinding(
-                    key,
-                    event.currentTarget.value as Assessment,
-                  )
-                }
-              >
-                {ASSESSMENT_OPTIONS.map(([value, optionLabel]) => (
-                  <option key={value} value={value}>
-                    {optionLabel}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
+          {HEART_FINDINGS.map(([key, label]) => {
+            const selected =
+              draft.findings[key] === "unable"
+                ? "not_assessed"
+                : draft.findings[key];
+            return (
+              <div className="heart-finding-control" key={key}>
+                <span className="heart-finding-label">{label}</span>
+                <div
+                  className="heart-assessment-options"
+                  role="group"
+                  aria-label={label}
+                >
+                  {(
+                    [
+                      ["yes", "Yes"],
+                      ["no", "No"],
+                      ["not_assessed", "Not assessed"],
+                    ] as const
+                  ).map(([value, optionLabel]) => (
+                    <button
+                      className="heart-assessment-option"
+                      type="button"
+                      key={value}
+                      aria-pressed={selected === value}
+                      onClick={() => onUpdateFinding(key, value)}
+                    >
+                      {optionLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </fieldset>
     </div>

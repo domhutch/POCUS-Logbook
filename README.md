@@ -57,6 +57,8 @@ Cases can optionally be tagged with a normal, abnormal/pathology, or indetermina
 
 Lung structured entry is organised by finding, with Yes and No choices and a single-line Not assessed checkbox for each region. New and untouched findings start as Not assessed; selecting Yes or No clears that checkbox. Existing Unable to assess (U/A) values remain supported in saved records. Case review and the printout continue to show results grouped by region.
 
+Heart assessment findings use one-tap Yes, No, and Not assessed buttons. Existing Unable to assess values are presented as Not assessed in the form and remain supported in saved records.
+
 Each case can be opened as a print-ready, single-page A4 report with **Print / PDF** from the Cases list. The compact table layout follows the structure of the official FUSIC logbook report forms without reproducing their logos or assessment branding. Use the browser or device print dialog to print it or choose **Save as PDF**. If the browser blocks the print window, the app shows an in-app print preview with its own print action. The sheet contains the case’s pathway-specific fields and leaves space for handwritten notes where optional reflections are blank.
 
 ## Capacitor

@@ -109,6 +109,7 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
 - [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
 - [x] **P2 · Lung form:** organise entry by finding, with Yes / No choices and a single-line Not assessed checkbox for each region. Keep region-keyed case data and show case review and print/PDF results by region. Existing U/A values remain supported.
+- [x] **P2 · Heart assessment input:** replace per-finding dropdowns with one-tap Yes, No, and Not assessed buttons; retain compatibility with existing saved responses.
 - [x] **P2 · Overview navigation:** make the case-count card open the Cases page when selected.
 - [ ] **P2 · Supervisor management:** let users add and manage their own supervisors, then select a supervisor from a dropdown in the case forms.
 - [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.

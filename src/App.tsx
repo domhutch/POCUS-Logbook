@@ -140,6 +140,7 @@ function App() {
   }, []);
 
   const pathway = PATHWAYS[activePathway];
+  const pathwayLogbookName = `${pathway.label.replace(/^FUSIC\s+/, "")} Logbook`;
   const pathwayEntries = useMemo(
     () => entries.filter((entry) => entry.pathway === activePathway),
     [activePathway, entries],
@@ -201,6 +202,10 @@ function App() {
           second.updatedAt.localeCompare(first.updatedAt),
       );
   }, [caseFilter, pathwayEntries, search]);
+
+  useEffect(() => {
+    document.title = pathwayLogbookName;
+  }, [pathwayLogbookName]);
 
   function startNewCase() {
     setReturnPage(activePage === "cases" ? "cases" : "overview");
@@ -422,12 +427,12 @@ function App() {
           className="brand"
           type="button"
           onClick={goToOverview}
-          aria-label="Go to POCUS Logbook overview"
+          aria-label={`Go to ${pathwayLogbookName} overview`}
         >
           <span className="brand-mark" aria-hidden="true">
-            P
+            {pathway.icon}
           </span>
-          <span>POCUS Logbook</span>
+          <span>{pathwayLogbookName}</span>
         </button>
         {activePage === "form" ? (
           <button
