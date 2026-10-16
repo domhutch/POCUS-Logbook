@@ -54,6 +54,9 @@ button:disabled {
 }
 
 .topbar {
+  position: sticky;
+  z-index: 10;
+  top: 0;
   display: flex;
   height: 72px;
   align-items: center;
@@ -1725,6 +1728,17 @@ summary:focus-visible {
   margin: 1rem 0 0;
   color: #82796a;
   font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.privacy-warning {
+  margin: 0.8rem 0 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #e8c78f;
+  border-radius: 8px;
+  background: #fff8e9;
+  color: #704b13;
+  font-size: 0.78rem;
   line-height: 1.5;
 }
 

@@ -48,9 +48,9 @@ Other open requests remain listed in their relevant sections below. Update this 
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
 - [x] Add optional impression and management-impact review markers.
-- [ ] Validate potentially identifying text beyond the in-form privacy warning.
+- [x] Add privacy-aware checks for email addresses, phone numbers, labelled patient/record numbers, and labelled dates of birth in free-text fields. Show a non-blocking warning and confirmation without changing or discarding text; clinical terms are not treated as identifiers. Names and unlabelled identifiers may not be detected.
 
-**Exit criteria:** pathway requirements and source versions are traceable in the catalogue. The exit criterion is still open until potentially identifying free text can be handled safely.
+**Exit criteria:** pathway requirements and source versions are traceable in the catalogue, and free-text privacy checks warn users about common identifier patterns without silently changing their notes. Met for the current heuristic checks; users must still review notes because names and unlabelled identifiers may not be detected.
 
 ### 2. Core logbook
 

@@ -17,6 +17,7 @@ import {
   type LungRegion,
   type ManagementImpact,
 } from "../domain/logbook";
+import { findPrivacyWarnings } from "../domain/privacy-check";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -43,6 +44,7 @@ function updateArrayItem<T extends string>(values: T[], value: T) {
 function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const isNewCase = !("createdAt" in draft);
+  const privacyWarnings = findPrivacyWarnings(draft);
 
   function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields>(
     key: K,
@@ -85,6 +87,14 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
+    if (
+      privacyWarnings.length > 0 &&
+      !window.confirm(
+        `Possible identifying details were detected in: ${privacyWarnings.join(", ")}. Review these fields and remove any patient-identifying information before saving. Save this case anyway?`,
+      )
+    ) {
+      return;
+    }
     setIsSaving(true);
     const saved = await onSave(draft);
     if (!saved) setIsSaving(false);
@@ -302,6 +312,14 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
           Keep this record de-identified. Don’t enter patient names, dates of
           birth, hospital numbers, or other identifying details.
         </p>
+        {privacyWarnings.length > 0 && (
+          <p className="privacy-warning" role="status">
+            Possible identifying details detected in {privacyWarnings.join(", ")}.
+            Review and remove patient-identifying information before saving.
+            Clinical wording is not checked as identifying information, and
+            names may not be detected automatically.
+          </p>
+        )}
         <div className="form-actions">
           <button
             className="button button-secondary"
