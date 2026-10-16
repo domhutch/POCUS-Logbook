@@ -2,6 +2,12 @@
 
 Offline-first POCUS logbook scaffold for the web, with a path to bundled iOS and Android apps.
 
+## License
+
+The project code is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the license text. This license applies to contributions and other material in this repository unless a file or its accompanying notice says otherwise.
+
+Curriculum names, requirements, and linked training-pack documents are reference material published by the Intensive Care Society (ICS). They remain subject to their respective rights and terms; this repository does not grant permission to redistribute ICS documents. The app links to source documents and summarizes selected logbook requirements for informational purposes. See [ROADMAP.md](./ROADMAP.md) and [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) for source references.
+
 See [ROADMAP.md](./ROADMAP.md) for the planned product scope, curriculum research, and milestones.
 
 ## Requirements
