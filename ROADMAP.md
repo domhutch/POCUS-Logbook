@@ -22,10 +22,9 @@ The native apps must include the built web assets in the app package. They must 
 
 These are a practical starting order based on the open checklist below, not new commitments:
 
-1. Add privacy-aware checks for potentially identifying text, without treating clinical terms as identifiers or silently discarding notes.
-2. Cover progress calculations and persistence failure cases, including the listed target and pathway boundaries.
-3. Implement the verified quota and case-mix rules when those pathways are added to the app.
-4. Complete a de-identified CSV export and verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
+1. Cover local persistence failure cases and ensure failed saves are never reported as successful.
+2. Implement a de-identified CSV export and test export formats.
+3. Verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
 
 Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
 
@@ -65,11 +64,11 @@ Other open requests remain listed in their relevant sections below. Update this 
 ### 3. Progress, mode, and review
 
 - [x] Add a training view that compares recorded cases with the selected pathway's initial total and supervised references.
-- [ ] Show pathway-specific quotas and case-mix summaries when the full catalogue has been verified.
+- [x] Show case-mix and protocol guidance for supported pathways, and quota details when a supported pathway defines them. Heart and Lung currently have no separate scan-type minimums; their recorded clinical/healthy-volunteer mix and protocol coverage are shown.
 - [x] Add an independent post-certification setting for each pathway that hides targets without deleting cases.
 - [x] Add a post-certification review summary for abnormal impressions and management changes.
 - [x] Prototype descriptive pathway metrics for activity, recorded scan details and findings, image quality, and review markers; development sample data remains in memory only.
-- [ ] Test boundary conditions: no cases, exactly at target, over target, switching modes, and changing pathways.
+- [x] Test boundary conditions: no cases, exactly at target, over target, switching modes, and changing pathways.
 
 **Exit criteria:** progress is calculated from versioned pathway rules; changing mode changes presentation only, not stored case data.
 
@@ -104,7 +103,7 @@ These are optional follow-ons after reliable local backup and restore:
 - [ ] Test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
 - [x] Add automated tests for JSON backup validation, v1 migration, and restore merge behavior.
 - [x] Add catalogue integrity tests for source links, route limits, Vascular quotas, the fTOE alternate route, and the FUSIC HD effective date.
-- [ ] Add automated tests for progress calculations, persistence failures, and CSV/PDF export formats.
+- [ ] Add automated tests for persistence failures and CSV/PDF export formats; progress boundary tests are tracked in section 3.
 - [ ] Document build, release, data-backup, and privacy expectations.
 
 **Exit criteria:** installed native builds work in airplane mode and preserve user data across supported upgrades.

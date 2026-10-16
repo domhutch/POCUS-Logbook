@@ -56,3 +56,14 @@ describe("restoreBackup", () => {
     expect(await getPathwayModes()).toEqual({ lung: true, heart: false });
   });
 });
+
+describe("pathway training modes", () => {
+  it("stores each pathway mode separately without changing cases", async () => {
+    const casesBefore = await getCases();
+    await savePathwayMode("heart", false);
+    await savePathwayMode("lung", true);
+
+    expect(await getPathwayModes()).toEqual({ heart: false, lung: true });
+    expect(await getCases()).toEqual(casesBefore);
+  });
+});

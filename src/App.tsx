@@ -8,7 +8,12 @@ import CaseList from "./components/CaseList";
 import CaseReview from "./components/CaseReview";
 import MetricsPage from "./components/MetricsPage";
 import OverviewPage from "./components/OverviewPage";
-import { createSampleCases } from "./domain/metrics";
+import { getCaseSequenceNumbers } from "./domain/case-display";
+import {
+  createSampleCases,
+  summarizeCaseMix,
+  summarizeTrainingProgress,
+} from "./domain/metrics";
 import {
   createDraft,
   PATHWAYS,
@@ -48,6 +53,7 @@ function App() {
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
   const pathwayMenuRef = usePathwayMenu();
+  const caseNumbers = useMemo(() => getCaseSequenceNumbers(entries), [entries]);
   const {
     pathwayEntries,
     filteredEntries,
@@ -66,9 +72,8 @@ function App() {
     () => createSampleCases(activePathway),
     [activePathway],
   );
-  const supervisedCount = pathwayEntries.filter(
-    (entry) => entry.supervised,
-  ).length;
+  const trainingProgress = summarizeTrainingProgress(entries, activePathway);
+  const caseMix = summarizeCaseMix(entries, activePathway);
   const abnormalCount = pathwayEntries.filter(
     (entry) => entry.impressionCategory === "abnormal",
   ).length;
@@ -322,8 +327,8 @@ function App() {
         {isReady && activePage === "overview" && (
           <OverviewPage
             pathway={activePathway}
-            caseCount={pathwayEntries.length}
-            supervisedCount={supervisedCount}
+            progress={trainingProgress}
+            caseMix={caseMix}
             abnormalCount={abnormalCount}
             changedManagementCount={changedManagementCount}
             trainingMode={trainingModes[activePathway]}
@@ -349,6 +354,7 @@ function App() {
         {isReady && activePage === "review" && reviewedCase && (
           <CaseReview
             entry={reviewedCase}
+            caseNumber={caseNumbers.get(reviewedCase.id) ?? 1}
             onEdit={() => startEditing(reviewedCase)}
             onClose={closeReview}
           />
@@ -372,6 +378,7 @@ function App() {
           <CaseList
             entries={filteredEntries}
             pathwayEntries={pathwayEntries}
+            caseNumbers={caseNumbers}
             pathway={activePathway}
             search={search}
             caseFilter={caseFilter}

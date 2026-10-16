@@ -24,6 +24,30 @@ export function formatCaseDate(
   );
 }
 
+/** Numbers cases by pathway and scan date; IDs stay stable for storage and imports. */
+export function getCaseSequenceNumbers(cases: LogbookCase[]) {
+  const byPathway = new Map<string, LogbookCase[]>();
+  for (const entry of cases) {
+    const pathwayCases = byPathway.get(entry.pathway) ?? [];
+    pathwayCases.push(entry);
+    byPathway.set(entry.pathway, pathwayCases);
+  }
+
+  const sequenceNumbers = new Map<string, number>();
+  for (const pathwayCases of byPathway.values()) {
+    pathwayCases
+      .slice()
+      .sort(
+        (first, second) =>
+          first.date.localeCompare(second.date) ||
+          first.createdAt.localeCompare(second.createdAt) ||
+          first.id.localeCompare(second.id),
+      )
+      .forEach((entry, index) => sequenceNumbers.set(entry.id, index + 1));
+  }
+  return sequenceNumbers;
+}
+
 export function formatImpression(value: ImpressionCategory) {
   if (value === "not_recorded") return "Not recorded";
   if (value === "abnormal") return "Abnormal / pathology";

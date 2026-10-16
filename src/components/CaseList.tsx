@@ -6,6 +6,7 @@ type CaseFilter = "all" | "supervised" | "unsupervised";
 interface CaseListProps {
   entries: LogbookCase[];
   pathwayEntries: LogbookCase[];
+  caseNumbers: ReadonlyMap<string, number>;
   pathway: Pathway;
   search: string;
   caseFilter: CaseFilter;
@@ -32,6 +33,7 @@ function caseSummary(entry: LogbookCase) {
 function CaseList({
   entries,
   pathwayEntries,
+  caseNumbers,
   pathway,
   search,
   caseFilter,
@@ -94,7 +96,7 @@ function CaseList({
       ) : (
         <div className="case-list">
           {entries.map((entry) => {
-            const date = formatCaseDate(entry.date, undefined, {
+            const date = formatCaseDate(entry.date, "en-GB", {
               day: "numeric",
               month: "short",
               year: "numeric",
@@ -106,7 +108,10 @@ function CaseList({
                   {entry.caseType === "healthy_volunteer" && <span className="case-kind">Healthy volunteer</span>}
                 </div>
                 <div className="case-main">
-                  <h3>{entry.diagnosis || "Scan recorded"}</h3>
+                  <h3>
+                    {PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "")} Case {caseNumbers.get(entry.id)}
+                  </h3>
+                  {entry.diagnosis && <p className="case-diagnosis">{entry.diagnosis}</p>}
                   <p>{caseSummary(entry)}</p>
                   {entry.summary && <p className="case-detail">{entry.summary}</p>}
                 </div>
@@ -128,10 +133,10 @@ function CaseList({
                   {entry.managementImpact === "changed" && <span className="review-tag review-tag-highlight">Changed management</span>}
                 </div>
                 <div className="case-actions">
-                  <button className="text-button" onClick={() => onReview(entry)} aria-label={`Review case from ${date}`}>Review</button>
-                  <button className="text-button" onClick={() => onPrint(entry)} aria-label={`Print or save case from ${date} as PDF`}>Print / PDF</button>
-                  <button className="text-button" onClick={() => onEdit(entry)} aria-label={`Edit case from ${date}`}>Edit</button>
-                  <button className="text-button text-button-danger" onClick={() => onDelete(entry)} aria-label={`Delete case from ${date}`}>Delete</button>
+                  <button className="text-button" onClick={() => onReview(entry)} aria-label={`Review ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Review</button>
+                  <button className="text-button" onClick={() => onPrint(entry)} aria-label={`Print or save ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date} as PDF`}>Print / PDF</button>
+                  <button className="text-button" onClick={() => onEdit(entry)} aria-label={`Edit ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Edit</button>
+                  <button className="text-button text-button-danger" onClick={() => onDelete(entry)} aria-label={`Delete ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Delete</button>
                 </div>
               </article>
             );

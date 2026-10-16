@@ -532,6 +532,94 @@ summary:focus-visible {
   line-height: 1.5;
 }
 
+.case-mix-panel {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: white;
+}
+
+.case-mix-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.case-mix-heading .eyebrow {
+  margin: 0 0 0.2rem;
+}
+
+.case-mix-heading h2 {
+  margin: 0;
+  color: #243a35;
+  font-size: 1rem;
+}
+
+.case-mix-source {
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-align: right;
+}
+
+.case-mix-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.case-mix-counts p {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.case-mix-counts strong {
+  color: var(--ink);
+  font-size: 1.25rem;
+}
+
+.case-mix-note,
+.case-mix-protocol {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.case-mix-protocol {
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
+.case-mix-quotas {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.case-mix-quotas li {
+  display: grid;
+  gap: 0.15rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.case-mix-quotas li strong {
+  color: var(--ink);
+}
+
+.case-mix-quotas small {
+  font-size: inherit;
+}
+
 .metrics-page {
   margin-top: 1rem;
 }
@@ -850,6 +938,11 @@ summary:focus-visible {
   line-height: 1.4;
 }
 
+.case-main .case-diagnosis {
+  color: #42564d;
+  font-weight: 600;
+}
+
 .case-main .case-detail {
   overflow: hidden;
   max-width: 540px;
@@ -992,6 +1085,13 @@ summary:focus-visible {
   margin: 0.35rem 0 0;
   color: var(--muted);
   font-size: 0.83rem;
+}
+
+.case-review-diagnosis {
+  margin: 0.35rem 0 0;
+  color: #53645b;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .case-review-actions {
@@ -1978,6 +2078,19 @@ summary:focus-visible {
   .metrics-summary {
     grid-template-columns: 1fr;
     gap: 0.45rem;
+  }
+
+  .case-mix-counts {
+    grid-template-columns: 1fr;
+  }
+
+  .case-mix-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .case-mix-source {
+    text-align: left;
   }
 
   .metrics-grid {

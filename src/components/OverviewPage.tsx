@@ -1,12 +1,13 @@
 import { useRef, type ChangeEvent } from "react";
+import type { CaseMixSummary, TrainingProgress } from "../domain/metrics";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
 
 interface OverviewPageProps {
   pathway: Pathway;
-  caseCount: number;
-  supervisedCount: number;
+  progress: TrainingProgress;
   abnormalCount: number;
   changedManagementCount: number;
+  caseMix: CaseMixSummary;
   trainingMode: boolean;
   isReady: boolean;
   isHandlingBackup: boolean;
@@ -19,10 +20,10 @@ interface OverviewPageProps {
 
 function OverviewPage({
   pathway,
-  caseCount,
-  supervisedCount,
+  progress,
   abnormalCount,
   changedManagementCount,
+  caseMix,
   trainingMode,
   isReady,
   isHandlingBackup,
@@ -66,19 +67,19 @@ function OverviewPage({
           className="stat-card stat-card-featured stat-card-action"
           type="button"
           onClick={onShowCases}
-          aria-label={`View ${caseCount} ${caseCount === 1 ? "case" : "cases"}`}
+          aria-label={`View ${progress.totalCases} ${progress.totalCases === 1 ? "case" : "cases"}`}
         >
           <span className="stat-label">Cases logged</span>
           <strong className="stat-value">
-            {caseCount}
-            {trainingMode && <span className="stat-reference"> / {details.totalTarget}</span>}
+            {progress.totalCases}
+            {trainingMode && <span className="stat-reference"> / {progress.totalTarget}</span>}
           </strong>
           <span className="stat-note">{trainingMode ? "Training case reference" : "All recorded scans"}</span>
         </button>
         {trainingMode ? (
           <article className="stat-card">
             <span className="stat-label">Directly supervised</span>
-            <strong className="stat-value">{supervisedCount}<span className="stat-reference"> / {details.supervisedTarget}</span></strong>
+            <strong className="stat-value">{progress.supervisedCases}<span className="stat-reference"> / {progress.supervisedTarget}</span></strong>
             <span className="stat-note">Direct supervision reference</span>
           </article>
         ) : (
@@ -98,9 +99,55 @@ function OverviewPage({
       </section>
 
       {trainingMode && (
-        <p className="source-note">
-          Training references are drawn from the supplied {details.source}. They are a personal aid, not an assessment of eligibility or competence.
-        </p>
+        <>
+          <section className="case-mix-panel" aria-labelledby="case-mix-title">
+            <div className="case-mix-heading">
+              <div>
+                <p className="eyebrow">Curriculum guidance</p>
+                <h2 id="case-mix-title">Case mix and scan coverage</h2>
+              </div>
+              <span className="case-mix-source">{details.source}</span>
+            </div>
+            <div className="case-mix-counts">
+              <p><strong>{caseMix.clinicalCases}</strong><span>Clinical cases</span></p>
+              <p>
+                <strong>{caseMix.healthyVolunteerCases}</strong>
+                <span>
+                  Healthy volunteers · {caseMix.healthyVolunteerPercent.toFixed(0)}%
+                  {caseMix.healthyVolunteerMaximumPercent !== null &&
+                    ` / max ${caseMix.healthyVolunteerMaximumPercent}%`}
+                </span>
+              </p>
+            </div>
+            {caseMix.pathologyRangeRequired && (
+              <p className="case-mix-note">
+                The curriculum requires a range of pathology. The logbook does not
+                verify pathology variety from free-text diagnoses.
+              </p>
+            )}
+            {caseMix.scanTypeQuotas.length > 0 ? (
+              <ul className="case-mix-quotas">
+                {caseMix.scanTypeQuotas.map((quota) => (
+                  <li key={quota.scanType}>
+                    <strong>{quota.scanType}</strong>
+                    <span>{quota.minimumScans} scans · {quota.minimumDirectlySupervised} directly supervised</span>
+                    {quota.note && <small>{quota.note}</small>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="case-mix-note">
+                No separate scan-type minimums are listed for this pathway.
+              </p>
+            )}
+            {caseMix.protocolCoverage && (
+              <p className="case-mix-protocol">{caseMix.protocolCoverage}</p>
+            )}
+          </section>
+          <p className="source-note">
+            Training references are drawn from the supplied {details.source}. They are a personal aid, not an assessment of eligibility or competence.
+          </p>
+        </>
       )}
 
       <section className="backup-panel" aria-labelledby="backup-title">

@@ -16,6 +16,7 @@ import {
 
 interface CaseReviewProps {
   entry: LogbookCase;
+  caseNumber: number;
   onEdit: () => void;
   onClose: () => void;
 }
@@ -29,7 +30,7 @@ function ReviewField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CaseReview({ entry, onEdit, onClose }: CaseReviewProps) {
+function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
   const supervision = formatSupervision(entry);
@@ -42,7 +43,9 @@ function CaseReview({ entry, onEdit, onClose }: CaseReviewProps) {
       <header className="case-review-heading">
         <div>
           <p className="eyebrow">{PATHWAYS[entry.pathway].label} · Case review</p>
-          <h2 id="review-title">{entry.diagnosis || "Scan recorded"}</h2>
+          <h2 id="review-title">
+            {PATHWAYS[entry.pathway].label.replace(/^FUSIC\s+/, "")} Case {caseNumber}
+          </h2>
           <p className="case-review-date">
             {formatCaseDate(entry.date, "en-GB", {
               day: "numeric",
@@ -50,6 +53,7 @@ function CaseReview({ entry, onEdit, onClose }: CaseReviewProps) {
               year: "numeric",
             })}
           </p>
+          {entry.diagnosis && <p className="case-review-diagnosis">{entry.diagnosis}</p>}
         </div>
         <div className="case-review-actions">
           <button className="button button-secondary" type="button" onClick={onClose}>

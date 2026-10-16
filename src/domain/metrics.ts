@@ -11,6 +11,7 @@ import {
   type Pathway,
 } from "./logbook";
 import { addTimestamps, createDraft } from "./logbook";
+import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
 const ACTIVITY_MONTHS = 6;
 const sampleCasesPerMonth = [2, 3, 4, 2, 5, 3];
@@ -50,6 +51,74 @@ export interface CaseMetrics {
   imageQuality: MetricCount[];
   impressions: MetricCount[];
   managementImpact: MetricCount[];
+}
+
+export interface TrainingProgress {
+  totalCases: number;
+  supervisedCases: number;
+  totalTarget: number;
+  supervisedTarget: number;
+  totalTargetMet: boolean;
+  supervisedTargetMet: boolean;
+}
+
+export interface CaseMixSummary {
+  clinicalCases: number;
+  healthyVolunteerCases: number;
+  healthyVolunteerPercent: number;
+  healthyVolunteerMaximumPercent: number | null;
+  pathologyRangeRequired: boolean;
+  protocolCoverage: string | null;
+  scanTypeQuotas: Array<{
+    scanType: string;
+    minimumScans: number;
+    minimumDirectlySupervised: number;
+    note?: string;
+  }>;
+}
+
+export function summarizeTrainingProgress(
+  cases: LogbookCase[],
+  pathway: Pathway,
+): TrainingProgress {
+  const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
+  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const supervisedCases = pathwayCases.filter((entry) => entry.supervised).length;
+
+  return {
+    totalCases: pathwayCases.length,
+    supervisedCases,
+    totalTarget: requirements.totalScans,
+    supervisedTarget: requirements.directlySupervisedScans,
+    totalTargetMet: pathwayCases.length >= requirements.totalScans,
+    supervisedTargetMet: supervisedCases >= requirements.directlySupervisedScans,
+  };
+}
+
+export function summarizeCaseMix(
+  cases: LogbookCase[],
+  pathway: Pathway,
+): CaseMixSummary {
+  const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
+  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const scanTypeQuotas = requirements.scanTypeQuotas;
+  const healthyVolunteerCases = pathwayCases.filter(
+    (entry) => entry.caseType === "healthy_volunteer",
+  ).length;
+
+  return {
+    clinicalCases: pathwayCases.length - healthyVolunteerCases,
+    healthyVolunteerCases,
+    healthyVolunteerPercent:
+      pathwayCases.length === 0
+        ? 0
+        : (healthyVolunteerCases / pathwayCases.length) * 100,
+    healthyVolunteerMaximumPercent:
+      requirements.caseMix.healthyVolunteerMaximumPercent ?? null,
+    pathologyRangeRequired: requirements.caseMix.pathologyRangeRequired,
+    protocolCoverage: requirements.protocolCoverage ?? null,
+    scanTypeQuotas: scanTypeQuotas?.map((quota) => ({ ...quota })) ?? [],
+  };
 }
 
 function monthKey(date: Date) {

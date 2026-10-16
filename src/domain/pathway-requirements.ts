@@ -56,7 +56,9 @@ const sharedClinicalCaseMix = {
   healthyVolunteerMaximumPercent: 10,
 } as const;
 
-export const PATHWAY_REQUIREMENTS = {
+export const PATHWAY_REQUIREMENTS: Readonly<
+  Record<CurriculumPathway, PathwayRequirements>
+> = {
   heart: {
     label: "FUSIC Heart",
     source: {
@@ -216,4 +218,4 @@ export const PATHWAY_REQUIREMENTS = {
     protocolCoverage:
       "The fTOE minimum dataset is eight views; each examination must include the minimum dataset and a completed report.",
   },
-} as const satisfies Record<CurriculumPathway, PathwayRequirements>;
+};
