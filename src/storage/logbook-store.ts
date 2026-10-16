@@ -2,6 +2,7 @@ import { openDB, type DBSchema } from "idb";
 import type { LogbookBackup } from "../domain/backup";
 import {
   addTimestamps,
+  isSampleCase,
   type CaseDraft,
   type LogbookCase,
   type Pathway,
@@ -74,6 +75,29 @@ export async function saveCase(draft: CaseDraft): Promise<void> {
 
 export async function deleteCase(id: string): Promise<void> {
   await (await database).delete("cases", id);
+}
+
+export async function addSampleCases(cases: LogbookCase[]): Promise<number> {
+  const db = await database;
+  const transaction = db.transaction("cases", "readwrite");
+  const store = transaction.objectStore("cases");
+  const existingIds = new Set((await store.getAll()).map((entry) => entry.id));
+  const additions = cases.filter(
+    (entry) => isSampleCase(entry) && !existingIds.has(entry.id),
+  );
+  await Promise.all(additions.map((entry) => store.add(entry)));
+  await transaction.done;
+  return additions.length;
+}
+
+export async function deleteSampleCases(): Promise<number> {
+  const db = await database;
+  const transaction = db.transaction("cases", "readwrite");
+  const store = transaction.objectStore("cases");
+  const sampleCases = (await store.getAll()).filter(isSampleCase);
+  await Promise.all(sampleCases.map((entry) => store.delete(entry.id)));
+  await transaction.done;
+  return sampleCases.length;
 }
 
 export async function getPathwayModes(): Promise<

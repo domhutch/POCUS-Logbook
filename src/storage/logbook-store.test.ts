@@ -1,6 +1,7 @@
 import "fake-indexeddb/auto";
 import { describe, expect, it } from "vitest";
 import { createBackup, parseBackup } from "../domain/backup";
+import { createSampleCases } from "../domain/metrics";
 import {
   addTimestamps,
   createDraft,
@@ -10,6 +11,8 @@ import {
 import {
   getCases,
   getPathwayModes,
+  addSampleCases,
+  deleteSampleCases,
   restoreBackup,
   saveCase,
   savePathwayMode,
@@ -64,6 +67,20 @@ describe("pathway training modes", () => {
     await savePathwayMode("lung", true);
 
     expect(await getPathwayModes()).toEqual({ heart: false, lung: true });
+    expect(await getCases()).toEqual(casesBefore);
+  });
+});
+
+describe("sample cases", () => {
+  it("adds samples idempotently and removes only marked sample records", async () => {
+    const casesBefore = await getCases();
+    const samples = createSampleCases("heart", new Date(2026, 9, 15));
+
+    await expect(addSampleCases(samples)).resolves.toBe(samples.length);
+    await expect(addSampleCases(samples)).resolves.toBe(0);
+    expect(await getCases()).toHaveLength(casesBefore.length + samples.length);
+
+    await expect(deleteSampleCases()).resolves.toBe(samples.length);
     expect(await getCases()).toEqual(casesBefore);
   });
 });

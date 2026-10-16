@@ -113,6 +113,12 @@ export interface HeartCaseFields extends CaseFields {
 }
 
 export type LogbookCase = LungCaseFields | HeartCaseFields;
+export const SAMPLE_CASE_ID_PREFIX = "pocus-sample:";
+
+export function isSampleCase(entry: Pick<LogbookCase, "id">) {
+  return entry.id.startsWith(SAMPLE_CASE_ID_PREFIX);
+}
+
 type WithoutTimestamps<T> = T extends LogbookCase
   ? Omit<T, "createdAt" | "updatedAt">
   : never;

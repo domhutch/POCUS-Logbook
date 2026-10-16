@@ -919,6 +919,16 @@ summary:focus-visible {
   font-weight: 700;
 }
 
+.sample-case-tag {
+  width: fit-content;
+  padding: 0.2rem 0.38rem;
+  border-radius: 5px;
+  background: #edf0fb;
+  color: #4b5c91;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
 .case-main {
   min-width: 0;
 }
@@ -1279,6 +1289,53 @@ summary:focus-visible {
   border: 1px solid #dce5dd;
   border-radius: 12px;
   background: #fbfcfa;
+}
+
+.test-data-panel {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px dashed #aeb9bd;
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+
+.test-data-panel > summary {
+  color: #43546e;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.test-data-panel > p {
+  margin: 0.65rem 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.test-data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.test-data-actions .button {
+  font-size: 0.72rem;
+}
+
+.test-data-panel > small {
+  display: block;
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
+.test-data-status {
+  padding: 0.55rem 0.7rem;
+  border-radius: 7px;
+  background: #edf4ef;
+  color: #315b42 !important;
 }
 
 .backup-copy .eyebrow {

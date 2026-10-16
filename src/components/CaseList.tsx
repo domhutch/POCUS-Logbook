@@ -1,5 +1,10 @@
 import { formatCaseDate } from "../domain/case-display";
-import { PATHWAYS, type LogbookCase, type Pathway } from "../domain/logbook";
+import {
+  isSampleCase,
+  PATHWAYS,
+  type LogbookCase,
+  type Pathway,
+} from "../domain/logbook";
 
 type CaseFilter = "all" | "supervised" | "unsupervised";
 
@@ -105,6 +110,7 @@ function CaseList({
               <article className="case-card" key={entry.id}>
                 <div className="case-date">
                   <span>{date}</span>
+                  {isSampleCase(entry) && <span className="sample-case-tag">Sample data</span>}
                   {entry.caseType === "healthy_volunteer" && <span className="case-kind">Healthy volunteer</span>}
                 </div>
                 <div className="case-main">

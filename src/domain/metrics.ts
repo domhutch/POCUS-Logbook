@@ -9,6 +9,7 @@ import {
   type LogbookCase,
   type ManagementImpact,
   type Pathway,
+  SAMPLE_CASE_ID_PREFIX,
 } from "./logbook";
 import { addTimestamps, createDraft } from "./logbook";
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
@@ -220,6 +221,7 @@ export function createSampleCases(pathway: Pathway, now = new Date()) {
         3 + monthCase * 5,
       );
       const draft = createSampleDraft(pathway, index);
+      draft.id = `${SAMPLE_CASE_ID_PREFIX}${pathway}:${String(index + 1).padStart(2, "0")}`;
       draft.date = `${scanDate.getFullYear()}-${String(
         scanDate.getMonth() + 1,
       ).padStart(2, "0")}-${String(scanDate.getDate()).padStart(2, "0")}`;

@@ -1,5 +1,6 @@
 import {
   HEART_FINDINGS,
+  isSampleCase,
   LUNG_FINDINGS,
   LUNG_REGIONS,
   PATHWAYS,
@@ -42,7 +43,10 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
     <section className="case-review" aria-labelledby="review-title">
       <header className="case-review-heading">
         <div>
-          <p className="eyebrow">{PATHWAYS[entry.pathway].label} · Case review</p>
+          <p className="eyebrow">
+            {PATHWAYS[entry.pathway].label} · Case review
+            {isSampleCase(entry) && " · Sample data"}
+          </p>
           <h2 id="review-title">
             {PATHWAYS[entry.pathway].label.replace(/^FUSIC\s+/, "")} Case {caseNumber}
           </h2>

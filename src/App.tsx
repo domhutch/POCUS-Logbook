@@ -16,12 +16,15 @@ import {
 } from "./domain/metrics";
 import {
   createDraft,
+  isSampleCase,
   PATHWAYS,
   type CaseDraft,
   type LogbookCase,
   type Pathway,
 } from "./domain/logbook";
 import {
+  addSampleCases,
+  deleteSampleCases,
   deleteCase,
   saveCase,
   savePathwayMode,
@@ -52,6 +55,8 @@ function App() {
   const [reviewedCase, setReviewedCase] = useState<LogbookCase | null>(null);
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
+  const [isHandlingTestData, setIsHandlingTestData] = useState(false);
+  const [testDataStatus, setTestDataStatus] = useState<string | null>(null);
   const pathwayMenuRef = usePathwayMenu();
   const caseNumbers = useMemo(() => getCaseSequenceNumbers(entries), [entries]);
   const {
@@ -74,6 +79,10 @@ function App() {
   );
   const trainingProgress = summarizeTrainingProgress(entries, activePathway);
   const caseMix = summarizeCaseMix(entries, activePathway);
+  const sampleCaseCount = entries.filter(isSampleCase).length;
+  const canManageTestData =
+    import.meta.env.DEV ||
+    new URLSearchParams(window.location.search).get("admin") === "1";
   const abnormalCount = pathwayEntries.filter(
     (entry) => entry.impressionCategory === "abnormal",
   ).length;
@@ -151,6 +160,55 @@ function App() {
           ? cause.message
           : "The case could not be deleted from this device.",
       );
+    }
+  }
+
+  async function handlePopulateTestCases(pathwayToPopulate: Pathway) {
+    setIsHandlingTestData(true);
+    setTestDataStatus(null);
+    try {
+      const addedCount = await addSampleCases(createSampleCases(pathwayToPopulate));
+      await refreshEntries();
+      const pathwayName = PATHWAYS[pathwayToPopulate].label.replace(/^FUSIC\s+/, "");
+      setTestDataStatus(
+        addedCount > 0
+          ? `Added ${addedCount} ${pathwayName} sample cases to this device.`
+          : `${pathwayName} sample cases are already on this device.`,
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Sample cases could not be added to this device.",
+      );
+    } finally {
+      setIsHandlingTestData(false);
+    }
+  }
+
+  async function handleClearTestCases() {
+    if (sampleCaseCount === 0) return;
+    if (
+      !window.confirm(
+        `Remove ${sampleCaseCount} clearly marked sample cases from this device? Real cases will not be changed.`,
+      )
+    ) {
+      return;
+    }
+    setIsHandlingTestData(true);
+    setTestDataStatus(null);
+    try {
+      const removedCount = await deleteSampleCases();
+      await refreshEntries();
+      setTestDataStatus(`Removed ${removedCount} sample cases.`);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Sample cases could not be removed from this device.",
+      );
+    } finally {
+      setIsHandlingTestData(false);
     }
   }
 
@@ -329,6 +387,10 @@ function App() {
             pathway={activePathway}
             progress={trainingProgress}
             caseMix={caseMix}
+            canManageTestData={canManageTestData}
+            sampleCaseCount={sampleCaseCount}
+            isHandlingTestData={isHandlingTestData}
+            testDataStatus={testDataStatus}
             abnormalCount={abnormalCount}
             changedManagementCount={changedManagementCount}
             trainingMode={trainingModes[activePathway]}
@@ -339,6 +401,10 @@ function App() {
             onShowCases={() => setActivePage("cases")}
             onExportBackup={() => void backup.exportBackup()}
             onRestoreBackup={(event) => void backup.restoreBackupFromFile(event)}
+            onPopulateTestCases={(pathwayToPopulate) =>
+              void handlePopulateTestCases(pathwayToPopulate)
+            }
+            onClearTestCases={() => void handleClearTestCases()}
           />
         )}
 

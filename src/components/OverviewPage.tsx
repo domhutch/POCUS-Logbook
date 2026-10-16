@@ -8,6 +8,10 @@ interface OverviewPageProps {
   abnormalCount: number;
   changedManagementCount: number;
   caseMix: CaseMixSummary;
+  canManageTestData: boolean;
+  sampleCaseCount: number;
+  isHandlingTestData: boolean;
+  testDataStatus: string | null;
   trainingMode: boolean;
   isReady: boolean;
   isHandlingBackup: boolean;
@@ -16,6 +20,8 @@ interface OverviewPageProps {
   onShowCases: () => void;
   onExportBackup: () => void;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPopulateTestCases: (pathway: Pathway) => void;
+  onClearTestCases: () => void;
 }
 
 function OverviewPage({
@@ -24,6 +30,10 @@ function OverviewPage({
   abnormalCount,
   changedManagementCount,
   caseMix,
+  canManageTestData,
+  sampleCaseCount,
+  isHandlingTestData,
+  testDataStatus,
   trainingMode,
   isReady,
   isHandlingBackup,
@@ -32,6 +42,8 @@ function OverviewPage({
   onShowCases,
   onExportBackup,
   onRestoreBackup,
+  onPopulateTestCases,
+  onClearTestCases,
 }: OverviewPageProps) {
   const backupInputRef = useRef<HTMLInputElement>(null);
   const details = PATHWAYS[pathway];
@@ -174,6 +186,40 @@ function OverviewPage({
         </details>
         {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
       </section>
+
+      {canManageTestData && (
+        <details className="test-data-panel">
+          <summary>Admin test data · {sampleCaseCount} sample cases on this device</summary>
+          <p>
+            Add clearly labelled sample cases to this device to test the hosted
+            app. They are included in backups. Adding them again won’t duplicate
+            existing sample cases.
+          </p>
+          <div className="test-data-actions">
+            {(Object.keys(PATHWAYS) as Pathway[]).map((key) => (
+              <button
+                className="button button-secondary"
+                type="button"
+                key={key}
+                onClick={() => onPopulateTestCases(key)}
+                disabled={isHandlingTestData || !isReady}
+              >
+                Add {PATHWAYS[key].label.replace(/^FUSIC\s+/, "")} sample cases
+              </button>
+            ))}
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={onClearTestCases}
+              disabled={isHandlingTestData || sampleCaseCount === 0}
+            >
+              Remove all sample cases ({sampleCaseCount})
+            </button>
+          </div>
+          {testDataStatus && <p className="test-data-status" role="status">{testDataStatus}</p>}
+          <small>Sample cases are marked in the Cases list and case review.</small>
+        </details>
+      )}
     </>
   );
 }
