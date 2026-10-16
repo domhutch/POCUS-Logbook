@@ -22,6 +22,7 @@ npm run dev
 - [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
 - [`src/hooks/`](./src/hooks) contains app behavior that is reused or easier to understand separately, such as loading local data, searching cases, backups, and printing.
 - [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
+- [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support remains Heart and Lung.
 - [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
 - [`src/styles.css`](./src/styles.css) contains the app layout and visual styles.
 

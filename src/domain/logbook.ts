@@ -1,3 +1,5 @@
+import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
+
 export type Pathway = "lung" | "heart";
 
 export type CaseType = "clinical" | "healthy_volunteer";
@@ -16,18 +18,18 @@ export const PATHWAYS = {
     description:
       "Record a focused cardiac scan, review your cases and keep your own practice history.",
     icon: "H",
-    totalTarget: 50,
-    supervisedTarget: 10,
-    source: "FUSIC Heart Training Pack v13 (2025)",
+    totalTarget: PATHWAY_REQUIREMENTS.heart.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.heart.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.heart.source.title} ${PATHWAY_REQUIREMENTS.heart.source.version}`,
   },
   lung: {
     label: "FUSIC Lung",
     description:
       "Record a lung ultrasound scan, review your cases and keep your own practice history.",
     icon: "L",
-    totalTarget: 30,
-    supervisedTarget: 10,
-    source: "FUSIC Lung Training Pack v10 (2025)",
+    totalTarget: PATHWAY_REQUIREMENTS.lung.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.lung.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.lung.source.title} ${PATHWAY_REQUIREMENTS.lung.source.version}`,
   },
 } as const;
 

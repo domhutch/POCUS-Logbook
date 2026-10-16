@@ -22,10 +22,10 @@ The native apps must include the built web assets in the app package. They must 
 
 These are a practical starting order based on the open checklist below, not new commitments:
 
-1. Finish and verify the versioned pathway requirements catalogue before adding more training rules.
+1. Add privacy-aware checks for potentially identifying text, without treating clinical terms as identifiers or silently discarding notes.
 2. Cover progress calculations and persistence failure cases, including the listed target and pathway boundaries.
-3. Complete a de-identified CSV export and document the expected columns.
-4. Verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
+3. Implement the verified quota and case-mix rules when those pathways are added to the app.
+4. Complete a de-identified CSV export and verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
 
 Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
 
@@ -43,14 +43,14 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 ### 1. Curriculum and data model
 
-- [ ] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. The initial total/direct-supervision references are shown in the app, with their source versions.
+- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue covers the seven pathways below; the app currently supports Heart and Lung only.
 - [x] Record the source document and version for the initial total and directly supervised references.
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
 - [x] Add optional impression and management-impact review markers.
 - [ ] Validate potentially identifying text beyond the in-form privacy warning.
 
-**Exit criteria:** remaining rules and fields are traceable to documents; records can be validated without storing patient identifiers.
+**Exit criteria:** pathway requirements and source versions are traceable in the catalogue. The exit criterion is still open until potentially identifying free text can be handled safely.
 
 ### 2. Core logbook
 
@@ -94,6 +94,7 @@ These are optional follow-ons after reliable local backup and restore:
 4. **Printable review reports:** produce a user-selected, de-identified PDF summary.
 5. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
 6. **Additional pathways:** add DVT, Abdomen, Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed.
+7. **Advanced echo findings:** after the HD pathway is implemented, consider recording advanced echocardiography findings beyond its curriculum. Map the overlap with the HD requirements first so the curriculum fields are not duplicated.
 
 ### 5. Mobile packaging and release readiness
 
@@ -102,7 +103,8 @@ These are optional follow-ons after reliable local backup and restore:
 - [ ] Verify the native app loads from assets packaged inside the app, with no hosted-app URL configured.
 - [ ] Test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
 - [x] Add automated tests for JSON backup validation, v1 migration, and restore merge behavior.
-- [ ] Add automated tests for progress calculations, pathway rules, persistence failures, and CSV/PDF export formats.
+- [x] Add catalogue integrity tests for source links, route limits, Vascular quotas, the fTOE alternate route, and the FUSIC HD effective date.
+- [ ] Add automated tests for progress calculations, persistence failures, and CSV/PDF export formats.
 - [ ] Document build, release, data-backup, and privacy expectations.
 
 **Exit criteria:** installed native builds work in airplane mode and preserve user data across supported upgrades.
@@ -142,21 +144,21 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - Keep certificates and exam scans optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
 - The requests for assessment requirements overlap the versioned pathway catalogue and curriculum-source verification work in sections 1 and 3; update those milestones rather than maintaining a second source of truth.
 
-## Curriculum starting points
+## Verified curriculum catalogue (16 October 2026)
 
-The supplied documents indicate materially different requirements. These are initial research notes, not yet executable app rules:
+The source versions and structured requirements are recorded in [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). Each linked training pack is published by the Intensive Care Society. These are logbook requirements, not a claim that the app implements or awards accreditation. All seven pathways specify a 12-month scan-collection window.
 
-| Pathway | Initial requirement observed | Source to verify before implementation |
+| Pathway and source | Total / directly supervised | Case mix and scan-type requirements |
 | --- | --- | --- |
-| FUSIC DVT | 10 scans; at least 5 directly supervised | [FUSIC-DVT-Training-Pack-v1-2026.pdf](./curriculum/FUSIC-DVT-Training-Pack-v1-2026.pdf) |
-| FUSIC Lung | 30 scans; at least 10 directly supervised | [FUSIC-Lung-Training-Pack-v10-2025.pdf](./curriculum/FUSIC-Lung-Training-Pack-v10-2025.pdf) |
-| FUSIC Heart | 50 scans; at least 10 directly supervised | [FUSIC-Heart-Training-Pack-2025-V13.pdf](./curriculum/FUSIC-Heart-Training-Pack-2025-V13.pdf) |
-| FUSIC Abdomen | 25 scans; at least 10 directly supervised | [FUSICAbdomen-Training-Pack-v11-2025.pdf](./curriculum/FUSICAbdomen-Training-Pack-v11-2025.pdf) |
-| FUSIC Vascular | 30 scans; at least 5 directly supervised, with scan-type requirements | [FUSICVascular-Training-Pack-v1-2026.pdf](./curriculum/FUSICVascular-Training-Pack-v1-2026.pdf) |
-| FUSIC HD | 50 scans; at least 20 supervised; case-mix requirements | [FUSIC-HD-Training-Pack-2026-v11.pdf](./curriculum/FUSIC-HD-Training-Pack-2026-v11.pdf) |
-| Focused TOE | 50 examinations and 20 directly observed; 30-exam route for specified prior accreditations | [Focused-TOE-Certification-Training-Packv11-2025.pdf](./curriculum/Focused-TOE-Certification-Training-Packv11-2025.pdf) |
+| [FUSIC Heart, v13 (2025)](https://ics.ac.uk/static/fbd90d07-49c8-4290-b59715a3922911aa/FUSIC-Heart-Training-Pack-v13-2025.pdf) | 50 / 10 | Pathology range; no more than 10% healthy volunteers; attempt all four pathway views. |
+| [FUSIC Lung, v10 (2025)](https://ics.ac.uk/static/947f68af-d44d-4c7a-ab16d6697ee897b0/FUSICLung-Training-Pack-2025-V10.pdf) | 30 / 10 | Pathology range; no more than 10% healthy volunteers; image all six examination points (three per side). |
+| [FUSIC DVT, v1 (2026)](https://ics.ac.uk/static/beaa5df0-fd47-4e83-9ed28e72533d2eb6/FUSIC-DVT-Training-Pack-v1-2026.pdf) | 10 / 5 | At least one DVT-positive scan; three-point technique; no more than 10% healthy volunteers. |
+| [FUSIC Abdomen, v11 (2025)](https://ics.ac.uk/static/ef0ddaff-73a2-484d-95acc7a5ab3be630/FUSICAbdomen-Training-Packv11-2025.pdf) | 25 / 10 | Pathology range; no more than 10% healthy volunteers; attempt required pathway views. |
+| [FUSIC Vascular, v1 (2026)](https://ics.ac.uk/static/57fbde91-95b6-44c9-89fbe7ba577cd952/FUSICVascular-Training-Pack-v1-2026.pdf) | 30 / 5 | At least one vascular-access case; CVC 5 (3 supervised), PICC/midline 3 (1 supervised), peripheral access 2 (1 supervised); substitution rule recorded in the catalogue; no more than 10% healthy volunteers. |
+| [FUSIC HD, v11 (2026)](https://ics.ac.uk/static/792a27d9-c0d5-479d-95ebaf79f77269f4/FUSIC-HD-Training-Pack-2026-v11.pdf) | 50 / 20 | Broad pathology; no more than 10 normal scans and no more than 10% healthy volunteers. Dataset changes for scans from 1 February 2026 are recorded separately in the catalogue. |
+| [Focused TOE, v11 (2025)](https://ics.ac.uk/static/286c0975-e7d1-4f98-a1eaf18489dc1d6d/Focused-TOE-Certification-Training-Packv11-2025.pdf) | 50 / first 20; an eligible prior-accreditation route allows 30 / first 20 | Eight-view minimum dataset; no more than 50% normal studies; 12-month logbook window and 24-month accreditation window. |
 
-The folder also contains assessment packs and older DVT/vascular documents. Where documents differ, confirm the current official requirement and record the chosen source/version rather than combining the rules implicitly.
+Heart, Lung, DVT, Abdomen, Vascular, and HD also limit healthy-volunteer studies to 10% of the logbook. FUSIC HD has a separate fixed cap of 10 normal scans. The percentages and fixed caps are intentionally represented separately. Confirm the source pack again before changing a requirement; assessment packs are not treated as competing scan-count sources.
 
 ## Initial technical choices
 
