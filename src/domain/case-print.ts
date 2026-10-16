@@ -30,6 +30,11 @@ function displayLabel(value: string) {
   );
 }
 
+function formatUkDate(date: string) {
+  const [year, month, day] = date.split("-");
+  return `${day}/${month}/${year}`;
+}
+
 function displayAssessment(value: Assessment) {
   return {
     not_assessed: "Not assessed",
@@ -151,7 +156,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   <div class="toolbar"><button class="print-button" onclick="window.print()">Print / save PDF</button></div>
   <header class="sheet-header">
     <div><p class="brand">POCUS Logbook · Personal case record</p><h1>${escapeHtml(PATHWAYS[entry.pathway].label)}</h1><p class="subtitle">Personal training and reflection record · Not a clinical record or accreditation decision</p></div>
-    <span class="badge">${escapeHtml(entry.date)}</span>
+    <span class="badge">${escapeHtml(formatUkDate(entry.date))}</span>
   </header>
   <section class="section"><h2>Case details</h2><div class="field-grid">
     ${field("Case type", caseType)}
@@ -164,7 +169,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   ${details}
   <section class="section"><h2>Summary of findings</h2><div class="notes ${entry.summary.trim() ? "" : "blank"}">${entry.summary.trim() ? escapeHtml(entry.summary.trim()) : ""}</div></section>
   <section class="section"><h2>Reflection / points to review</h2><div class="notes ${entry.reflection.trim() ? "" : "blank"}">${entry.reflection.trim() ? escapeHtml(entry.reflection.trim()) : ""}</div></section>
-  <footer class="footer"><span>Keep this copy de-identified. Do not add patient-identifying details.</span><span>Printed ${escapeHtml(new Date().toLocaleDateString())}</span></footer>
+  <footer class="footer"><span>Keep this copy de-identified. Do not add patient-identifying details.</span><span>Printed ${escapeHtml(new Date().toLocaleDateString("en-GB"))}</span></footer>
 </body>
 </html>`;
 }

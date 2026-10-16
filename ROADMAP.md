@@ -96,6 +96,38 @@ These are optional follow-ons after reliable local backup and restore:
 
 **Exit criteria:** installed native builds work in airplane mode and preserve user data across supported upgrades.
 
+## User feedback backlog
+
+Feedback received 16 October 2026. These are requests to triage, not commitments or implemented behavior. Reassess them against the existing roadmap, confirm scope where noted, and then turn agreed work into small deliverable milestones.
+
+### Bugs and usability issues
+
+- [ ] **P1 · Print/PDF layout:** make an individual case printout fit on one page and verify printing or saving as PDF works when the PWA is installed to the Home Screen.
+- [x] **P1 · Case review:** add a read-only case detail view from the Cases screen, covering pathway-specific details, findings, supervision, and notes.
+- [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
+- [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
+- [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
+- [ ] **P2 · Lung form:** group location choices under each pathology, with a selectable location for each pathology; make the location label/text clickable as well as its checkbox. Do not present every location as an undifferentiated set of checkboxes for each lung field.
+- [x] **P2 · Overview navigation:** make the case-count card open the Cases page when selected.
+- [ ] **P2 · Supervisor management:** let users add and manage their own supervisors, then select a supervisor from a dropdown in the case forms.
+- [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.
+- [ ] **P2 · Responsive text and controls:** provide a usable way to scale text up or down on mobile, and ensure form inputs and buttons resize and reflow without clipping or breaking the layout.
+- [ ] **P3 · Metrics period:** allow users to switch between a rolling 12-month view and a calendar-year view; weekly/daily breakdowns are not requested.
+- [x] **P3 · Pathway ordering:** put FUSIC Heart first in the pathway selector and make it the initial pathway.
+
+### Nice-to-have features
+
+- [ ] **Assessment-pack documents:** allow users to store certificates and examination scans for their assessment pack. Decide supported file types, on-device storage limits, backup/export behavior, and privacy protections before implementation.
+- [ ] **Assessment requirements guidance:** add links and breakdowns of assessment requirements, and keep the guidance aligned with current training packs and their versions.
+
+### Reassessment notes
+
+- Address print/PDF correctness, date formatting, mobile safe areas, and access to saved scan images as core reliability and data-review concerns.
+- Review responsive typography, form interactions, lung pathology/location entry, supervisor selection, overview navigation, and pathway ordering together as mobile case-entry and navigation improvements.
+- Reconcile the requested metrics periods with the current metrics behavior and tests before changing the range controls.
+- Keep certificates and exam scans optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
+- The requests for assessment requirements overlap the versioned pathway catalogue and curriculum-source verification work in sections 1 and 3; update those milestones rather than maintaining a second source of truth.
+
 ## Curriculum starting points
 
 The supplied documents indicate materially different requirements. These are initial research notes, not yet executable app rules:

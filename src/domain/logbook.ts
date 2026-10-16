@@ -11,15 +11,6 @@ export type ImpressionCategory =
 export type ManagementImpact = "not_recorded" | "changed" | "unchanged";
 
 export const PATHWAYS = {
-  lung: {
-    label: "FUSIC Lung",
-    description:
-      "Record a lung ultrasound scan, review your cases and keep your own practice history.",
-    icon: "L",
-    totalTarget: 30,
-    supervisedTarget: 10,
-    source: "FUSIC Lung Training Pack v10 (2025)",
-  },
   heart: {
     label: "FUSIC Heart",
     description:
@@ -28,6 +19,15 @@ export const PATHWAYS = {
     totalTarget: 50,
     supervisedTarget: 10,
     source: "FUSIC Heart Training Pack v13 (2025)",
+  },
+  lung: {
+    label: "FUSIC Lung",
+    description:
+      "Record a lung ultrasound scan, review your cases and keep your own practice history.",
+    icon: "L",
+    totalTarget: 30,
+    supervisedTarget: 10,
+    source: "FUSIC Lung Training Pack v10 (2025)",
   },
 } as const;
 

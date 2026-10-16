@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
 } from "react";
 import CaseForm from "./components/CaseForm";
+import CaseReview from "./components/CaseReview";
 import MetricsPage from "./components/MetricsPage";
 import { createBackup, parseBackup } from "./domain/backup";
 import { createCasePrintDocument } from "./domain/case-print";
@@ -28,7 +29,7 @@ import {
 import "./styles.css";
 
 type CaseFilter = "all" | "supervised" | "unsupervised";
-type Page = "overview" | "cases" | "metrics" | "form";
+type Page = "overview" | "cases" | "metrics" | "form" | "review";
 const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
 function caseSummary(entry: LogbookCase) {
@@ -54,7 +55,7 @@ function formatDate(date: string) {
 }
 
 function App() {
-  const [activePathway, setActivePathway] = useState<Pathway>("lung");
+  const [activePathway, setActivePathway] = useState<Pathway>("heart");
   const [entries, setEntries] = useState<LogbookCase[]>([]);
   const [trainingModes, setTrainingModes] = useState<Record<Pathway, boolean>>({
     lung: true,
@@ -64,6 +65,7 @@ function App() {
   const [activePage, setActivePage] = useState<Page>("overview");
   const [returnPage, setReturnPage] = useState<Exclude<Page, "form">>("overview");
   const [draft, setDraft] = useState<CaseDraft | null>(null);
+  const [reviewedCase, setReviewedCase] = useState<LogbookCase | null>(null);
   const [search, setSearch] = useState("");
   const [caseFilter, setCaseFilter] = useState<CaseFilter>("all");
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +208,18 @@ function App() {
   function startEditing(entry: LogbookCase) {
     setReturnPage("cases");
     setDraft({ ...entry });
+    setReviewedCase(null);
     setActivePage("form");
+  }
+
+  function startReviewing(entry: LogbookCase) {
+    setReviewedCase(entry);
+    setActivePage("review");
+  }
+
+  function closeReview() {
+    setReviewedCase(null);
+    setActivePage("cases");
   }
 
   function cancelForm() {
@@ -397,6 +410,13 @@ function App() {
           >
             Cancel
           </button>
+        ) : activePage === "review" ? (
+          <button
+            className="button button-secondary topbar-action"
+            onClick={closeReview}
+          >
+            Back to cases
+          </button>
         ) : (
           <button
             className="button button-primary topbar-action"
@@ -410,9 +430,15 @@ function App() {
 
       <section
         className="page-content"
-        aria-labelledby={activePage === "form" ? "form-title" : "page-title"}
+        aria-labelledby={
+          activePage === "form"
+            ? "form-title"
+            : activePage === "review"
+              ? "review-title"
+              : "page-title"
+        }
       >
-        {activePage !== "form" && (
+        {activePage !== "form" && activePage !== "review" && (
           <>
             <h1 className="sr-only" id="page-title">
               {activePage === "overview"
@@ -447,7 +473,7 @@ function App() {
           </>
         )}
 
-        {activePage !== "form" && (
+        {activePage !== "form" && activePage !== "review" && (
           <div className="pathway-picker">
             <span className="pathway-picker-label">Logbook type</span>
             <details className="pathway-menu" ref={pathwayMenuRef}>
@@ -557,14 +583,19 @@ function App() {
             >
               {trainingModes[activePathway] ? (
                 <>
-                  <article className="stat-card stat-card-featured">
+                  <button
+                    className="stat-card stat-card-featured stat-card-action"
+                    type="button"
+                    onClick={() => setActivePage("cases")}
+                    aria-label={`View ${pathwayEntries.length} ${pathwayEntries.length === 1 ? "case" : "cases"}`}
+                  >
                     <span className="stat-label">Cases logged</span>
                     <strong className="stat-value">
                       {pathwayEntries.length}
                       <span className="stat-reference"> / {pathway.totalTarget}</span>
                     </strong>
                     <span className="stat-note">Training case reference</span>
-                  </article>
+                  </button>
                   <article className="stat-card">
                     <span className="stat-label">Directly supervised</span>
                     <strong className="stat-value">
@@ -579,11 +610,16 @@ function App() {
                 </>
               ) : (
                 <>
-                  <article className="stat-card stat-card-featured">
+                  <button
+                    className="stat-card stat-card-featured stat-card-action"
+                    type="button"
+                    onClick={() => setActivePage("cases")}
+                    aria-label={`View ${pathwayEntries.length} ${pathwayEntries.length === 1 ? "case" : "cases"}`}
+                  >
                     <span className="stat-label">Cases logged</span>
                     <strong className="stat-value">{pathwayEntries.length}</strong>
                     <span className="stat-note">All recorded scans</span>
-                  </article>
+                  </button>
                   <article className="stat-card">
                     <span className="stat-label">Abnormal impressions</span>
                     <strong className="stat-value">{abnormalCount}</strong>
@@ -662,6 +698,14 @@ function App() {
             onChange={setDraft}
             onSave={handleSave}
             onCancel={cancelForm}
+          />
+        )}
+
+        {isReady && activePage === "review" && reviewedCase && (
+          <CaseReview
+            entry={reviewedCase}
+            onEdit={() => startEditing(reviewedCase)}
+            onClose={closeReview}
           />
         )}
 
@@ -791,6 +835,13 @@ function App() {
                         )}
                       </div>
                       <div className="case-actions">
+                        <button
+                          className="text-button"
+                          onClick={() => startReviewing(entry)}
+                          aria-label={`Review case from ${formatDate(entry.date)}`}
+                        >
+                          Review
+                        </button>
                         <button
                           className="text-button"
                           onClick={() => handlePrintCase(entry)}

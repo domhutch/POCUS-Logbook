@@ -7,12 +7,14 @@ describe("printable case sheets", () => {
     const draft = createDraft("lung");
     if (draft.pathway !== "lung") throw new Error("Expected Lung case draft");
     draft.indication = "<script>alert('x')</script>";
+    draft.date = "2026-10-01";
     draft.regions = ["Right upper anterior"];
     draft.findings["Right upper anterior"].lungSliding = "yes";
 
     const document = createCasePrintDocument(addTimestamps(draft));
 
     expect(document).toContain("FUSIC Lung");
+    expect(document).toContain(">01/10/2026</span>");
     expect(document).toContain("Right upper anterior");
     expect(document).toContain("Lung sliding");
     expect(document).toContain("&lt;script&gt;");
