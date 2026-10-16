@@ -18,6 +18,17 @@ The native apps must include the built web assets in the app package. They must 
 
 ## Roadmap
 
+### Suggested next steps
+
+These are a practical starting order based on the open checklist below, not new commitments:
+
+1. Finish and verify the versioned pathway requirements catalogue before adding more training rules.
+2. Cover progress calculations and persistence failure cases, including the listed target and pathway boundaries.
+3. Complete a de-identified CSV export and document the expected columns.
+4. Verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
+
+Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
+
 ### 0. Foundation and decisions
 
 - [x] Create the initial roadmap.

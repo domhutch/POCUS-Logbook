@@ -16,6 +16,16 @@ npm install
 npm run dev
 ```
 
+## Find your way around the code
+
+- [`src/App.tsx`](./src/App.tsx) connects the main screens and coordinates app state.
+- [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
+- [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
+- [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
+- [`src/styles.css`](./src/styles.css) contains the app layout and visual styles.
+
+For a small first change, start with a label or layout in a component. If a change affects what a case means or how it is stored, check the domain model and backup validation as well. Database changes need an upgrade path so existing logbooks continue to open.
+
 ## Build and check
 
 ```sh

@@ -6,8 +6,10 @@ import {
   type ChangeEvent,
 } from "react";
 import CaseForm from "./components/CaseForm";
+import CaseList from "./components/CaseList";
 import CaseReview from "./components/CaseReview";
 import MetricsPage from "./components/MetricsPage";
+import OverviewPage from "./components/OverviewPage";
 import { createBackup, parseBackup } from "./domain/backup";
 import { createCasePrintDocument } from "./domain/case-print";
 import { createSampleCases } from "./domain/metrics";
@@ -32,28 +34,6 @@ type CaseFilter = "all" | "supervised" | "unsupervised";
 type Page = "overview" | "cases" | "metrics" | "form" | "review";
 const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
-function caseSummary(entry: LogbookCase) {
-  const hasStructuredDetails =
-    entry.pathway === "lung"
-      ? entry.regions.length > 0
-      : entry.views.length > 0;
-  const scanDetails = hasStructuredDetails
-    ? entry.pathway === "lung"
-      ? `${entry.regions.length} of 6 regions recorded`
-      : `${entry.views.length} views recorded`
-    : "Structured details not added";
-
-  return [entry.indication, scanDetails].filter(Boolean).join(" · ");
-}
-
-function formatDate(date: string) {
-  return new Date(`${date}T12:00:00`).toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function App() {
   const [activePathway, setActivePathway] = useState<Pathway>("heart");
   const [entries, setEntries] = useState<LogbookCase[]>([]);
@@ -75,7 +55,6 @@ function App() {
     useState(false);
   const [printDocument, setPrintDocument] = useState<string | null>(null);
   const [isPrintFrameReady, setIsPrintFrameReady] = useState(false);
-  const backupInputRef = useRef<HTMLInputElement>(null);
   const printFrameRef = useRef<HTMLIFrameElement>(null);
   const pathwayMenuRef = useRef<HTMLDetailsElement>(null);
 
@@ -546,35 +525,6 @@ function App() {
           </div>
         )}
 
-        {activePage === "overview" && (
-          <section className="pathway-heading" aria-labelledby="pathway-title">
-            <div>
-              <p className="eyebrow">Personal logbook</p>
-              <h2 id="pathway-title">{pathway.label}</h2>
-              <p className="pathway-description">{pathway.description}</p>
-            </div>
-            <label className="mode-switch">
-              <span>
-                <strong>Training progress</strong>
-                <small>
-                  {trainingModes[activePathway]
-                    ? "Targets are visible"
-                    : "Targets are hidden"}
-                </small>
-              </span>
-              <input
-                type="checkbox"
-                role="switch"
-                checked={trainingModes[activePathway]}
-                onChange={(event) =>
-                  void handleTrainingModeChange(event.currentTarget.checked)
-                }
-                aria-label={`Show ${pathway.label} training progress`}
-              />
-            </label>
-          </section>
-        )}
-
         {error && (
           <div className="error-banner" role="alert">
             <div>
@@ -605,122 +555,21 @@ function App() {
         )}
 
         {isReady && activePage === "overview" && (
-          <>
-            <section
-              className={`stats-grid ${trainingModes[activePathway] ? "stats-grid-training" : ""}`}
-              aria-label={`${pathway.label} ${
-                trainingModes[activePathway] ? "training totals" : "review summary"
-              }`}
-            >
-              {trainingModes[activePathway] ? (
-                <>
-                  <button
-                    className="stat-card stat-card-featured stat-card-action"
-                    type="button"
-                    onClick={() => setActivePage("cases")}
-                    aria-label={`View ${pathwayEntries.length} ${pathwayEntries.length === 1 ? "case" : "cases"}`}
-                  >
-                    <span className="stat-label">Cases logged</span>
-                    <strong className="stat-value">
-                      {pathwayEntries.length}
-                      <span className="stat-reference"> / {pathway.totalTarget}</span>
-                    </strong>
-                    <span className="stat-note">Training case reference</span>
-                  </button>
-                  <article className="stat-card">
-                    <span className="stat-label">Directly supervised</span>
-                    <strong className="stat-value">
-                      {supervisedCount}
-                      <span className="stat-reference">
-                        {" "}
-                        / {pathway.supervisedTarget}
-                      </span>
-                    </strong>
-                    <span className="stat-note">Direct supervision reference</span>
-                  </article>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="stat-card stat-card-featured stat-card-action"
-                    type="button"
-                    onClick={() => setActivePage("cases")}
-                    aria-label={`View ${pathwayEntries.length} ${pathwayEntries.length === 1 ? "case" : "cases"}`}
-                  >
-                    <span className="stat-label">Cases logged</span>
-                    <strong className="stat-value">{pathwayEntries.length}</strong>
-                    <span className="stat-note">All recorded scans</span>
-                  </button>
-                  <article className="stat-card">
-                    <span className="stat-label">Abnormal impressions</span>
-                    <strong className="stat-value">{abnormalCount}</strong>
-                    <span className="stat-note">Marked abnormal for review</span>
-                  </article>
-                  <article className="stat-card">
-                    <span className="stat-label">Management changed</span>
-                    <strong className="stat-value">{changedManagementCount}</strong>
-                    <span className="stat-note">Marked as changing management</span>
-                  </article>
-                </>
-              )}
-            </section>
-
-            {trainingModes[activePathway] && (
-              <p className="source-note">
-                Training references are drawn from the supplied{" "}
-                {pathway.source}. They are a personal aid, not an assessment of
-                eligibility or competence.
-              </p>
-            )}
-
-            <section className="backup-panel" aria-labelledby="backup-title">
-              <div className="backup-copy">
-                <p className="eyebrow">Recovery</p>
-                <h2 id="backup-title">Keep a safe copy</h2>
-                <p>
-                  Download a portable backup or merge one into this logbook.
-                  Existing cases and preferences are kept on conflicts.
-                </p>
-              </div>
-              <div className="backup-actions">
-                <button
-                  className="button button-secondary"
-                  onClick={() => void handleBackupExport()}
-                  disabled={isHandlingBackup || !isReady}
-                >
-                  Download backup
-                </button>
-                <button
-                  className="button button-primary"
-                  onClick={() => backupInputRef.current?.click()}
-                  disabled={isHandlingBackup || !isReady}
-                >
-                  Restore backup
-                </button>
-                <input
-                  ref={backupInputRef}
-                  className="sr-only"
-                  type="file"
-                  accept=".json,application/json"
-                  aria-label="Choose a POCUS Logbook backup file"
-                  onChange={(event) => void handleBackupRestore(event)}
-                />
-              </div>
-              <details className="backup-privacy">
-                <summary>Backup privacy</summary>
-                <p>
-                  The JSON backup is readable and not encrypted. Store it
-                  somewhere private; don’t upload it to a shared server until
-                  encrypted backup support is available.
-                </p>
-              </details>
-              {backupStatus && (
-                <p className="backup-status" role="status">
-                  {backupStatus}
-                </p>
-              )}
-            </section>
-          </>
+          <OverviewPage
+            pathway={activePathway}
+            caseCount={pathwayEntries.length}
+            supervisedCount={supervisedCount}
+            abnormalCount={abnormalCount}
+            changedManagementCount={changedManagementCount}
+            trainingMode={trainingModes[activePathway]}
+            isReady={isReady}
+            isHandlingBackup={isHandlingBackup}
+            backupStatus={backupStatus}
+            onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}
+            onShowCases={() => setActivePage("cases")}
+            onExportBackup={() => void handleBackupExport()}
+            onRestoreBackup={(event) => void handleBackupRestore(event)}
+          />
         )}
 
         {isReady && activePage === "form" && draft && (
@@ -755,156 +604,20 @@ function App() {
         )}
 
         {isReady && activePage === "cases" && (
-          <section className="entries-section" aria-label="Cases">
-            {pathwayEntries.length > 0 && (
-              <div className="list-toolbar">
-                <label className="search-field">
-                  <span className="sr-only">Search cases</span>
-                  <span className="search-icon" aria-hidden="true">
-                    ⌕
-                  </span>
-                  <input
-                    type="search"
-                    placeholder="Search diagnosis, notes…"
-                    value={search}
-                    onChange={(event) => setSearch(event.currentTarget.value)}
-                  />
-                </label>
-                <div className="filter-group" aria-label="Filter by supervision">
-                  {(
-                    [
-                      ["all", "All cases"],
-                      ["supervised", "Supervised"],
-                      ["unsupervised", "Unsupervised"],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <button
-                      className={`filter-button ${caseFilter === key ? "is-active" : ""}`}
-                      key={key}
-                      onClick={() => setCaseFilter(key)}
-                      aria-pressed={caseFilter === key}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-              {filteredEntries.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon" aria-hidden="true">
-                    {pathway.icon}
-                  </div>
-                  <h3>
-                    {pathwayEntries.length === 0
-                      ? "Your first case starts here"
-                      : "No cases match that search"}
-                  </h3>
-                  <p>
-                    {pathwayEntries.length === 0
-                      ? "Keep a clear, de-identified record of your scans, whatever stage of practice you’re in."
-                      : "Try another search or change the supervision filter."}
-                  </p>
-                  {pathwayEntries.length === 0 && (
-                    <button
-                      className="button button-primary"
-                      onClick={startNewCase}
-                    >
-                      Add your first case
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="case-list">
-                  {filteredEntries.map((entry) => (
-                    <article className="case-card" key={entry.id}>
-                      <div className="case-date">
-                        <span>{formatDate(entry.date)}</span>
-                        {entry.caseType === "healthy_volunteer" && (
-                          <span className="case-kind">Healthy volunteer</span>
-                        )}
-                      </div>
-                      <div className="case-main">
-                        <h3>{entry.diagnosis || "Scan recorded"}</h3>
-                        <p>{caseSummary(entry)}</p>
-                        {entry.summary && (
-                          <p className="case-detail">{entry.summary}</p>
-                        )}
-                      </div>
-                      <div className="case-meta">
-                        <span
-                          className={`supervision-tag ${entry.supervised ? "is-supervised" : ""}`}
-                        >
-                          <span aria-hidden="true">
-                            {entry.supervised ? "●" : "○"}
-                          </span>
-                          {entry.supervised ? "Supervised" : "Independent"}
-                        </span>
-                        {entry.supervised && entry.supervisorName && (
-                          <span className="supervisor-name">
-                            with {entry.supervisorName}
-                          </span>
-                        )}
-                      </div>
-                      <div className="case-tags" aria-label="Case review markers">
-                        {entry.impressionCategory !== "not_recorded" && (
-                          <span
-                            className={`review-tag ${
-                              entry.impressionCategory === "abnormal"
-                                ? "review-tag-highlight"
-                                : ""
-                            }`}
-                          >
-                            {entry.impressionCategory}
-                          </span>
-                        )}
-                        {entry.managementImpact === "changed" && (
-                          <span className="review-tag review-tag-highlight">
-                            Changed management
-                          </span>
-                        )}
-                      </div>
-                      <div className="case-actions">
-                        <button
-                          className="text-button"
-                          onClick={() => startReviewing(entry)}
-                          aria-label={`Review case from ${formatDate(entry.date)}`}
-                        >
-                          Review
-                        </button>
-                        <button
-                          className="text-button"
-                          onClick={() => handlePrintCase(entry)}
-                          aria-label={`Print or save case from ${formatDate(entry.date)} as PDF`}
-                        >
-                          Print / PDF
-                        </button>
-                        <button
-                          className="text-button"
-                          onClick={() => startEditing(entry)}
-                          aria-label={`Edit case from ${formatDate(entry.date)}`}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="text-button text-button-danger"
-                          onClick={() => void handleDelete(entry)}
-                          aria-label={`Delete case from ${formatDate(entry.date)}`}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-              <p className="privacy-note">
-                Don’t enter patient names, dates of birth, record numbers, or
-                other identifying details. This is a personal training and
-                reflection log, not a clinical record.
-              </p>
-          </section>
+          <CaseList
+            entries={filteredEntries}
+            pathwayEntries={pathwayEntries}
+            pathway={activePathway}
+            search={search}
+            caseFilter={caseFilter}
+            onSearchChange={setSearch}
+            onFilterChange={setCaseFilter}
+            onAddFirstCase={startNewCase}
+            onReview={startReviewing}
+            onPrint={handlePrintCase}
+            onEdit={startEditing}
+            onDelete={(entry) => void handleDelete(entry)}
+          />
         )}
       </section>
 

@@ -3,22 +3,22 @@ import {
   LUNG_FINDINGS,
   LUNG_REGIONS,
   PATHWAYS,
-  type Assessment,
   type LogbookCase,
 } from "../domain/logbook";
+import {
+  ASSESSMENT_LABELS,
+  formatCaseDate,
+  formatImageQuality,
+  formatImpression,
+  formatManagementImpact,
+  formatSupervision,
+} from "../domain/case-display";
 
 interface CaseReviewProps {
   entry: LogbookCase;
   onEdit: () => void;
   onClose: () => void;
 }
-
-const ASSESSMENT_LABELS: Record<Assessment, string> = {
-  not_assessed: "Not assessed",
-  yes: "Yes",
-  no: "No",
-  unable: "Unable to assess",
-};
 
 function ReviewField({ label, value }: { label: string; value: string }) {
   return (
@@ -32,26 +32,10 @@ function ReviewField({ label, value }: { label: string; value: string }) {
 function CaseReview({ entry, onEdit, onClose }: CaseReviewProps) {
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
-  const supervision = entry.supervised
-    ? `Directly supervised${entry.supervisorName.trim() ? ` · ${entry.supervisorName.trim()}` : ""}`
-    : "Not directly supervised";
-  const impression =
-    entry.impressionCategory === "not_recorded"
-      ? "Not recorded"
-      : entry.impressionCategory === "abnormal"
-        ? "Abnormal / pathology"
-        : entry.impressionCategory[0].toUpperCase() +
-          entry.impressionCategory.slice(1);
-  const management =
-    entry.managementImpact === "not_recorded"
-      ? "Not recorded"
-      : entry.managementImpact === "changed"
-        ? "Changed"
-        : "Unchanged";
-  const imageQuality =
-    entry.imageQuality === "not_recorded"
-      ? "Not recorded"
-      : entry.imageQuality[0].toUpperCase() + entry.imageQuality.slice(1);
+  const supervision = formatSupervision(entry);
+  const impression = formatImpression(entry.impressionCategory);
+  const management = formatManagementImpact(entry.managementImpact);
+  const imageQuality = formatImageQuality(entry.imageQuality);
 
   return (
     <section className="case-review" aria-labelledby="review-title">
@@ -60,7 +44,7 @@ function CaseReview({ entry, onEdit, onClose }: CaseReviewProps) {
           <p className="eyebrow">{PATHWAYS[entry.pathway].label} · Case review</p>
           <h2 id="review-title">{entry.diagnosis || "Scan recorded"}</h2>
           <p className="case-review-date">
-            {new Date(`${entry.date}T12:00:00`).toLocaleDateString("en-GB", {
+            {formatCaseDate(entry.date, "en-GB", {
               day: "numeric",
               month: "long",
               year: "numeric",

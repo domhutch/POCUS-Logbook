@@ -23,6 +23,21 @@ interface LogbookDatabase extends DBSchema {
   };
 }
 
+function migrateCaseRecord(record: LogbookCase, oldVersion: number): LogbookCase {
+  const migrated = { ...record } as LogbookCase & {
+    impressionCategory?: LogbookCase["impressionCategory"];
+    managementImpact?: LogbookCase["managementImpact"];
+    curriculumPlus?: boolean;
+  };
+
+  if (oldVersion < 2) {
+    migrated.impressionCategory ??= "not_recorded";
+    migrated.managementImpact ??= "not_recorded";
+  }
+  delete migrated.curriculumPlus;
+  return migrated;
+}
+
 const database = openDB<LogbookDatabase>("pocus-logbook", 3, {
   blocked() {
     window.dispatchEvent(new Event("pocus-logbook-upgrade-blocked"));
@@ -34,19 +49,12 @@ const database = openDB<LogbookDatabase>("pocus-logbook", 3, {
     }
     if (oldVersion < 3) {
       const store = transaction.objectStore("cases");
-      const migration = (cursor: Awaited<ReturnType<typeof store.openCursor>>) => {
+      const migrateNextCase = (cursor: Awaited<ReturnType<typeof store.openCursor>>) => {
         if (!cursor) return;
-        const migrated = { ...cursor.value };
-        if (oldVersion < 2) {
-          migrated.impressionCategory ??= "not_recorded";
-          migrated.managementImpact ??= "not_recorded";
-        }
-        delete (migrated as LogbookCase & { curriculumPlus?: boolean })
-          .curriculumPlus;
-        cursor.update(migrated);
-        void cursor.continue().then(migration);
+        cursor.update(migrateCaseRecord(cursor.value, oldVersion));
+        void cursor.continue().then(migrateNextCase);
       };
-      void store.openCursor().then(migration);
+      void store.openCursor().then(migrateNextCase);
     }
   },
   blocking() {

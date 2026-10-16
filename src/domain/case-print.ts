@@ -6,6 +6,12 @@ import {
   type Assessment,
   type LogbookCase,
 } from "./logbook";
+import {
+  formatImageQuality,
+  formatImpression,
+  formatManagementImpact,
+  formatSupervision,
+} from "./case-display";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => {
@@ -22,12 +28,6 @@ function escapeHtml(value: string) {
 
 function displayValue(value: string) {
   return value.trim() ? escapeHtml(value.trim()) : '<span class="muted">Not recorded</span>';
-}
-
-function displayLabel(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (character) =>
-    character.toUpperCase(),
-  );
 }
 
 function formatUkDate(date: string) {
@@ -66,7 +66,7 @@ function lungDetails(entry: Extract<LogbookCase, { pathway: "lung" }>) {
     return `<tr><th scope="row"><span class="checkbox ${attempted ? "checked" : ""}"></span>${escapeHtml(region)}</th>${findings}</tr>`;
   }).join("");
 
-  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : displayLabel(entry.imageQuality))}</div><h2>Regional findings</h2><table class="report-table lung-table"><thead><tr><th scope="col">Probe position</th>${LUNG_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`;
+  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Regional findings</h2><table class="report-table lung-table"><thead><tr><th scope="col">Probe position</th>${LUNG_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`;
 }
 
 function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
@@ -91,28 +91,19 @@ function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
       .join("")}</tr>`;
   }).join("");
 
-  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : displayLabel(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
+  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
 }
 
 export function createCasePrintDocument(entry: LogbookCase) {
-  const supervision = entry.supervised
-    ? `Directly supervised${entry.supervisorName.trim() ? ` · ${entry.supervisorName.trim()}` : ""}`
-    : "Not directly supervised";
+  const supervision = formatSupervision(entry);
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
-  const impression =
-    entry.impressionCategory === "not_recorded"
-      ? ""
-      : entry.impressionCategory === "abnormal"
-        ? "Abnormal / pathology"
-        : entry.impressionCategory[0].toUpperCase() +
-          entry.impressionCategory.slice(1);
-  const management =
-    entry.managementImpact === "not_recorded"
-      ? ""
-      : entry.managementImpact === "changed"
-        ? "Changed"
-        : "Unchanged";
+  const impression = entry.impressionCategory === "not_recorded"
+    ? ""
+    : formatImpression(entry.impressionCategory);
+  const management = entry.managementImpact === "not_recorded"
+    ? ""
+    : formatManagementImpact(entry.managementImpact);
   const details =
     entry.pathway === "lung" ? lungDetails(entry) : heartDetails(entry);
 
