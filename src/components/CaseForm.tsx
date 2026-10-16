@@ -69,7 +69,15 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
       ...draft.findings,
       [region]: { ...draft.findings[region], [key]: value },
     };
-    onChange({ ...draft, findings: nextFindings });
+    const hasRecordedFinding = Object.values(nextFindings[region]).some(
+      (assessment) => assessment !== "not_assessed",
+    );
+    const nextRegions = hasRecordedFinding
+      ? draft.regions.includes(region)
+        ? draft.regions
+        : [...draft.regions, region]
+      : draft.regions.filter((recordedRegion) => recordedRegion !== region);
+    onChange({ ...draft, findings: nextFindings, regions: nextRegions });
   }
 
   function updateHeartFinding(key: HeartFinding, value: Assessment) {
@@ -248,7 +256,6 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
             <LungDetails
               draft={draft}
               onUpdateRegion={updateRegion}
-              onUpdateRegions={(regions) => updateField("regions", regions)}
               onUpdateVentilation={(value) =>
                 updateField("ventilatorySupport", value)
               }
@@ -326,7 +333,6 @@ interface LungDetailsProps {
     key: LungFinding,
     value: Assessment,
   ) => void;
-  onUpdateRegions: (regions: LungRegion[]) => void;
   onUpdateVentilation: (value: string) => void;
   onUpdateQuality: (value: ImageQuality) => void;
 }
@@ -334,7 +340,6 @@ interface LungDetailsProps {
 function LungDetails({
   draft,
   onUpdateRegion,
-  onUpdateRegions,
   onUpdateVentilation,
   onUpdateQuality,
 }: LungDetailsProps) {
@@ -367,57 +372,69 @@ function LungDetails({
           </select>
         </label>
       </div>
-      <fieldset className="checklist-fieldset">
-        <legend>Lung regions attempted</legend>
-        <div className="region-checklist">
-          {LUNG_REGIONS.map((region) => (
-            <label className="check-option" key={region}>
-              <input
-                type="checkbox"
-                checked={draft.regions.includes(region)}
-                onChange={() =>
-                  onUpdateRegions(updateArrayItem(draft.regions, region))
-                }
-              />
-              <span>{region}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset className="checklist-fieldset">
-        <legend>Reported findings by region</legend>
-        <div className="region-findings">
-          {LUNG_REGIONS.map((region) => (
-            <div className="region-finding-row" key={region}>
-              <strong>{region}</strong>
-              <div>
-                {LUNG_FINDINGS.map(([key, label]) => (
-                  <label className="finding-control" key={key}>
-                    <span>{label}</span>
-                    <select
-                      value={draft.findings[region][key]}
-                      onChange={(event) =>
-                        onUpdateRegion(
-                          region,
-                          key,
-                          event.currentTarget.value as Assessment,
-                        )
-                      }
-                      aria-label={`${region}: ${label}`}
-                    >
-                      {ASSESSMENT_OPTIONS.map(([value, optionLabel]) => (
-                        <option key={value} value={value}>
-                          {optionLabel}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ))}
-              </div>
+      <section className="lung-finding-sections" aria-label="Lung findings by region">
+        {LUNG_FINDINGS.map(([key, label]) => (
+          <section className="lung-finding-section" key={key}>
+            <div className="lung-finding-heading">
+              <h3>{label}</h3>
+              <p id={`lung-${key}-help`}>
+                Choose Yes or No, or leave Not assessed selected.
+              </p>
             </div>
-          ))}
-        </div>
-      </fieldset>
+            <div className="lung-region-responses">
+              {LUNG_REGIONS.map((region) => {
+                const selected = draft.findings[region][key];
+                return (
+                  <div
+                    className="lung-region-response"
+                    key={region}
+                  >
+                    <strong className="lung-region-label" id={`lung-${key}-${region}`}>
+                      {region}
+                    </strong>
+                    <div
+                      className="lung-assessment-options"
+                      role="group"
+                      aria-labelledby={`lung-${key}-${region}`}
+                      aria-describedby={`lung-${key}-help`}
+                    >
+                      {(
+                        [
+                          ["yes", "Yes"],
+                          ["no", "No"],
+                        ] as const
+                      ).map(([value, optionLabel]) => (
+                        <label className="lung-assessment-option" key={value}>
+                          <input
+                            type="radio"
+                            name={`lung-${key}-${region}`}
+                            value={value}
+                            checked={selected === value}
+                            onChange={() => onUpdateRegion(region, key, value)}
+                          />
+                          <span>{optionLabel}</span>
+                        </label>
+                      ))}
+                      <label className="lung-not-assessed">
+                        <input
+                          type="checkbox"
+                          checked={selected === "not_assessed" || selected === "unable"}
+                          onChange={(event) => {
+                            if (event.currentTarget.checked) {
+                              onUpdateRegion(region, key, "not_assessed");
+                            }
+                          }}
+                        />
+                        <span>Not assessed</span>
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </section>
     </div>
   );
 }

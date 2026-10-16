@@ -73,7 +73,10 @@ function App() {
   const [isHandlingBackup, setIsHandlingBackup] = useState(false);
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
+  const [printDocument, setPrintDocument] = useState<string | null>(null);
+  const [isPrintFrameReady, setIsPrintFrameReady] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
+  const printFrameRef = useRef<HTMLIFrameElement>(null);
   const pathwayMenuRef = useRef<HTMLDetailsElement>(null);
 
   async function refreshEntries() {
@@ -271,17 +274,17 @@ function App() {
 
   function handlePrintCase(entry: LogbookCase) {
     setError(null);
+    const document = createCasePrintDocument(entry);
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      setError(
-        "The print window was blocked. Allow pop-ups for this app, then try again.",
-      );
+      setPrintDocument(document);
+      setIsPrintFrameReady(false);
       return;
     }
 
     try {
       printWindow.document.open();
-      printWindow.document.write(createCasePrintDocument(entry));
+      printWindow.document.write(document);
       printWindow.document.close();
       window.setTimeout(() => {
         printWindow.focus();
@@ -293,6 +296,29 @@ function App() {
         cause instanceof Error
           ? cause.message
           : "The printable case sheet could not be opened.",
+      );
+    }
+  }
+
+  function closePrintPreview() {
+    setPrintDocument(null);
+    setIsPrintFrameReady(false);
+  }
+
+  function printFallbackDocument() {
+    const printWindow = printFrameRef.current?.contentWindow;
+    if (!printWindow) {
+      setError("The print preview is not ready yet. Wait a moment and try again.");
+      return;
+    }
+    try {
+      printWindow.focus();
+      printWindow.print();
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "The case print dialog could not be opened.",
       );
     }
   }
@@ -876,6 +902,43 @@ function App() {
           </section>
         )}
       </section>
+
+      {printDocument && (
+        <section
+          className="print-preview-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="print-preview-title"
+        >
+          <header className="print-preview-toolbar">
+            <h2 id="print-preview-title">Case print preview</h2>
+            <div>
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={closePrintPreview}
+              >
+                Back to cases
+              </button>
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={printFallbackDocument}
+                disabled={!isPrintFrameReady}
+              >
+                Print / save PDF
+              </button>
+            </div>
+          </header>
+          <iframe
+            ref={printFrameRef}
+            className="print-preview-frame"
+            title="Printable case sheet"
+            srcDoc={printDocument}
+            onLoad={() => setIsPrintFrameReady(true)}
+          />
+        </section>
+      )}
 
       <footer className="app-footer">
         <span>Private by default · Stored on this device</span>

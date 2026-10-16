@@ -10,12 +10,21 @@ describe("printable case sheets", () => {
     draft.date = "2026-10-01";
     draft.regions = ["Right upper anterior"];
     draft.findings["Right upper anterior"].lungSliding = "yes";
+    draft.regions.push("Left lower anterior");
+    draft.findings["Left lower anterior"].pleuralEffusion = "unable";
 
     const document = createCasePrintDocument(addTimestamps(draft));
 
     expect(document).toContain("FUSIC Lung");
     expect(document).toContain(">01/10/2026</span>");
+    expect(document).toContain("@page { size: A4 portrait; margin: 8mm; }");
+    expect(document).toContain("const printableHeight = 275 * 96 / 25.4");
+    expect(document).toContain('class="report-table lung-table"');
+    expect(document).toContain('<th scope="col">Lung sliding</th>');
     expect(document).toContain("Right upper anterior");
+    expect(document).toContain("Left lower anterior");
+    expect(document).toContain("Pleural effusion");
+    expect(document).toContain("U/A");
     expect(document).toContain("Lung sliding");
     expect(document).toContain("&lt;script&gt;");
     expect(document).not.toContain("<script>alert");
@@ -30,11 +39,12 @@ describe("printable case sheets", () => {
 
     const document = createCasePrintDocument(addTimestamps(draft));
 
-    expect(document).toContain("Focused cardiac scan record");
+    expect(document).toContain("Assessment findings");
     expect(document).toContain("PLAX");
     expect(document).toContain("Heart rate");
     expect(document).toContain("82");
+    expect(document).toContain('class="report-table heart-table"');
+    expect(document).toContain('<strong class="selected">No</strong>');
     expect(document).toContain("LV dilated");
-    expect(document).toContain("No");
   });
 });

@@ -904,6 +904,47 @@ summary:focus-visible {
   gap: 0.45rem;
 }
 
+.print-preview-overlay {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: var(--canvas);
+}
+
+.print-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.print-preview-toolbar h2 {
+  margin: 0;
+  color: #243a35;
+  font-size: 1.1rem;
+}
+
+.print-preview-toolbar > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.print-preview-frame {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
 .case-review {
   display: grid;
   gap: 1rem;
@@ -1415,7 +1456,6 @@ summary:focus-visible {
   font-weight: 700;
 }
 
-.region-checklist,
 .heart-view-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1444,29 +1484,150 @@ summary:focus-visible {
   accent-color: var(--teal);
 }
 
-.region-findings {
+.lung-finding-sections {
   display: grid;
-  gap: 0.65rem;
-  padding-top: 0.7rem;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.region-finding-row {
-  display: grid;
-  grid-template-columns: 155px minmax(0, 1fr);
-  gap: 0.7rem;
-  align-items: start;
+.lung-finding-section {
+  min-width: 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid #dfe8e1;
 }
 
-.region-finding-row > strong {
-  padding-top: 0.65rem;
+.lung-finding-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.lung-finding-heading h3 {
+  margin: 0;
+  color: #354840;
+  font-size: 0.88rem;
+}
+
+.lung-finding-heading p {
+  margin: 0;
+  color: #758179;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.lung-region-responses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.6rem;
+}
+
+.lung-region-response {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #e7ece7;
+  border-radius: 8px;
+  background: #fcfdfb;
+}
+
+.lung-region-label {
+  min-width: 0;
   color: #52635a;
   font-size: 0.7rem;
+  line-height: 1.3;
 }
 
-.region-finding-row > div {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.55rem;
+.lung-assessment-options {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.lung-assessment-option {
+  position: relative;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.lung-assessment-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+}
+
+.lung-assessment-option > span {
+  display: inline-flex;
+  min-width: 40px;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #dce4de;
+  border-radius: 6px;
+  background: white;
+  color: #52635a;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.lung-not-assessed {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #dce4de;
+  border-radius: 6px;
+  background: white;
+  color: #52635a;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lung-not-assessed input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--teal);
+}
+
+.lung-not-assessed:has(input:checked) {
+  border-color: var(--teal);
+  background: var(--teal-wash);
+  color: var(--teal-dark);
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+
+.lung-not-assessed:has(input:focus-visible) {
+  outline: 3px solid #7eb6a0;
+  outline-offset: 2px;
+}
+
+.lung-assessment-option input:checked + span {
+  border-color: var(--teal);
+  background: var(--teal-wash);
+  color: var(--teal-dark);
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+
+.lung-assessment-option input:focus-visible + span {
+  outline: 3px solid #7eb6a0;
+  outline-offset: 2px;
 }
 
 .finding-control {
@@ -1610,6 +1771,24 @@ summary:focus-visible {
   .case-review-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .print-preview-overlay {
+    padding: 0.6rem;
+    padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .print-preview-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .print-preview-toolbar > div {
+    width: 100%;
+  }
+
+  .print-preview-toolbar .button {
+    flex: 1;
   }
 
   .case-review-actions {
@@ -1876,26 +2055,42 @@ summary:focus-visible {
     gap: 0.75rem;
   }
 
-  .region-checklist,
   .heart-view-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.15rem 0.55rem;
   }
 
-  .region-finding-row {
+  .lung-finding-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .lung-region-responses {
     grid-template-columns: 1fr;
-    gap: 0.35rem;
-    padding: 0.5rem 0 0.7rem;
-    border-bottom: 1px solid #eef1ed;
   }
 
-  .region-finding-row > strong {
-    padding-top: 0;
+  .lung-region-response {
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem;
   }
 
-  .region-finding-row > div {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
+  .lung-assessment-options {
+    gap: 0.2rem;
+  }
+
+  .lung-assessment-option > span {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.25rem;
+    font-size: 0.68rem;
+  }
+
+  .lung-not-assessed {
+    min-height: 36px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.68rem;
   }
 
   .heart-findings-list {

@@ -102,12 +102,13 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 
 ### Bugs and usability issues
 
-- [ ] **P1 · Print/PDF layout:** make an individual case printout fit on one page and verify printing or saving as PDF works when the PWA is installed to the Home Screen.
+- [x] **P1 · Print/PDF layout:** use a compact, FUSIC-style A4 report layout and automatically scale individual case sheets to the printable page height.
+- [ ] **P1 · Installed-PWA printing:** verify print/save-to-PDF on an iOS Home Screen install. If the browser blocks a new print window, the app now offers an in-app print-preview fallback.
 - [x] **P1 · Case review:** add a read-only case detail view from the Cases screen, covering pathway-specific details, findings, supervision, and notes.
 - [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
 - [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
-- [ ] **P2 · Lung form:** group location choices under each pathology, with a selectable location for each pathology; make the location label/text clickable as well as its checkbox. Do not present every location as an undifferentiated set of checkboxes for each lung field.
+- [ ] **IN PROGRESS · P2 · Lung form:** group location responses under each pathology, with Yes / No / U/A choices per region and clear region labels. Keep the existing region-keyed case data so case review and print/PDF output remain organised by region; test entry and output together.
 - [x] **P2 · Overview navigation:** make the case-count card open the Cases page when selected.
 - [ ] **P2 · Supervisor management:** let users add and manage their own supervisors, then select a supervisor from a dropdown in the case forms.
 - [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.
