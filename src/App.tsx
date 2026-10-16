@@ -445,7 +445,7 @@ function App() {
           </button>
         ) : (
           <button
-            className="button button-primary topbar-action"
+            className="button button-primary topbar-action topbar-action-new-case"
             onClick={startNewCase}
             disabled={!isReady}
           >
@@ -902,6 +902,17 @@ function App() {
           </section>
         )}
       </section>
+
+      {(activePage === "overview" || activePage === "cases") && (
+        <button
+          className="button button-primary topbar-action floating-new-case"
+          type="button"
+          onClick={startNewCase}
+          disabled={!isReady}
+        >
+          <span aria-hidden="true">+</span> New case
+        </button>
+      )}
 
       {printDocument && (
         <section

@@ -135,6 +135,10 @@ button:disabled {
   line-height: 1;
 }
 
+.floating-new-case {
+  display: none;
+}
+
 .page-content {
   width: min(100% - 3rem, 1060px);
   margin: 0 auto;
@@ -1705,6 +1709,18 @@ summary:focus-visible {
   .topbar {
     height: calc(64px + env(safe-area-inset-top, 0px));
     padding: env(safe-area-inset-top, 0px) 1rem 0;
+  }
+
+  .topbar-action-new-case {
+    display: none;
+  }
+
+  .floating-new-case {
+    position: fixed;
+    z-index: 5;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    display: inline-flex;
   }
 
   input:not([type="checkbox"]):not([type="radio"]),

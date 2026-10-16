@@ -108,12 +108,12 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
 - [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
-- [ ] **IN PROGRESS · P2 · Lung form:** group location responses under each pathology, with Yes / No / U/A choices per region and clear region labels. Keep the existing region-keyed case data so case review and print/PDF output remain organised by region; test entry and output together.
+- [x] **P2 · Lung form:** organise entry by finding, with Yes / No choices and a single-line Not assessed checkbox for each region. Keep region-keyed case data and show case review and print/PDF results by region. Existing U/A values remain supported.
 - [x] **P2 · Overview navigation:** make the case-count card open the Cases page when selected.
 - [ ] **P2 · Supervisor management:** let users add and manage their own supervisors, then select a supervisor from a dropdown in the case forms.
 - [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.
 - [ ] **P2 · Responsive text and controls:** provide a usable way to scale text up or down on mobile, and ensure form inputs and buttons resize and reflow without clipping or breaking the layout.
-- [ ] **P3 · Metrics period:** allow users to switch between a rolling 12-month view and a calendar-year view; weekly/daily breakdowns are not requested.
+- [ ] **P3 · Metrics period:** the current activity summary covers six months. Allow users to switch between a rolling 12-month view and a calendar-year view; weekly/daily breakdowns are not requested.
 - [x] **P3 · Pathway ordering:** put FUSIC Heart first in the pathway selector and make it the initial pathway.
 
 ### Nice-to-have features
@@ -124,7 +124,8 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 ### Reassessment notes
 
 - Address print/PDF correctness, date formatting, mobile safe areas, and access to saved scan images as core reliability and data-review concerns.
-- Review responsive typography, form interactions, lung pathology/location entry, supervisor selection, overview navigation, and pathway ordering together as mobile case-entry and navigation improvements.
+- Continue mobile usability work on responsive typography and supervisor selection. Lung form reorganisation and focus-zoom prevention are implemented.
+- Verify print/save and safe-area behavior on an iOS Home Screen install.
 - Reconcile the requested metrics periods with the current metrics behavior and tests before changing the range controls.
 - Keep certificates and exam scans optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
 - The requests for assessment requirements overlap the versioned pathway catalogue and curriculum-source verification work in sections 1 and 3; update those milestones rather than maintaining a second source of truth.
