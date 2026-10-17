@@ -2,15 +2,15 @@
 
 ## Product direction
 
-Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The primary product is a mobile-friendly installable PWA. Packaging the same codebase for iOS and Android with Capacitor remains a future option, rather than a requirement for the initial product direction.
+Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The primary product is a mobile-friendly installable PWA. Packaging the same codebase as iOS and Android apps is a future stretch goal, not part of the current plan.
 
-The product stores cases on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed encrypted Google Drive backup is available when a Google OAuth client ID is configured at build time. Continuous cross-device synchronisation remains future work; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
+The product stores cases on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed encrypted Google Drive backup is available when a Google OAuth client ID is configured at build time. Provider sync and native app packaging are future stretch goals; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
 
 ## Product principles
 
 - **Private by default:** avoid patient-identifiable information; keep records on-device by default and make any cloud connection optional and user-authorized.
 - **Useful offline:** recording and reviewing cases should not require a network connection.
-- **One source of truth:** use a shared data model and interface across PWA, iOS, and Android.
+- **One source of truth:** keep the data model and interface in the PWA codebase so future native wrappers can reuse them.
 - **Pathway-aware, not one-size-fits-all:** totals, supervision minimums, case mix, and other rules differ by modality and curriculum version.
 - **Training mode is not certification:** show progress as a personal aid, never as an accreditation decision.
 - **Certification does not erase history:** hiding training targets must leave cases and personal statistics intact.
@@ -24,8 +24,8 @@ The product stores cases on the device and works offline. There is no POCUS Logb
 These are a practical starting order based on the open checklist below, not new commitments:
 
 1. Cover local persistence failure cases and ensure failed saves are never reported as successful.
-2. Add automated coverage for CSV and PDF export formats, including combined case reports.
-3. Verify printing, safe-area layout, and backup/export behavior in the PWA; repeat these checks if native packaging is pursued.
+2. Complete automated coverage for persistence failures and PDF export formats, including combined case reports.
+3. Verify printing, safe-area layout, and backup/export behavior in the PWA.
 
 Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
 
@@ -33,17 +33,17 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 - [x] Create the initial roadmap.
 - [x] Establish a TypeScript, React, and Vite app shell.
-- [x] Add PWA offline configuration and a Capacitor configuration that targets bundled build output.
+- [x] Add PWA offline configuration.
 - [x] Install dependencies and verify web and production builds when Node.js/npm are available.
 - [x] Decide which pathways are in the first usable release: FUSIC Lung and FUSIC Heart.
 - [x] Decide whether training/post-certification mode is per pathway or a single app-wide setting: per pathway.
 - [x] Review the supplied 2025 Lung v10 and Heart v13 training and assessment packs. Training-pack pages provide the 30/10 Lung and 50/10 Heart logbook references; assessment packs provide compatible report fields, rather than separate competing scan totals.
 
-**Exit criteria:** the scaffold builds; its production output can be packaged locally; scope and source versions for the first pathways are agreed. Met for the initial web scaffold.
+**Exit criteria:** the PWA scaffold builds; scope and source versions for the first pathways are agreed. Met for the initial web scaffold.
 
 ### 1. Curriculum and data model
 
-- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue covers the seven pathways below; the app currently supports Heart, Lung, Abdomen, DVT, HD, and Vascular.
+- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue documents seven pathways; the app currently supports Heart, Lung, Abdomen, DVT, HD, and Vascular. Focused TOE is documented for future consideration and is not planned for the current release.
 - [x] Record the source document and version for the initial total and directly supervised references.
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
@@ -61,6 +61,8 @@ Other open requests remain listed in their relevant sections below. Update this 
 - [x] Show local storage errors; do not report a case as saved when persistence fails.
 
 **Exit criteria:** a user can record, find, inspect, and edit cases offline, with counts matching the stored records.
+
+- [ ] Add automated coverage for persistence failures and confirm failed saves are never reported as successful.
 
 ### 3. Progress, mode, and review
 
@@ -86,6 +88,8 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 **Exit criteria:** exported records can be inspected, and encrypted or legacy backups can be restored into a clean installation without data loss. PWA backup/export controls are in Settings; native backup and CSV files use the system share sheet when packaged. Native device behavior still needs release verification.
 
+- [ ] Complete automated coverage for CSV and PDF export formats, including combined case reports. CSV and individual case/logbook print formats have tests; persistence-failure tests are tracked in section 2.
+
 ### Stretch goals
 
 These are optional follow-ons after reliable local backup and restore:
@@ -102,21 +106,20 @@ These are optional follow-ons after reliable local backup and restore:
 4. [x] **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
 5. **Printable review reports:** produce a user-selected, de-identified PDF summary.
 6. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
-7. **Additional pathways:** Vascular logging now covers the 2026 reporting fields and quotas; Focused TOE remains to be added. Abdomen was added using FUSIC v11 (2025) and its matching 2025 v11 Assessment Pack. DVT was added using FUSIC DVT v1 (2026) and its Assessment Pack. HD logging covers the ten clinical questions and revised 2026 core measurements.
+7. **Additional pathways:** the current PWA supports Heart, Lung, Abdomen, DVT, HD, and Vascular. Abdomen was added using FUSIC v11 (2025) and its matching 2025 v11 Assessment Pack. DVT was added using FUSIC DVT v1 (2026) and its Assessment Pack. HD logging covers the ten clinical questions and revised 2026 core measurements. Focused TOE is a separate future stretch goal below.
 8. **Advanced echo findings:** consider recording findings beyond the HD curriculum only if there is a clear personal-review use case. Map any overlap with HD first so curriculum fields are not duplicated.
+9. **Focused TOE support:** consider adding the pathway after the current release; verify the then-current source pack and requirements before planning implementation.
+10. **Native app packaging:** if pursued, plan and build iOS and Android wrappers around the local web assets; verify storage, upgrades, offline use, backup/restore, printing, and exports on devices. Native projects are not part of the current release plan.
 
-### 5. PWA release readiness and optional native packaging
+### 5. PWA release readiness
 
 - [x] Add a GitHub Pages build/deploy workflow and document site-origin storage, local backup/restore, and test-data privacy.
 - [ ] Verify PWA install, upgrades, offline use, storage, backup/restore, printing, and exports on supported browsers and mobile devices.
-- [ ] If native packaging is pursued, generate and check in the iOS and Android Capacitor platform projects when platform tooling is available.
-- [ ] If native packaging is pursued, verify the app loads from packaged assets with no hosted-app URL configured, and test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
 - [x] Add automated tests for JSON backup validation, v1 migration, and restore merge behavior.
 - [x] Add catalogue integrity tests for source links, route limits, Vascular quotas, the fTOE alternate route, and the FUSIC HD effective date.
-- [ ] Add automated tests for persistence failures and CSV/PDF export formats; progress boundary tests are tracked in section 3.
-- [ ] Document build, release, data-backup, and privacy expectations.
+- [x] Document build, release, data-backup, and privacy expectations in [`README.md`](./README.md).
 
-**Exit criteria:** the PWA installs, works offline, and preserves user data across supported upgrades. If native packaging is pursued, native builds also meet those criteria using bundled assets.
+**Exit criteria:** the PWA installs, works offline, and preserves user data across supported upgrades. Native packaging, if pursued later, has separate release checks in the stretch goals.
 
 ## User feedback backlog
 
@@ -127,7 +130,6 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - [x] **P1 · Print/PDF layout:** use a compact, FUSIC-style A4 report layout and automatically scale individual case sheets to the printable page height.
 - [ ] **P1 · Installed-PWA printing:** verify the in-app PDF preview, print dialog, direct download, and close-to-logbook flow on an iOS Home Screen install. The app now keeps the preview in-app instead of opening a separate window.
 - [x] **P1 · Case review:** add a read-only case detail view from the Cases screen, covering pathway-specific details, findings, supervision, and notes.
-- [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
 - [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
 - [x] **P1 · PDF preview and batch export:** fit case and logbook previews to screen width, retain print margins on A4, and download all saved case reports as a single PDF with one page per case. Disable the case-report export when the pathway has no cases; the blank logbook summary remains printable.
@@ -151,16 +153,17 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 
 ### Nice-to-have features
 
+- [ ] **Scan image review:** consider viewing images attached to cases only after deciding whether these are clinical images and reviewing the product's explicit exclusion of clinical-image storage, plus local storage, backup, export, and privacy implications. This is optional future work, not part of the current plan.
 - [ ] **Assessment-pack documents:** allow users to store certificates and examination scans for their assessment pack. Decide supported file types, on-device storage limits, backup/export behavior, and privacy protections before implementation.
 - [ ] **Assessment requirements guidance:** add links and breakdowns of assessment requirements, and keep the guidance aligned with current training packs and their versions.
 
 ### Reassessment notes
 
-- Address print/PDF correctness, date formatting, mobile safe areas, and access to saved scan images as core reliability and data-review concerns.
+- Address print/PDF correctness, date formatting, and mobile safe areas as core reliability concerns. Image review remains a nice-to-have pending a privacy and scope decision.
 - Continue mobile usability work on mobile use of the finding-first lung assessment form. Keep the lung form grouped by finding; improve its mobile usability without switching to region-first grouping. Focus-zoom prevention, text-size controls, and supervisor management are implemented.
 - Verify print/save and safe-area behavior on an iOS Home Screen install.
 - Metrics activity now supports rolling 12-month and calendar-year-to-date views.
-- Keep certificates and exam scans optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
+- Keep certificates, exam scans, and any scan-image feature optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
 - The requests for assessment requirements overlap the versioned pathway catalogue and curriculum-source verification work in sections 1 and 3; update those milestones rather than maintaining a second source of truth.
 
 ## Verified curriculum catalogue (16 October 2026)
@@ -183,8 +186,8 @@ Heart, Lung, DVT, Abdomen, Vascular, and HD also limit healthy-volunteer studies
 
 - **UI and build:** React, TypeScript, Vite.
 - **PWA:** Vite PWA plugin with a generated service worker and web app manifest.
-- **Optional native packaging:** Capacitor; if pursued, native builds use the local `dist` output (`webDir`) and do not configure a remote web server.
-- **Persistence:** on-device storage is the initial direction; select and test the concrete storage implementation during the data-model phase.
+- **Future native packaging stretch goal:** Capacitor can use the local `dist` output (`webDir`) and must not configure a remote web server if native packaging is pursued.
+- **Persistence:** IndexedDB stores cases and settings on-device; persistence-failure coverage remains open in section 2.
 - **Backend:** no app-operated account service, data relay, or logbook storage backend is planned. The PWA and optional native clients connect directly to user-authorized storage providers for future sync.
 
 ## Out of scope for the initial release
