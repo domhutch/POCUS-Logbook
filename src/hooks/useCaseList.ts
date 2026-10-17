@@ -24,6 +24,12 @@ function searchableClinicalDetails(entry: LogbookCase) {
       ...Object.entries(findings).flatMap(([finding, value]) => [finding, value]),
     ]),
   ];
+  if (entry.pathway === "hd") return [
+    entry.otherComments,
+    ...Object.entries(entry.questionFindings).flat(),
+    ...Object.values(entry.questionNotes),
+    ...Object.values(entry.measurements),
+  ];
   return [
     ...entry.views,
     entry.ventilatorySupport,

@@ -2,6 +2,7 @@ import { formatCaseDate } from "../domain/case-display";
 import {
   isSampleCase,
   PATHWAYS,
+  HD_QUESTIONS,
   type LogbookCase,
   type Pathway,
 } from "../domain/logbook";
@@ -34,9 +35,9 @@ function caseSummary(entry: LogbookCase) {
           entry.rightUpperQuadrant || entry.leftUpperQuadrant || entry.rightKidney ||
           entry.leftKidney || entry.bladderDescription || entry.freeFluid || entry.otherComments,
         )
-        : Boolean(entry.otherComments) || Object.values(entry.findings).some((site) =>
+        : entry.pathway === "dvt" ? Boolean(entry.otherComments) || Object.values(entry.findings).some((site) =>
             Object.values(site).some((finding) => finding !== "not_assessed"),
-          );
+          ) : Object.values(entry.questionFindings).some((finding) => finding !== "not_assessed") || Object.values(entry.measurements).some(Boolean) || Boolean(entry.otherComments);
   const scanDetails = hasStructuredDetails
     ? entry.pathway === "lung"
       ? `${entry.regions.length} of 6 regions recorded`
@@ -44,7 +45,9 @@ function caseSummary(entry: LogbookCase) {
         ? `${entry.views.length} views recorded`
         : entry.pathway === "abdomen"
           ? `${entry.examinationPoints.length} examination points recorded`
-          : `${Object.values(entry.findings).filter((site) => Object.values(site).some((finding) => finding !== "not_assessed")).length} venous sites reviewed`
+          : entry.pathway === "dvt"
+            ? `${Object.values(entry.findings).filter((site) => Object.values(site).some((finding) => finding !== "not_assessed")).length} venous sites reviewed`
+            : `${HD_QUESTIONS.filter(([key]) => entry.questionFindings[key] !== "not_assessed").length} clinical questions reviewed`
     : "Structured details not added";
   return [entry.indication, scanDetails].filter(Boolean).join(" · ");
 }

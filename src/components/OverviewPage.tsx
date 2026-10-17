@@ -136,6 +136,12 @@ function OverviewPage({
                 DVT-positive scans: {caseMix.positiveScans ?? 0} / {caseMix.minimumPositiveScans} required
               </p>
             )}
+            {caseMix.normalScanMaximum !== null && (
+              <div className="case-mix-note">
+                <p>Normal scans: {caseMix.normalScans} / {caseMix.normalScanMaximum} maximum</p>
+                <small>Counted from cases marked “Normal” in Impression category.</small>
+              </div>
+            )}
             {caseMix.scanTypeQuotas.length > 0 ? (
               <ul className="case-mix-quotas">
                 {caseMix.scanTypeQuotas.map((quota) => (

@@ -1,6 +1,6 @@
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
-export type Pathway = "lung" | "heart" | "abdomen" | "dvt";
+export type Pathway = "lung" | "heart" | "abdomen" | "dvt" | "hd";
 
 export type CaseType = "clinical" | "healthy_volunteer";
 export type ImageQuality = "not_recorded" | "good" | "acceptable" | "poor";
@@ -47,7 +47,50 @@ export const PATHWAYS = {
     supervisedTarget: PATHWAY_REQUIREMENTS.dvt.directlySupervisedScans,
     source: `${PATHWAY_REQUIREMENTS.dvt.source.title} ${PATHWAY_REQUIREMENTS.dvt.source.version}`,
   },
+  hd: {
+    label: "FUSIC HD",
+    description: "Record a focused haemodynamic ultrasound study and review your cases.",
+    icon: "HD",
+    totalTarget: PATHWAY_REQUIREMENTS.hd.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.hd.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.hd.source.title} ${PATHWAY_REQUIREMENTS.hd.source.version}`,
+  },
 } as const;
+
+export const HD_QUESTIONS = [
+  ["strokeVolumeCoupling", "Is stroke volume and/or ventricular–arterial coupling abnormal?"],
+  ["strokeVolumeResponsiveness", "Is stroke volume responsive to fluids, vasopressors or inotropes?"],
+  ["aorta", "Is the aorta abnormal?"],
+  ["valves", "Are the aortic, mitral or tricuspid valves severely abnormal?"],
+  ["lvOutflowObstruction", "Is there LV outflow tract obstruction (LVOTO)?"],
+  ["regionalWallMotion", "Is there a regional wall motion abnormality (RWMA)?"],
+  ["leftAtrialPressure", "Is left atrial pressure raised?"],
+  ["pulmonaryPressure", "Is pulmonary artery pressure raised, and how is the RV responding?"],
+  ["tamponade", "Are there ultrasound features of cardiac tamponade?"],
+  ["venousCongestion", "Is there venous congestion?"],
+] as const;
+export type HdQuestion = (typeof HD_QUESTIONS)[number][0];
+
+export const HD_MEASUREMENTS = [
+  ["lvEjectionFraction", "LVEF (%)"],
+  ["lvotVti", "LVOT VTI (cm)"],
+  ["strokeVolume", "Stroke volume (mL)"],
+  ["aorticRoot", "Aortic root (mm)"],
+  ["ascendingAorta", "Ascending aorta (mm)"],
+  ["rvFac", "RV fractional area change (%)"],
+  ["rvBasalDiameter", "RV basal diameter (mm)"],
+  ["rvMidDiameter", "RV mid diameter (mm)"],
+  ["rvLongitudinalDiameter", "RV longitudinal diameter (mm)"],
+  ["trVmax", "TR Vmax (m/s)"],
+  ["leftAtrialPressureAssessment", "Left atrial pressure algorithm result"],
+  ["pulmonaryDopplerAssessment", "Pulmonary hypertension Doppler assessment"],
+  ["hepaticVeinFlow", "Hepatic vein flow pattern"],
+  ["portalVeinPulsatilityIndex", "Portal vein pulsatility index"],
+  ["renalVeinImpedanceIndex", "Renal vein venous impedance index"],
+  ["renalArteryResistiveIndex", "Renal artery resistive index (RRI)"],
+  ["vexusGrade", "VExUS grade"],
+] as const;
+export type HdMeasurement = (typeof HD_MEASUREMENTS)[number][0];
 
 export const ABDOMEN_EXAMINATION_POINTS = [
   "RUQ (diaphragm and liver)",
@@ -181,7 +224,15 @@ export interface DvtCaseFields extends CaseFields {
   otherComments: string;
 }
 
-export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields | DvtCaseFields;
+export interface HdCaseFields extends CaseFields {
+  pathway: "hd";
+  questionFindings: Record<HdQuestion, Assessment>;
+  questionNotes: Record<HdQuestion, string>;
+  measurements: Record<HdMeasurement, string>;
+  otherComments: string;
+}
+
+export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields | DvtCaseFields | HdCaseFields;
 export const SAMPLE_CASE_ID_PREFIX = "pocus-sample:";
 
 export function isSampleCase(entry: Pick<LogbookCase, "id">) {
@@ -221,6 +272,10 @@ function emptyDvtFindings(): Record<DvtSite, DvtSiteFindings> {
   return Object.fromEntries(
     DVT_SITES.map((site) => [site, Object.fromEntries(DVT_SITE_FINDINGS.map(([key]) => [key, "not_assessed"]))]),
   ) as Record<DvtSite, DvtSiteFindings>;
+}
+
+function emptyHdRecord<T extends string>(keys: readonly T[], value = "") {
+  return Object.fromEntries(keys.map((key) => [key, value])) as Record<T, typeof value>;
 }
 
 function newCaseFields() {
@@ -263,6 +318,17 @@ export function createDraft(pathway: Pathway): CaseDraft {
 
   if (pathway === "dvt") {
     return { ...newCaseFields(), pathway, findings: emptyDvtFindings(), otherComments: "" };
+  }
+
+  if (pathway === "hd") {
+    return {
+      ...newCaseFields(),
+      pathway,
+      questionFindings: emptyHdRecord(HD_QUESTIONS.map(([key]) => key), "not_assessed") as Record<HdQuestion, Assessment>,
+      questionNotes: emptyHdRecord(HD_QUESTIONS.map(([key]) => key)),
+      measurements: emptyHdRecord(HD_MEASUREMENTS.map(([key]) => key)),
+      otherComments: "",
+    };
   }
 
   return {

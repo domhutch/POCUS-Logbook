@@ -2,6 +2,8 @@ import {
   HEART_FINDINGS,
   DVT_SITES,
   DVT_SITE_FINDINGS,
+  HD_QUESTIONS,
+  HD_MEASUREMENTS,
   isSampleCase,
   LUNG_FINDINGS,
   LUNG_REGIONS,
@@ -166,7 +168,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             <ReviewField label="Other comments" value={entry.otherComments} />
           </dl>
         </section>
-      ) : (
+      ) : entry.pathway === "dvt" ? (
         <section className="review-section" aria-labelledby="review-dvt-title">
           <h3 id="review-dvt-title">Venous findings</h3>
           <div className="review-region-list">
@@ -182,6 +184,20 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             ))}
           </div>
           <dl className="review-fields">
+            <ReviewField label="Other comments" value={entry.otherComments} />
+          </dl>
+        </section>
+      ) : (
+        <section className="review-section" aria-labelledby="review-hd-title">
+          <h3 id="review-hd-title">FUSIC HD clinical questions</h3>
+          <dl className="review-finding-list review-heart-findings">
+            {HD_QUESTIONS.map(([key, question]) => (
+              <ReviewField key={key} label={question} value={`${ASSESSMENT_LABELS[entry.questionFindings[key]]}${entry.questionNotes[key] ? ` · ${entry.questionNotes[key]}` : ""}`} />
+            ))}
+          </dl>
+          <h3>Measurements and Doppler</h3>
+          <dl className="review-fields">
+            {HD_MEASUREMENTS.map(([key, label]) => <ReviewField key={key} label={label} value={entry.measurements[key]} />)}
             <ReviewField label="Other comments" value={entry.otherComments} />
           </dl>
         </section>

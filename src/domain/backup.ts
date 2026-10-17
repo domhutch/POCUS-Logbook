@@ -19,16 +19,21 @@ import {
   type AbdomenCaseFields,
   DVT_SITES,
   DVT_SITE_FINDINGS,
+  HD_QUESTIONS,
+  HD_MEASUREMENTS,
   type DvtSite,
   type DvtSiteFinding,
+  type HdQuestion,
+  type HdMeasurement,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 5;
+export const BACKUP_SCHEMA_VERSION = 6;
 export const BACKUP_APP_ID = "pocus-logbook";
 const VERSION_ONE_BACKUP = 1;
 const VERSION_TWO_BACKUP = 2;
 const VERSION_THREE_BACKUP = 3;
 const VERSION_FOUR_BACKUP = 4;
+const VERSION_FIVE_BACKUP = 5;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -52,6 +57,7 @@ type VersionTwoLogbookCase =
   | (HeartCaseFields & { curriculumPlus: boolean });
 type VersionThreeLogbookCase = LungCaseFields | HeartCaseFields;
 type VersionFourLogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields;
+type VersionFiveLogbookCase = VersionFourLogbookCase | Extract<LogbookCase, { pathway: "dvt" }>;
 
 interface BackupEnvelope {
   app: typeof BACKUP_APP_ID;
@@ -117,6 +123,7 @@ const dvtCaseFields = [
   "findings",
   "otherComments",
 ];
+const hdCaseFields = [...caseFields, "questionFindings", "questionNotes", "measurements", "otherComments"];
 const versionOneLungCaseFields = [
   ...legacyCaseFields,
   "ventilatorySupport",
@@ -175,6 +182,8 @@ const heartFindings: HeartFinding[] = HEART_FINDINGS.map(([key]) => key);
 const heartViews: HeartView[] = [...HEART_VIEWS];
 const dvtSites: DvtSite[] = [...DVT_SITES];
 const dvtSiteFindings: DvtSiteFinding[] = DVT_SITE_FINDINGS.map(([key]) => key);
+const hdQuestions: HdQuestion[] = HD_QUESTIONS.map(([key]) => key);
+const hdMeasurements: HdMeasurement[] = HD_MEASUREMENTS.map(([key]) => key);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -263,6 +272,15 @@ function isDvtFindings(value: unknown): boolean {
   });
 }
 
+function isHdQuestionRecord(value: unknown): boolean {
+  return isRecord(value) && hasExactKeys(value, hdQuestions) &&
+    hdQuestions.every((key) => isAssessment(value[key]));
+}
+
+function isHdStringRecord(value: unknown, keys: readonly string[]): boolean {
+  return isRecord(value) && hasExactKeys(value, keys) && keys.every((key) => isString(value[key], 500));
+}
+
 function isCommonCase(
   value: Record<string, unknown>,
   schemaVersion: number,
@@ -340,8 +358,13 @@ function isLogbookCase(
       ["not_assessed", "not_seen", "small", "normal", "large"].includes(String(value.bladderSize));
   }
 
-  if (value.pathway === "dvt" && schemaVersion === BACKUP_SCHEMA_VERSION) {
+  if (value.pathway === "dvt" && schemaVersion >= VERSION_FIVE_BACKUP && schemaVersion <= BACKUP_SCHEMA_VERSION) {
     return hasExactKeys(value, dvtCaseFields) && isDvtFindings(value.findings) && isString(value.otherComments);
+  }
+  if (value.pathway === "hd" && schemaVersion === BACKUP_SCHEMA_VERSION) {
+    return hasExactKeys(value, hdCaseFields) && isHdQuestionRecord(value.questionFindings) &&
+      isHdStringRecord(value.questionNotes, hdQuestions) && isHdStringRecord(value.measurements, hdMeasurements) &&
+      isString(value.otherComments);
   }
   return false;
 }
@@ -362,13 +385,15 @@ function isBackupEnvelope(value: unknown): value is BackupEnvelope {
     Array.isArray(value.cases) &&
     isRecord(value.pathwayModes) &&
     hasExactKeys(value.pathwayModes,
-      value.schemaVersion === BACKUP_SCHEMA_VERSION ? ["lung", "heart", "abdomen", "dvt"] :
+      value.schemaVersion === BACKUP_SCHEMA_VERSION ? ["lung", "heart", "abdomen", "dvt", "hd"] :
+        value.schemaVersion === VERSION_FIVE_BACKUP ? ["lung", "heart", "abdomen", "dvt"] :
         value.schemaVersion === VERSION_FOUR_BACKUP ? ["lung", "heart", "abdomen"] : ["lung", "heart"],
     ) &&
     typeof value.pathwayModes.lung === "boolean" &&
     typeof value.pathwayModes.heart === "boolean" &&
     (value.schemaVersion < VERSION_FOUR_BACKUP || typeof value.pathwayModes.abdomen === "boolean") &&
-    (value.schemaVersion !== BACKUP_SCHEMA_VERSION || typeof value.pathwayModes.dvt === "boolean")
+    (value.schemaVersion < VERSION_FIVE_BACKUP || typeof value.pathwayModes.dvt === "boolean") &&
+    (value.schemaVersion !== BACKUP_SCHEMA_VERSION || typeof value.pathwayModes.hd === "boolean")
   );
 }
 
@@ -401,6 +426,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       VERSION_TWO_BACKUP,
       VERSION_THREE_BACKUP,
       VERSION_FOUR_BACKUP,
+      VERSION_FIVE_BACKUP,
       BACKUP_SCHEMA_VERSION,
     ].includes(value.schemaVersion) ||
     !value.cases.every((entry) =>
@@ -429,7 +455,7 @@ export function parseBackup(serialized: string): LogbookBackup {
           managementImpact: "not_recorded",
         }),
       ),
-      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true } as Record<Pathway, boolean>,
+      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true } as Record<Pathway, boolean>,
     };
   }
 
@@ -445,7 +471,7 @@ export function parseBackup(serialized: string): LogbookBackup {
         } = entry as VersionTwoLogbookCase;
         return currentEntry;
       }),
-      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true } as Record<Pathway, boolean>,
+      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true } as Record<Pathway, boolean>,
     };
   }
 
@@ -455,7 +481,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
       cases: value.cases as VersionThreeLogbookCase[],
-      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true } as Record<Pathway, boolean>,
+      pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true } as Record<Pathway, boolean>,
     };
   }
 
@@ -465,7 +491,17 @@ export function parseBackup(serialized: string): LogbookBackup {
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
       cases: value.cases as VersionFourLogbookCase[],
-      pathwayModes: { ...value.pathwayModes, dvt: true } as Record<Pathway, boolean>,
+      pathwayModes: { ...value.pathwayModes, dvt: true, hd: true } as Record<Pathway, boolean>,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_FIVE_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases as VersionFiveLogbookCase[],
+      pathwayModes: { ...value.pathwayModes, hd: true } as Record<Pathway, boolean>,
     };
   }
 

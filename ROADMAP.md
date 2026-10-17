@@ -43,7 +43,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 ### 1. Curriculum and data model
 
-- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue covers the seven pathways below; the app currently supports Heart, Lung, Abdomen, and DVT.
+- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue covers the seven pathways below; the app currently supports Heart, Lung, Abdomen, DVT, and HD.
 - [x] Record the source document and version for the initial total and directly supervised references.
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
@@ -65,7 +65,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 ### 3. Progress, mode, and review
 
 - [x] Add a training view that compares recorded cases with the selected pathway's initial total and supervised references.
-- [x] Show case-mix and protocol guidance for supported pathways, and quota details when a supported pathway defines them. DVT additionally tracks the required positive scan.
+- [x] Show case-mix and protocol guidance for supported pathways, and quota details when a supported pathway defines them. DVT tracks the positive scan requirement and HD tracks its normal-scan cap.
 - [x] Add an independent post-certification setting for each pathway that hides targets without deleting cases.
 - [x] Add a post-certification review summary for abnormal impressions and management changes.
 - [x] Prototype descriptive pathway metrics for activity, recorded scan details and findings, image quality, and review markers; development sample data remains in memory only.
@@ -102,8 +102,8 @@ These are optional follow-ons after reliable local backup and restore:
 4. [x] **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
 5. **Printable review reports:** produce a user-selected, de-identified PDF summary.
 6. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
-7. **Additional pathways:** add Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed. Abdomen was added using FUSIC v11 (2025) and its matching 2025 v11 Assessment Pack. DVT was added using FUSIC DVT v1 (2026) and its Assessment Pack.
-8. **Advanced echo findings:** after the HD pathway is implemented, consider recording advanced echocardiography findings beyond its curriculum. Map the overlap with the HD requirements first so the curriculum fields are not duplicated.
+7. **Additional pathways:** add Vascular and Focused TOE after their requirements and versioned sources are reviewed. Abdomen was added using FUSIC v11 (2025) and its matching 2025 v11 Assessment Pack. DVT was added using FUSIC DVT v1 (2026) and its Assessment Pack. HD logging now covers the ten clinical questions and revised 2026 core measurements.
+8. **Advanced echo findings:** consider recording findings beyond the HD curriculum only if there is a clear personal-review use case. Map any overlap with HD first so curriculum fields are not duplicated.
 
 ### 5. PWA release readiness and optional native packaging
 
@@ -174,7 +174,7 @@ The source versions and structured requirements are recorded in [`src/domain/pat
 | [FUSIC DVT, v1 (2026)](https://ics.ac.uk/static/beaa5df0-fd47-4e83-9ed28e72533d2eb6/FUSIC-DVT-Training-Pack-v1-2026.pdf) and [Assessment Pack](https://ics.ac.uk/asset/89A15FB1-7BED-4818-865C7600311B3C1A/) | 10 / 5 | At least one DVT-positive scan; three-point technique; no more than 10% healthy volunteers. |
 | [FUSIC Abdomen, v11 (2025)](https://ics.ac.uk/static/ef0ddaff-73a2-484d-95acc7a5ab3be630/FUSICAbdomen-Training-Packv11-2025.pdf) and [Assessment Pack v11 (2025)](https://ics.ac.uk/static/4f58cbc7-b6d1-4ed4-9dcb9d4990a126ec/FUSIC-Abdomen-Assessment-Pack-2025-v11.pdf) | 25 / 10 | Pathology range; no more than 10% healthy volunteers; attempt required pathway views. |
 | [FUSIC Vascular, v1 (2026)](https://ics.ac.uk/static/57fbde91-95b6-44c9-89fbe7ba577cd952/FUSICVascular-Training-Pack-v1-2026.pdf) | 30 / 5 | At least one vascular-access case; CVC 5 (3 supervised), PICC/midline 3 (1 supervised), peripheral access 2 (1 supervised); substitution rule recorded in the catalogue; no more than 10% healthy volunteers. |
-| [FUSIC HD, v11 (2026)](https://ics.ac.uk/static/792a27d9-c0d5-479d-95ebaf79f77269f4/FUSIC-HD-Training-Pack-2026-v11.pdf) | 50 / 20 | Broad pathology; no more than 10 normal scans and no more than 10% healthy volunteers. Dataset changes for scans from 1 February 2026 are recorded separately in the catalogue. |
+| [FUSIC HD, v11 (2026)](https://ics.ac.uk/static/792a27d9-c0d5-479d-95ebaf79f77269f4/FUSIC-HD-Training-Pack-2026-v11.pdf), [Assessment Pack](https://ics.ac.uk/asset/E1ADF59F-6927-4AD3-B765C4B10F133C35/), and [Complete Guide](https://ics.ac.uk/asset/08F17125-7601-49EB-B00D9F2201376D45/) | 50 / 20 | Broad pathology; no more than 10 normal scans and no more than 10% healthy volunteers. Dataset changes for scans from 1 February 2026 are recorded separately in the catalogue. |
 | [Focused TOE, v11 (2025)](https://ics.ac.uk/static/286c0975-e7d1-4f98-a1eaf18489dc1d6d/Focused-TOE-Certification-Training-Packv11-2025.pdf) | 50 / first 20; an eligible prior-accreditation route allows 30 / first 20 | Eight-view minimum dataset; no more than 50% normal studies; 12-month logbook window and 24-month accreditation window. |
 
 Heart, Lung, DVT, Abdomen, Vascular, and HD also limit healthy-volunteer studies to 10% of the logbook. FUSIC HD has a separate fixed cap of 10 normal scans. The percentages and fixed caps are intentionally represented separately. Confirm the source pack again before changing a requirement; assessment packs are not treated as competing scan-count sources.

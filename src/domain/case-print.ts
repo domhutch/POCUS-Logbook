@@ -2,6 +2,8 @@ import {
   HEART_FINDINGS,
   DVT_SITES,
   DVT_SITE_FINDINGS,
+  HD_QUESTIONS,
+  HD_MEASUREMENTS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
   PATHWAYS,
@@ -9,6 +11,7 @@ import {
   type LogbookCase,
 } from "./logbook";
 import {
+  ASSESSMENT_LABELS,
   formatImageQuality,
   formatImpression,
   formatManagementImpact,
@@ -105,6 +108,14 @@ function dvtDetails(entry: Extract<LogbookCase, { pathway: "dvt" }>) {
   return `<section class="section"><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Venous findings</h2><table class="report-table dvt-table"><thead><tr><th scope="col">Examination site</th>${DVT_SITE_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table><p class="table-legend">Not assessed fields are left blank. U/A = unable to assess.</p>${field("Other comments", entry.otherComments)}</section>`;
 }
 
+function hdDetails(entry: Extract<LogbookCase, { pathway: "hd" }>) {
+  const questionRows = HD_QUESTIONS.map(([key, question]) =>
+    `<tr><th scope="row">${escapeHtml(question)}</th><td>${escapeHtml(ASSESSMENT_LABELS[entry.questionFindings[key]])}</td><td>${displayValue(entry.questionNotes[key])}</td></tr>`,
+  ).join("");
+  const measurements = HD_MEASUREMENTS.map(([key, label]) => field(label, entry.measurements[key])).join("");
+  return `<section class="section"><h2>FUSIC HD clinical questions</h2><table class="report-table hd-table"><thead><tr><th scope="col">Question</th><th scope="col">Finding</th><th scope="col">Notes</th></tr></thead><tbody>${questionRows}</tbody></table><h2>Measurements and Doppler</h2><div class="field-grid">${measurements}</div>${field("Other comments", entry.otherComments)}</section>`;
+}
+
 export function createCasePrintDocument(entry: LogbookCase) {
   const supervision = formatSupervision(entry);
   const caseType =
@@ -115,7 +126,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   const management = entry.managementImpact === "not_recorded"
     ? ""
     : formatManagementImpact(entry.managementImpact);
-  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : entry.pathway === "abdomen" ? abdomenDetails(entry) : dvtDetails(entry);
+  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : entry.pathway === "abdomen" ? abdomenDetails(entry) : entry.pathway === "dvt" ? dvtDetails(entry) : hdDetails(entry);
 
   return `<!doctype html>
 <html lang="en">
@@ -163,6 +174,10 @@ export function createCasePrintDocument(entry: LogbookCase) {
     .dvt-table th:first-child { width: 25%; }
     .dvt-table th, .dvt-table td { padding: .7mm .4mm; text-align: center; overflow-wrap: anywhere; }
     .dvt-table tbody th { text-align: left; }
+    .hd-table { font-size: 6.5pt; }
+    .hd-table th:first-child { width: 35%; }
+    .hd-table th:nth-child(2) { width: 19%; }
+    .hd-table th, .hd-table td { padding: 1mm; vertical-align: top; overflow-wrap: anywhere; }
     .table-legend { margin-top: 1mm; color: #435148; font-size: 6pt; }
     .notes-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .notes { min-height: 13mm; padding: 1.5mm; border: .25mm solid #66746b; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 7pt; line-height: 1.25; }

@@ -6,6 +6,7 @@ import {
   ABDOMEN_EXAMINATION_POINTS,
   DVT_SITES,
   DVT_SITE_FINDINGS,
+  HD_QUESTIONS,
   type CaseDraft,
   type ImageQuality,
   type ImpressionCategory,
@@ -72,6 +73,8 @@ export interface CaseMixSummary {
   healthyVolunteerCases: number;
   healthyVolunteerPercent: number;
   healthyVolunteerMaximumPercent: number | null;
+  normalScans: number;
+  normalScanMaximum: number | null;
   pathologyRangeRequired: boolean;
   protocolCoverage: string | null;
   scanTypeQuotas: Array<{
@@ -122,6 +125,8 @@ export function summarizeCaseMix(
         : (healthyVolunteerCases / pathwayCases.length) * 100,
     healthyVolunteerMaximumPercent:
       requirements.caseMix.healthyVolunteerMaximumPercent ?? null,
+    normalScans: pathwayCases.filter((entry) => entry.impressionCategory === "normal").length,
+    normalScanMaximum: requirements.caseMix.normalScanMaximum ?? null,
     pathologyRangeRequired: requirements.caseMix.pathologyRangeRequired,
     protocolCoverage: requirements.protocolCoverage ?? null,
     scanTypeQuotas: scanTypeQuotas?.map((quota) => ({ ...quota })) ?? [],
@@ -190,7 +195,7 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
           "Shock assessment",
           "Fluid status review",
           "Breathlessness",
-        ][index % 4] : pathway === "abdomen" ? ["Abdominal assessment", "Free fluid assessment", "Renal assessment", "Bladder assessment"][index % 4] : ["Leg swelling", "DVT assessment", "Venous assessment", "Thrombosis assessment"][index % 4];
+        ][index % 4] : pathway === "abdomen" ? ["Abdominal assessment", "Free fluid assessment", "Renal assessment", "Bladder assessment"][index % 4] : pathway === "dvt" ? ["Leg swelling", "DVT assessment", "Venous assessment", "Thrombosis assessment"][index % 4] : ["Haemodynamic assessment", "Shock assessment", "Fluid responsiveness", "Venous congestion"][index % 4];
   draft.diagnosis =
     pathway === "lung"
       ? [
@@ -204,7 +209,7 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
           "Reduced LV function",
           "RV dilatation",
           "Indeterminate study",
-        ][index % 4] : pathway === "abdomen" ? ["No significant abnormality", "Free fluid noted", "Indeterminate study", "Renal finding recorded"][index % 4] : ["No DVT demonstrated", "Positive DVT finding", "Indeterminate study", "Venous findings recorded"][index % 4];
+        ][index % 4] : pathway === "abdomen" ? ["No significant abnormality", "Free fluid noted", "Indeterminate study", "Renal finding recorded"][index % 4] : pathway === "dvt" ? ["No DVT demonstrated", "Positive DVT finding", "Indeterminate study", "Venous findings recorded"][index % 4] : ["No significant abnormality", "Reduced LV function", "Raised filling pressure", "Indeterminate study"][index % 4];
   draft.imageQuality = imageQualities[index % imageQualities.length];
   draft.impressionCategory = impressions[index % impressions.length];
   draft.managementImpact = managementImpacts[index % managementImpacts.length];
@@ -236,11 +241,18 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
     draft.rightHydronephrosis = "none";
     draft.bladderSize = "normal";
     draft.summary = "Sample case for exploring logbook metrics.";
-  } else {
+  } else if (draft.pathway === "dvt") {
     const site = DVT_SITES[index % DVT_SITES.length];
     draft.findings[site].fullyCompressible = "yes";
     if (index % 3 === 1) draft.findings[site].occlusiveThrombus = "yes";
     else draft.findings[site].occlusiveThrombus = "no";
+    draft.summary = "Sample case for exploring logbook metrics.";
+  } else {
+    const [question] = HD_QUESTIONS[index % HD_QUESTIONS.length];
+    draft.questionFindings[question] = index % 3 === 1 ? "yes" : "no";
+    if (index % 3 === 1) draft.questionNotes[question] = "Sample finding";
+    draft.measurements.lvEjectionFraction = String(55 + (index % 5) * 5);
+    draft.measurements.rvFac = String(28 + (index % 4) * 4);
     draft.summary = "Sample case for exploring logbook metrics.";
   }
 
@@ -304,9 +316,12 @@ export function summarizeCases(
         })) : pathway === "abdomen" ? ABDOMEN_EXAMINATION_POINTS.map((point) => ({
           label: point,
           count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && entry.examinationPoints.includes(point)).length,
-        })) : DVT_SITES.map((site) => ({
+        })) : pathway === "dvt" ? DVT_SITES.map((site) => ({
           label: site,
           count: pathwayCases.filter((entry) => entry.pathway === "dvt" && Object.values(entry.findings[site]).some((finding) => finding !== "not_assessed")).length,
+        })) : HD_QUESTIONS.map(([key, label]) => ({
+          label,
+          count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] !== "not_assessed").length,
         }));
   const findings =
     pathway === "lung"
@@ -327,9 +342,12 @@ export function summarizeCases(
           { label: "Right kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.rightKidney)).length },
           { label: "Left kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.leftKidney)).length },
           { label: "Free fluid field completed", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.freeFluid)).length },
-        ] : DVT_SITE_FINDINGS.map(([key, label]) => ({
+        ] : pathway === "dvt" ? DVT_SITE_FINDINGS.map(([key, label]) => ({
           label,
           count: pathwayCases.filter((entry) => entry.pathway === "dvt" && DVT_SITES.some((site) => entry.findings[site][key] === "yes")).length,
+        })) : HD_QUESTIONS.map(([key, label]) => ({
+          label,
+          count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] === "yes").length,
         }));
   return {
     totalCases: pathwayCases.length,
