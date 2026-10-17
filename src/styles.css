@@ -668,6 +668,7 @@ summary:focus-visible {
 }
 
 .settings-panel {
+  min-width: 0;
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 11px;
@@ -733,6 +734,7 @@ summary:focus-visible {
 
 .settings-field {
   display: grid;
+  min-width: 0;
   flex: 1;
   gap: 0.35rem;
 }
@@ -1562,6 +1564,16 @@ summary:focus-visible {
   background: #fbfcfa;
 }
 
+.settings-panel[aria-labelledby="backup-heading"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
+.settings-panel[aria-labelledby="backup-heading"] .backup-actions {
+  justify-content: flex-start;
+}
+
 .test-data-panel {
   margin-top: 0.85rem;
   padding: 0.85rem 1rem;
@@ -1746,6 +1758,8 @@ summary:focus-visible {
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  justify-self: stretch;
+  appearance: none;
 }
 
 .form-field textarea {
