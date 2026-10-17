@@ -4,7 +4,7 @@
 
 Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The primary product is a mobile-friendly installable PWA. Packaging the same codebase for iOS and Android with Capacitor remains a future option, rather than a requirement for the initial product direction.
 
-The initial product stores data on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed cloud backup and synchronisation are planned as future work; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
+The product stores cases on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed encrypted Google Drive backup is available when a Google OAuth client ID is configured at build time. Continuous cross-device synchronisation remains future work; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
 
 ## Product principles
 
@@ -93,7 +93,8 @@ These are optional follow-ons after reliable local backup and restore:
 1. **User-managed provider sync:** preserve local-first and offline behavior; connect directly from the user's device to a provider they choose, with no app-operated account service or data relay. The encrypted portable backup and restore layer is implemented; never send readable case data to a provider through the app.
    - First plan the threat model, provider permissions, OAuth flows, PWA/native credential storage, deletion/disconnection behavior, and privacy disclosures. Do not request email/profile scopes or retain provider account identifiers.
    - Before provider sync, review the passphrase-based key derivation strength and recovery UX on target devices. Explain that losing the passphrase makes the encrypted copy unrecoverable; provide a recovery/passphrase verification flow.
-   - Start with one provider after feasibility review. Evaluate Google Drive and OneDrive app-specific folders, Nextcloud authentication and server compatibility, and iCloud's platform-specific file access separately. Keep provider tokens on-device using platform-appropriate secure storage; use OAuth authorization code with PKCE for public clients.
+   - [x] Add optional Google Drive encrypted backup upload and latest-backup restore in the web app using the narrow `drive.appdata` scope. The static PWA uses Google's browser token model with access tokens held only in memory; this Google-specific exception to the PKCE preference avoids an app backend but requires reauthorization after token expiry or page reload. Google configuration and hidden-folder deletion limitations are documented. Capacitor builds remain disabled until a system-browser OAuth flow is implemented.
+   - Evaluate Nextcloud authentication and server compatibility, OneDrive app-specific folders, and iCloud's platform-specific file access separately. Keep provider tokens on-device using platform-appropriate secure storage; use OAuth authorization code with PKCE for public clients wherever the provider and platform support a backend-free flow.
    - Add upload confirmation, last-success status, file/version integrity checks, revocation and deletion guidance, and a conflict flow that never silently overwrites cases. Retain readable manual export/import as a recovery path.
    - After one-provider backup/restore is reliable, consider opt-in cross-device sync with explicit conflict resolution and preservation of both copies when they differ.
 2. **Privacy-preserving product metrics (optional):** decide whether any metrics are needed before adding telemetry. Default to off; never send logbook content, email, provider identity, or persistent installation identifiers. If enabled, collect only coarse, batched feature/version counts and document that hosting and provider infrastructure may still process connection metadata such as IP addresses.
@@ -189,7 +190,7 @@ Heart, Lung, DVT, Abdomen, Vascular, and HD also limit healthy-volunteer studies
 ## Out of scope for the initial release
 
 - An app-operated user account service, hosted logbook storage, or data relay.
-- Cloud sync in the initial release; future sync must be optional, user-managed, and encrypted on-device before upload.
+- Continuous cloud sync; any future sync must be optional, user-managed, and encrypted on-device before upload.
 - Clinical decision support or use of training records as a clinical record.
 - Automatic claims of FUSIC/TOE eligibility, competence, or accreditation.
 - Capturing patient identifiers or storing clinical images.

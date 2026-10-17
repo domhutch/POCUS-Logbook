@@ -4,6 +4,11 @@ import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { createBackup, parseBackup } from "../domain/backup";
 import { decryptBackup, encryptBackup, isEncryptedBackupFile } from "../domain/encrypted-backup";
+import {
+  downloadLatestBackupFromDrive,
+  requestGoogleDriveAccess,
+  uploadEncryptedBackupToDrive,
+} from "../cloud/google-drive";
 import { csvFilename, createCasesCsv } from "../domain/case-csv";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 import {
@@ -173,5 +178,67 @@ export function useLogbookBackup({
     }
   }
 
-  return { status, isBusy, exportBackup, exportCsv, restoreBackupFromFile };
+  async function uploadBackupToGoogleDrive(passphrase: string, clientId: string) {
+    // Start OAuth before awaiting local reads/encryption so the browser sees a user gesture.
+    const accessToken = requestGoogleDriveAccess(clientId);
+    setIsBusy(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const token = await accessToken;
+      const [storedCases, storedModes] = await Promise.all([getCases(), getPathwayModes()]);
+      const backup = createBackup(storedCases, {
+        lung: storedModes.lung ?? trainingModes.lung,
+        heart: storedModes.heart ?? trainingModes.heart,
+      });
+      const serialized = JSON.stringify(backup);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
+        throw new Error("Backup data is larger than the supported 10 MB limit.");
+      }
+      const encrypted = await encryptBackup(serialized, passphrase);
+      const uploaded = await uploadEncryptedBackupToDrive(token, encrypted);
+      setStatus(`Encrypted backup uploaded to Google Drive (${new Date(uploaded.modifiedTime).toLocaleString()}). Keep your passphrase safe; it is not stored by the app.`);
+    } catch (cause) {
+      setError(messageFrom(cause, "The encrypted backup could not be uploaded to Google Drive."));
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function restoreBackupFromGoogleDrive(passphrase: string, clientId: string) {
+    // Start OAuth synchronously from the button click to avoid popup blocking.
+    const accessToken = requestGoogleDriveAccess(clientId);
+    setIsBusy(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const token = await accessToken;
+      const { encrypted, file } = await downloadLatestBackupFromDrive(token);
+      if (!isEncryptedBackupFile(encrypted)) {
+        throw new Error("The latest Google Drive file is not an encrypted POCUS Logbook backup.");
+      }
+      const decrypted = await decryptBackup(encrypted, passphrase);
+      if (new TextEncoder().encode(decrypted).byteLength > MAX_BACKUP_SIZE) {
+        throw new Error("Decrypted backup files must be 10 MB or smaller.");
+      }
+      const backup = parseBackup(decrypted);
+      const result = await restoreBackup(backup);
+      await refreshEntries();
+      setStatus(`Restored ${file.name}: ${result.addedCases} ${result.addedCases === 1 ? "case" : "cases"} added, ${result.skippedCases} existing ${result.skippedCases === 1 ? "case" : "cases"} kept. Current cases and preferences were not replaced.`);
+    } catch (cause) {
+      setError(messageFrom(cause, "The Google Drive backup could not be downloaded or restored."));
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return {
+    status,
+    isBusy,
+    exportBackup,
+    exportCsv,
+    restoreBackupFromFile,
+    uploadBackupToGoogleDrive,
+    restoreBackupFromGoogleDrive,
+  };
 }
