@@ -22,6 +22,7 @@ export const DEFAULT_ENABLED_MODULES: Record<Pathway, boolean> = {
   abdomen: true,
   dvt: true,
   hd: true,
+  vascular: true,
 };
 
 export interface AppSettings {
@@ -168,6 +169,7 @@ export async function getAppSettings(): Promise<AppSettings> {
     typeof settings.enabledModules.abdomen !== "boolean" ||
     typeof settings.enabledModules.dvt !== "boolean" ||
     typeof settings.enabledModules.hd !== "boolean"
+    || typeof settings.enabledModules.vascular !== "boolean"
   ) {
     const migrated: AppSettings = {
       supervisors: settings.supervisors,
@@ -183,6 +185,7 @@ export async function getAppSettings(): Promise<AppSettings> {
         abdomen: settings.enabledModules?.abdomen ?? true,
         dvt: settings.enabledModules?.dvt ?? true,
         hd: settings.enabledModules?.hd ?? true,
+        vascular: settings.enabledModules?.vascular ?? true,
       },
       // A saved preferences record predating onboarding belongs to an existing user.
       onboardingComplete: settings.onboardingComplete ?? true,
@@ -238,7 +241,7 @@ export async function restoreBackup(
     addedCases += 1;
   }
 
-  for (const pathway of ["lung", "heart", "abdomen", "dvt", "hd"] as const) {
+  for (const pathway of ["lung", "heart", "abdomen", "dvt", "hd", "vascular"] as const) {
     if (existingPathways.has(pathway)) continue;
     writes.push(
       transaction.objectStore("settings").add({

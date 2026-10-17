@@ -147,7 +147,7 @@ function OverviewPage({
                 {caseMix.scanTypeQuotas.map((quota) => (
                   <li key={quota.scanType}>
                     <strong>{quota.scanType}</strong>
-                    <span>{quota.minimumScans} scans · {quota.minimumDirectlySupervised} directly supervised</span>
+                    <span>{quota.recordedScans} / {quota.minimumScans} scans · {quota.supervisedScans} / {quota.minimumDirectlySupervised} directly supervised</span>
                     {quota.note && <small>{quota.note}</small>}
                   </li>
                 ))}

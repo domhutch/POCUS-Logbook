@@ -145,6 +145,11 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       version: "v1 (2026)",
       url: "https://ics.ac.uk/static/57fbde91-95b6-44c9-89fbe7ba577cd952/FUSICVascular-Training-Pack-v1-2026.pdf",
     },
+    assessmentSource: {
+      title: "FUSIC Vascular Assessment Pack",
+      version: "2026",
+      url: "https://ics.ac.uk/asset/9E05D301-0951-4BF8-A1E535C7A3933107/",
+    },
     totalScans: 30,
     directlySupervisedScans: 5,
     collectionWindowMonths: 12,

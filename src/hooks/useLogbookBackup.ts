@@ -104,6 +104,7 @@ export function useLogbookBackup({
         abdomen: storedModes.abdomen ?? trainingModes.abdomen,
         dvt: storedModes.dvt ?? trainingModes.dvt,
         hd: storedModes.hd ?? trainingModes.hd,
+        vascular: storedModes.vascular ?? trainingModes.vascular,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
@@ -196,6 +197,7 @@ export function useLogbookBackup({
         abdomen: storedModes.abdomen ?? trainingModes.abdomen,
         dvt: storedModes.dvt ?? trainingModes.dvt,
         hd: storedModes.hd ?? trainingModes.hd,
+        vascular: storedModes.vascular ?? trainingModes.vascular,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {

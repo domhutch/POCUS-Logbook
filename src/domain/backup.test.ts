@@ -18,6 +18,7 @@ const pathwayModes: Record<Pathway, boolean> = {
   abdomen: true,
   dvt: true,
   hd: true,
+  vascular: true,
 };
 
 function makeBackup(cases: LogbookCase[] = []) {
@@ -30,6 +31,7 @@ function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3 | 4) {
   delete backup.pathwayModes.abdomen;
   delete backup.pathwayModes.dvt;
   delete backup.pathwayModes.hd;
+  delete backup.pathwayModes.vascular;
   return backup;
 }
 
@@ -41,6 +43,7 @@ describe("POCUS Logbook backups", () => {
       addTimestamps(createDraft("abdomen")),
       addTimestamps(createDraft("dvt")),
       addTimestamps(createDraft("hd")),
+      addTimestamps(createDraft("vascular")),
     ];
 
     expect(parseBackup(makeBackup(cases))).toEqual({
@@ -62,6 +65,7 @@ describe("POCUS Logbook backups", () => {
     const current = JSON.parse(makeBackup([addTimestamps(createDraft("dvt"))]));
     current.schemaVersion = 5;
     delete current.pathwayModes.hd;
+    delete current.pathwayModes.vascular;
     expect(parseBackup(JSON.stringify(current)).pathwayModes).toEqual(pathwayModes);
   });
 
@@ -161,7 +165,7 @@ describe("POCUS Logbook backups", () => {
     const restored = parseBackup(JSON.stringify(backup));
 
     expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
-    expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true, dvt: true, hd: true });
+    expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true, dvt: true, hd: true, vascular: true });
     expect(restored.cases).toEqual(backup.cases);
   });
 });

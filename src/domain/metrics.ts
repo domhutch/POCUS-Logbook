@@ -7,6 +7,8 @@ import {
   DVT_SITES,
   DVT_SITE_FINDINGS,
   HD_QUESTIONS,
+  VASCULAR_ASSESSMENTS,
+  VASCULAR_PROCEDURES,
   type CaseDraft,
   type ImageQuality,
   type ImpressionCategory,
@@ -81,6 +83,8 @@ export interface CaseMixSummary {
     scanType: string;
     minimumScans: number;
     minimumDirectlySupervised: number;
+    recordedScans: number;
+    supervisedScans: number;
     note?: string;
   }>;
   minimumPositiveScans: number | null;
@@ -129,7 +133,17 @@ export function summarizeCaseMix(
     normalScanMaximum: requirements.caseMix.normalScanMaximum ?? null,
     pathologyRangeRequired: requirements.caseMix.pathologyRangeRequired,
     protocolCoverage: requirements.protocolCoverage ?? null,
-    scanTypeQuotas: scanTypeQuotas?.map((quota) => ({ ...quota })) ?? [],
+    scanTypeQuotas: scanTypeQuotas?.map((quota, index) => {
+      const procedureCategory = (["cvc", "picc_midline", "peripheral_access"] as const)[index];
+      const quotaCases = pathway === "vascular"
+        ? pathwayCases.filter((entry) => entry.pathway === "vascular" && (entry.procedureCategory === procedureCategory || (procedureCategory === "picc_midline" && entry.procedureCategory === "peripheral_access" && entry.piccMidlineSubstitution)))
+        : [];
+      return {
+        ...quota,
+        recordedScans: quotaCases.length,
+        supervisedScans: quotaCases.filter((entry) => entry.supervised).length,
+      };
+    }) ?? [],
     minimumPositiveScans: requirements.caseMix.minimumPositiveScans ?? null,
     positiveScans: pathway === "dvt"
       ? pathwayCases.filter((entry) => entry.pathway === "dvt" && DVT_SITES.some((site) =>
@@ -247,12 +261,22 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
     if (index % 3 === 1) draft.findings[site].occlusiveThrombus = "yes";
     else draft.findings[site].occlusiveThrombus = "no";
     draft.summary = "Sample case for exploring logbook metrics.";
-  } else {
+  } else if (draft.pathway === "hd") {
     const [question] = HD_QUESTIONS[index % HD_QUESTIONS.length];
     draft.questionFindings[question] = index % 3 === 1 ? "yes" : "no";
     if (index % 3 === 1) draft.questionNotes[question] = "Sample finding";
     draft.measurements.lvEjectionFraction = String(55 + (index % 5) * 5);
     draft.measurements.rvFac = String(28 + (index % 4) * 4);
+    draft.summary = "Sample case for exploring logbook metrics.";
+  } else {
+    draft.procedureCategory = (["cvc", "picc_midline", "peripheral_access"] as const)[index % 3];
+    draft.procedure = "Ultrasound-guided vascular access";
+    draft.insertionSite = ["Internal jugular", "Upper arm vein", "Peripheral vein"][index % 3];
+    draft.assessments.arteryVeinDistinguished = "yes";
+    draft.assessments.transverseView = "yes";
+    draft.assessments.longitudinalView = "yes";
+    draft.assessments.needleTipVisible = "yes";
+    draft.assessments.sterilityMaintained = "yes";
     draft.summary = "Sample case for exploring logbook metrics.";
   }
 
@@ -319,9 +343,12 @@ export function summarizeCases(
         })) : pathway === "dvt" ? DVT_SITES.map((site) => ({
           label: site,
           count: pathwayCases.filter((entry) => entry.pathway === "dvt" && Object.values(entry.findings[site]).some((finding) => finding !== "not_assessed")).length,
-        })) : HD_QUESTIONS.map(([key, label]) => ({
+        })) : pathway === "hd" ? HD_QUESTIONS.map(([key, label]) => ({
           label,
           count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] !== "not_assessed").length,
+        })) : VASCULAR_PROCEDURES.map(([key, label]) => ({
+          label,
+          count: pathwayCases.filter((entry) => entry.pathway === "vascular" && entry.procedureCategory === key).length,
         }));
   const findings =
     pathway === "lung"
@@ -345,9 +372,12 @@ export function summarizeCases(
         ] : pathway === "dvt" ? DVT_SITE_FINDINGS.map(([key, label]) => ({
           label,
           count: pathwayCases.filter((entry) => entry.pathway === "dvt" && DVT_SITES.some((site) => entry.findings[site][key] === "yes")).length,
-        })) : HD_QUESTIONS.map(([key, label]) => ({
+        })) : pathway === "hd" ? HD_QUESTIONS.map(([key, label]) => ({
           label,
           count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] === "yes").length,
+        })) : VASCULAR_ASSESSMENTS.map(([key, label]) => ({
+          label,
+          count: pathwayCases.filter((entry) => entry.pathway === "vascular" && entry.assessments[key] === "yes").length,
         }));
   return {
     totalCases: pathwayCases.length,

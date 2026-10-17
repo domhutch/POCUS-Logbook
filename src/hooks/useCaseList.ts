@@ -30,6 +30,10 @@ function searchableClinicalDetails(entry: LogbookCase) {
     ...Object.values(entry.questionNotes),
     ...Object.values(entry.measurements),
   ];
+  if (entry.pathway === "vascular") return [
+    entry.procedureCategory, entry.procedure, entry.insertionSite, entry.lineType, entry.piccMidlineSubstitution ? "PICC/midline quota substitute" : "",
+    entry.otherComments, ...Object.entries(entry.assessments).flat(),
+  ];
   return [
     ...entry.views,
     entry.ventilatorySupport,

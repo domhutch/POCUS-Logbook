@@ -7,6 +7,8 @@ import {
   DVT_SITE_FINDINGS,
   HD_QUESTIONS,
   HD_MEASUREMENTS,
+  VASCULAR_ASSESSMENTS,
+  VASCULAR_PROCEDURES,
   PATHWAYS,
   isSampleCase,
   type LogbookCase,
@@ -45,7 +47,7 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
   const sequenceNumbers = getCaseSequenceNumbers(pathwayCases);
   const detailColumns = pathway === "lung"
     ? ["Ventilatory support", "Regions scanned", ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([, label]) => `${region} · ${label}`))]
-    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : pathway === "abdomen" ? ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"] : pathway === "dvt" ? DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([, label]) => `${site} · ${label}`)).concat("Other comments") : [...HD_QUESTIONS.flatMap(([, label]) => [`${label} · Finding`, `${label} · Notes`]), ...HD_MEASUREMENTS.map(([, label]) => label), "Other comments"];
+    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : pathway === "abdomen" ? ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"] : pathway === "dvt" ? DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([, label]) => `${site} · ${label}`)).concat("Other comments") : pathway === "hd" ? [...HD_QUESTIONS.flatMap(([, label]) => [`${label} · Finding`, `${label} · Notes`]), ...HD_MEASUREMENTS.map(([, label]) => label), "Other comments"] : ["Procedure category", "Procedure", "Site of insertion", "Type of line", "PICC/midline quota substitution", ...VASCULAR_ASSESSMENTS.map(([, label]) => label), "Comments"];
   const headers = [...commonColumns(), ...detailColumns, "Summary of main findings", "Reflection"];
 
   const rows = pathwayCases
@@ -82,11 +84,11 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
           ] : entry.pathway === "abdomen" ? [entry.examinationPoints.join("; "), entry.rightUpperQuadrant, entry.leftUpperQuadrant, entry.rightKidney, entry.rightHydronephrosis, entry.leftKidney, entry.leftHydronephrosis, entry.bladderSize, entry.bladderDescription, entry.freeFluid, entry.otherComments] : entry.pathway === "dvt" ? [
             ...DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([key]) => assessment(entry.findings[site][key]))),
             entry.otherComments.trim(),
-          ] : [
+          ] : entry.pathway === "hd" ? [
             ...HD_QUESTIONS.flatMap(([key]) => [assessment(entry.questionFindings[key]), entry.questionNotes[key].trim()]),
             ...HD_MEASUREMENTS.map(([key]) => entry.measurements[key].trim()),
             entry.otherComments.trim(),
-          ];
+          ] : [VASCULAR_PROCEDURES.find(([key]) => key === entry.procedureCategory)?.[1] ?? entry.procedureCategory, entry.procedure.trim(), entry.insertionSite.trim(), entry.lineType.trim(), entry.piccMidlineSubstitution ? "Yes" : "No", ...VASCULAR_ASSESSMENTS.map(([key]) => assessment(entry.assessments[key])), entry.otherComments.trim()];
       return [...common, ...details, entry.summary.trim(), entry.reflection.trim()];
     });
 

@@ -7,6 +7,7 @@ const TEXT_FIELDS = [
   ["Reflection", (draft: CaseDraft) => draft.reflection],
   ["HD question notes", (draft: CaseDraft) => draft.pathway === "hd" ? Object.values(draft.questionNotes).join(" ") : ""],
   ["HD other comments", (draft: CaseDraft) => draft.pathway === "hd" ? draft.otherComments : ""],
+  ["Vascular procedure and site", (draft: CaseDraft) => draft.pathway === "vascular" ? [draft.procedure, draft.insertionSite, draft.lineType, draft.otherComments].join(" ") : ""],
 ] as const;
 
 const IDENTIFIER_PATTERNS: Array<[string, RegExp]> = [

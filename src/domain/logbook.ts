@@ -1,6 +1,6 @@
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
-export type Pathway = "lung" | "heart" | "abdomen" | "dvt" | "hd";
+export type Pathway = "lung" | "heart" | "abdomen" | "dvt" | "hd" | "vascular";
 
 export type CaseType = "clinical" | "healthy_volunteer";
 export type ImageQuality = "not_recorded" | "good" | "acceptable" | "poor";
@@ -55,7 +55,30 @@ export const PATHWAYS = {
     supervisedTarget: PATHWAY_REQUIREMENTS.hd.directlySupervisedScans,
     source: `${PATHWAY_REQUIREMENTS.hd.source.title} ${PATHWAY_REQUIREMENTS.hd.source.version}`,
   },
+  vascular: {
+    label: "FUSIC Vascular",
+    description: "Record vascular access ultrasound and review your cases.",
+    icon: "V",
+    totalTarget: PATHWAY_REQUIREMENTS.vascular.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.vascular.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.vascular.source.title} ${PATHWAY_REQUIREMENTS.vascular.source.version}`,
+  },
 } as const;
+
+export const VASCULAR_PROCEDURES = [
+  ["cvc", "Central venous catheter (internal jugular ± femoral)"],
+  ["picc_midline", "PICC or midline"],
+  ["peripheral_access", "Peripheral vascular access"],
+] as const;
+export type VascularProcedure = (typeof VASCULAR_PROCEDURES)[number][0];
+export const VASCULAR_ASSESSMENTS = [
+  ["arteryVeinDistinguished", "Artery and vein distinguished / confirmed"],
+  ["transverseView", "Transverse view obtained"],
+  ["longitudinalView", "Longitudinal view obtained"],
+  ["needleTipVisible", "Needle tip kept in view"],
+  ["sterilityMaintained", "Sterility maintained"],
+] as const;
+export type VascularAssessment = (typeof VASCULAR_ASSESSMENTS)[number][0];
 
 export const HD_QUESTIONS = [
   ["strokeVolumeCoupling", "Is stroke volume and/or ventricular–arterial coupling abnormal?"],
@@ -232,7 +255,18 @@ export interface HdCaseFields extends CaseFields {
   otherComments: string;
 }
 
-export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields | DvtCaseFields | HdCaseFields;
+export interface VascularCaseFields extends CaseFields {
+  pathway: "vascular";
+  procedureCategory: VascularProcedure;
+  procedure: string;
+  insertionSite: string;
+  lineType: string;
+  piccMidlineSubstitution: boolean;
+  assessments: Record<VascularAssessment, Assessment>;
+  otherComments: string;
+}
+
+export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields | DvtCaseFields | HdCaseFields | VascularCaseFields;
 export const SAMPLE_CASE_ID_PREFIX = "pocus-sample:";
 
 export function isSampleCase(entry: Pick<LogbookCase, "id">) {
@@ -296,6 +330,14 @@ function newCaseFields() {
 }
 
 export function createDraft(pathway: Pathway): CaseDraft {
+  if (pathway === "vascular") {
+    return {
+      ...newCaseFields(), pathway, procedureCategory: "cvc", procedure: "",
+      insertionSite: "", lineType: "", piccMidlineSubstitution: false, assessments: emptyHdRecord(
+        VASCULAR_ASSESSMENTS.map(([key]) => key), "not_assessed",
+      ) as Record<VascularAssessment, Assessment>, otherComments: "",
+    };
+  }
   if (pathway === "lung") {
     return {
       ...newCaseFields(),

@@ -13,6 +13,7 @@ const INITIAL_TRAINING_MODES: Record<Pathway, boolean> = {
   abdomen: true,
   dvt: true,
   hd: true,
+  vascular: true,
 };
 
 function errorMessage(cause: unknown, fallback: string) {
@@ -28,7 +29,7 @@ export function useLogbookData() {
     textSize: "default",
     textScaleVersion: 2,
     curriculum: "fusic",
-    enabledModules: { heart: true, lung: true, abdomen: true, dvt: true, hd: true },
+    enabledModules: { heart: true, lung: true, abdomen: true, dvt: true, hd: true, vascular: true },
     onboardingComplete: false,
   });
   const [isReady, setIsReady] = useState(false);

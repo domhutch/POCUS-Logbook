@@ -3007,9 +3007,18 @@ html[data-text-size="default"] .button {
   gap: 1rem;
 }
 
-.hd-details {
+.hd-details,
+.vascular-details {
   display: grid;
   gap: 1rem;
+}
+
+.vascular-assessments {
+  min-width: 0;
+}
+
+.vascular-substitution {
+  align-self: end;
 }
 
 .hd-questions,
