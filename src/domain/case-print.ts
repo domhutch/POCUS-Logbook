@@ -211,7 +211,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   <div class="toolbar"><button class="print-button" onclick="window.print()">Print / save PDF</button></div>
   <main class="sheet">
     <header class="sheet-header">
-      <div><p class="brand">POCUS Logbook · Personal case record</p><h1>${escapeHtml(PATHWAYS[entry.pathway].label)} logbook report</h1><p class="subtitle">Training and reflection record · Not a clinical record or accreditation decision</p></div>
+      <div><p class="brand">CritSono: POCUS Logbook · Personal case record</p><h1>${escapeHtml(PATHWAYS[entry.pathway].label)} logbook report</h1><p class="subtitle">Training and reflection record · Not a clinical record or accreditation decision</p></div>
       <span class="badge">${escapeHtml(formatUkDate(entry.date))}</span>
     </header>
     <section class="section"><h2>Case details</h2><div class="field-grid">

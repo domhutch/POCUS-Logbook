@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["pocus-icon.svg"],
       manifest: {
-        name: "POCUS Logbook",
-        short_name: "POCUS Logbook",
+        name: "CritSono: POCUS Logbook",
+        short_name: "CritSono",
         description: "An offline-first personal point-of-care ultrasound logbook.",
         theme_color: "#163b44",
         background_color: "#f3f6f5",

@@ -51,7 +51,7 @@ export function useLogbookData() {
   useEffect(() => {
     const handleBlockedUpgrade = () => {
       setError(
-        "Close other POCUS Logbook tabs or app windows, then retry the database upgrade.",
+        "Close other CritSono: POCUS Logbook tabs or app windows, then retry the database upgrade.",
       );
     };
     window.addEventListener("pocus-logbook-upgrade-blocked", handleBlockedUpgrade);

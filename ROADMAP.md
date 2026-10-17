@@ -1,10 +1,10 @@
-# POCUS Logbook Roadmap
+# CritSono: POCUS Logbook Roadmap
 
 ## Product direction
 
 Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The primary product is a mobile-friendly installable PWA. Packaging the same codebase as iOS and Android apps is a future stretch goal, not part of the current plan.
 
-The product stores cases on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed encrypted Google Drive backup is available when a Google OAuth client ID is configured at build time. Provider sync and native app packaging are future stretch goals; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
+The product stores cases on the device and works offline. There is no CritSono: POCUS Logbook account service or app-operated data backend. Optional user-managed encrypted Google Drive backup is available when a Google OAuth client ID is configured at build time. Provider sync and native app packaging are future stretch goals; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
 
 ## Product principles
 

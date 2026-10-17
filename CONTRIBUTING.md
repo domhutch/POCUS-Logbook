@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for considering a contribution to POCUS Logbook. Small, focused changes are easiest to review.
+Thanks for considering a contribution to CritSono: POCUS Logbook. Small, focused changes are easiest to review.
 
 ## Set up the project
 

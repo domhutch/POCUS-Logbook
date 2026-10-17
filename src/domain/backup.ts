@@ -456,7 +456,7 @@ export function parseBackup(serialized: string): LogbookBackup {
     )
   ) {
     throw new Error(
-      `This file is not a valid POCUS Logbook backup (supported formats: versions 1–${BACKUP_SCHEMA_VERSION}).`,
+      `This file is not a valid CritSono: POCUS Logbook backup (supported formats: versions 1–${BACKUP_SCHEMA_VERSION}).`,
     );
   }
 

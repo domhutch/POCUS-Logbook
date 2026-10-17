@@ -46,7 +46,7 @@ function AboutHelpPage({ onBack }: AboutHelpPageProps) {
         Back to Settings
       </button>
       <header className="about-help-heading">
-        <p className="eyebrow">POCUS Logbook</p>
+        <p className="eyebrow">CritSono: POCUS Logbook</p>
         <h2 id="about-help-heading">About &amp; Help</h2>
         <p>A quick guide to recording, reviewing, and keeping your logbook safe.</p>
       </header>

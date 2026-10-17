@@ -12,4 +12,4 @@ Include the affected version or commit, the impact, steps to reproduce with synt
 
 ## Scope
 
-This policy covers this repository and the POCUS Logbook application. It does not provide a security contact for Google, GitHub Pages, browsers, operating systems, or other third-party services; report issues in those services to their respective maintainers.
+This policy covers this repository and the CritSono: POCUS Logbook application. It does not provide a security contact for Google, GitHub Pages, browsers, operating systems, or other third-party services; report issues in those services to their respective maintainers.

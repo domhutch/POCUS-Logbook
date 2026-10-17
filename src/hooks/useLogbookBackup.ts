@@ -111,7 +111,7 @@ export function useLogbookBackup({
       const delivery = await deliverExport(
         file,
         "pocus-logbook-backup-full-admin-sample.json",
-        "Full POCUS Logbook sample backup",
+        "Full CritSono: POCUS Logbook sample backup",
       );
       return delivery;
     } finally {
@@ -145,7 +145,7 @@ export function useLogbookBackup({
         type: "application/json",
       });
       const filename = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.pocusbackup`;
-      const delivery = await deliverExport(file, filename, "Encrypted POCUS Logbook backup");
+      const delivery = await deliverExport(file, filename, "Encrypted CritSono: POCUS Logbook backup");
       setStatus(delivery === "shared"
         ? `Encrypted backup prepared for sharing with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Choose a destination; the app cannot confirm that it was saved.`
         : `Encrypted backup download started with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Keep your passphrase safe; it cannot be recovered.`);
@@ -253,7 +253,7 @@ export function useLogbookBackup({
       const token = await accessToken;
       const { encrypted, file } = await downloadLatestBackupFromDrive(token);
       if (!isEncryptedBackupFile(encrypted)) {
-        throw new Error("The latest Google Drive file is not an encrypted POCUS Logbook backup.");
+        throw new Error("The latest Google Drive file is not an encrypted CritSono: POCUS Logbook backup.");
       }
       const decrypted = await decryptBackup(encrypted, passphrase);
       if (new TextEncoder().encode(decrypted).byteLength > MAX_BACKUP_SIZE) {

@@ -108,8 +108,8 @@ function App() {
   ).length;
   useEffect(() => {
     document.title = appSettings.onboardingComplete
-      ? `${pathwayLogbookName} · FUSIC Logbook`
-      : "Welcome · FUSIC Logbook";
+      ? `${pathwayLogbookName} · CritSono: POCUS Logbook`
+      : "Welcome · CritSono: POCUS Logbook";
   }, [appSettings.onboardingComplete, pathwayLogbookName]);
 
   useEffect(() => {
@@ -369,12 +369,12 @@ function App() {
           className="brand"
           type="button"
           onClick={goToOverview}
-          aria-label="Go to FUSIC Logbook overview"
+          aria-label={`Go to CritSono ${pathway.label.replace(/^FUSIC\s+/, "")} overview`}
         >
           <span className="brand-mark" aria-hidden="true">
             {pathway.icon}
           </span>
-          <span className="brand-name">FUSIC Logbook</span>
+          <span className="brand-name">CritSono</span>
           <span className="brand-pathway">
             {pathway.label.replace(/^FUSIC\s+/, "")}
           </span>
@@ -678,7 +678,7 @@ function App() {
           <iframe
             ref={printing.frameRef}
             className="print-preview-frame"
-            title="POCUS Logbook PDF preview"
+            title="CritSono: POCUS Logbook PDF preview"
             srcDoc={printing.document}
             onLoad={printing.markFrameReady}
           />

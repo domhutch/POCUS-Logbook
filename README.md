@@ -1,4 +1,4 @@
-# POCUS Logbook
+# CritSono: POCUS Logbook
 
 Offline-first POCUS logbook scaffold for the web, with a path to bundled iOS and Android apps.
 
