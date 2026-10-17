@@ -176,77 +176,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </label>
         </div>
 
-        <details
-          className="structured-details optional-details"
-          open={Boolean(
-            draft.indication ||
-              draft.diagnosis ||
-              draft.impressionCategory !== "not_recorded" ||
-              draft.managementImpact !== "not_recorded",
-          )}
-        >
-          <summary>Case context and review markers <span>Optional</span></summary>
-          <div className="form-grid">
-            <label className="form-field">
-              <span>Indication <span className="optional-mark">Optional</span></span>
-              <input
-                type="text"
-                maxLength={160}
-                placeholder="e.g. breathlessness"
-                value={draft.indication}
-                onChange={(event) =>
-                  updateField("indication", event.currentTarget.value)
-                }
-              />
-            </label>
-            <label className="form-field">
-              <span>Diagnosis / impression <span className="optional-mark">Optional</span></span>
-              <input
-                type="text"
-                maxLength={160}
-                placeholder="A brief, de-identified summary"
-                value={draft.diagnosis}
-                onChange={(event) =>
-                  updateField("diagnosis", event.currentTarget.value)
-                }
-              />
-            </label>
-            <label className="form-field">
-              <span>Impression category <span className="optional-mark">Optional</span></span>
-              <select
-                value={draft.impressionCategory}
-                onChange={(event) =>
-                  updateField(
-                    "impressionCategory",
-                    event.currentTarget.value as ImpressionCategory,
-                  )
-                }
-              >
-                <option value="not_recorded">Not recorded</option>
-                <option value="normal">Normal</option>
-                <option value="abnormal">Abnormal / pathology</option>
-                <option value="indeterminate">Indeterminate</option>
-              </select>
-            </label>
-            <label className="form-field">
-              <span>Management impact <span className="optional-mark">Optional</span></span>
-              <select
-                value={draft.managementImpact}
-                onChange={(event) =>
-                  updateField(
-                    "managementImpact",
-                    event.currentTarget.value as ManagementImpact,
-                  )
-                }
-              >
-                <option value="not_recorded">Not recorded</option>
-                <option value="changed">Changed</option>
-                <option value="unchanged">Unchanged</option>
-              </select>
-            </label>
-          </div>
-        </details>
-
         <label className="supervision-control">
           <input
             type="checkbox"
@@ -296,6 +225,55 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </div>
         )}
 
+        <details
+          className="structured-details optional-details"
+          open={Boolean(
+            draft.indication ||
+              draft.diagnosis ||
+              draft.impressionCategory !== "not_recorded" ||
+              draft.managementImpact !== "not_recorded" ||
+              draft.imageQuality !== "not_recorded",
+          )}
+        >
+          <summary>Case context and review markers <span>Optional</span></summary>
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Indication <span className="optional-mark">Optional</span></span>
+              <input type="text" maxLength={160} placeholder="e.g. breathlessness" value={draft.indication} onChange={(event) => updateField("indication", event.currentTarget.value)} />
+            </label>
+            <label className="form-field">
+              <span>Diagnosis / impression <span className="optional-mark">Optional</span></span>
+              <input type="text" maxLength={160} placeholder="A brief, de-identified summary" value={draft.diagnosis} onChange={(event) => updateField("diagnosis", event.currentTarget.value)} />
+            </label>
+            <label className="form-field">
+              <span>Impression category <span className="optional-mark">Optional</span></span>
+              <select value={draft.impressionCategory} onChange={(event) => updateField("impressionCategory", event.currentTarget.value as ImpressionCategory)}>
+                <option value="not_recorded">Not recorded</option>
+                <option value="normal">Normal</option>
+                <option value="abnormal">Abnormal / pathology</option>
+                <option value="indeterminate">Indeterminate</option>
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Management impact <span className="optional-mark">Optional</span></span>
+              <select value={draft.managementImpact} onChange={(event) => updateField("managementImpact", event.currentTarget.value as ManagementImpact)}>
+                <option value="not_recorded">Not recorded</option>
+                <option value="changed">Changed</option>
+                <option value="unchanged">Unchanged</option>
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Image quality <span className="optional-mark">Optional</span></span>
+              <select value={draft.imageQuality} onChange={(event) => updateField("imageQuality", event.currentTarget.value as ImageQuality)}>
+                <option value="not_recorded">Not recorded</option>
+                <option value="good">Good</option>
+                <option value="acceptable">Acceptable</option>
+                <option value="poor">Poor</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
         <details className="structured-details" open>
           <summary>Structured scan details <span>Optional</span></summary>
           {draft.pathway === "lung" ? (
@@ -305,7 +283,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               onUpdateVentilation={(value) =>
                 updateField("ventilatorySupport", value)
               }
-              onUpdateQuality={(value) => updateField("imageQuality", value)}
             />
           ) : draft.pathway === "heart" ? (
             <HeartDetails
@@ -382,28 +359,10 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
                 <span>Other comments</span>
                 <textarea value={draft.otherComments} maxLength={500} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
               </label>
-              <label className="form-field">
-                <span>Image quality</span>
-                <select value={draft.imageQuality} onChange={(event) => updateField("imageQuality", event.currentTarget.value as ImageQuality)}>
-                  <option value="not_recorded">Not recorded</option>
-                  <option value="good">Good</option>
-                  <option value="acceptable">Acceptable</option>
-                  <option value="poor">Poor</option>
-                </select>
-              </label>
             </div>
           ) : (
             <div className="dvt-details">
               <p className="case-mix-protocol">Required points include the saphenofemoral junction, common femoral vein, and popliteal vein. Attempt all views; distal views beyond the popliteal trifurcation are optional.</p>
-              <label className="form-field dvt-image-quality">
-                <span>Image quality</span>
-                <select value={draft.imageQuality} onChange={(event) => updateField("imageQuality", event.currentTarget.value as ImageQuality)}>
-                  <option value="not_recorded">Not recorded</option>
-                  <option value="good">Good</option>
-                  <option value="acceptable">Acceptable</option>
-                  <option value="poor">Poor</option>
-                </select>
-              </label>
               {DVT_SITES.map((site) => (
                 <fieldset className="checklist-fieldset dvt-site" key={site}>
                   <legend>{site}</legend>
@@ -504,14 +463,12 @@ interface LungDetailsProps {
     value: Assessment,
   ) => void;
   onUpdateVentilation: (value: string) => void;
-  onUpdateQuality: (value: ImageQuality) => void;
 }
 
 function LungDetails({
   draft,
   onUpdateRegion,
   onUpdateVentilation,
-  onUpdateQuality,
 }: LungDetailsProps) {
   return (
     <div className="structured-content">
@@ -525,20 +482,6 @@ function LungDetails({
             {VENTILATORY_SUPPORT.map((option) => (
               <option key={option}>{option}</option>
             ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Image quality</span>
-          <select
-            value={draft.imageQuality}
-            onChange={(event) =>
-              onUpdateQuality(event.currentTarget.value as ImageQuality)
-            }
-          >
-            <option value="not_recorded">Not recorded</option>
-            <option value="good">Good</option>
-            <option value="acceptable">Acceptable</option>
-            <option value="poor">Poor</option>
           </select>
         </label>
       </div>
