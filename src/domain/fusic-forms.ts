@@ -25,26 +25,40 @@ function estimatedTextWidth(value: string, size: number) {
   return [...value].reduce((width, character) => {
     const factor = character === " " ? 0.28
       : /[ilI1.,:;'|]/.test(character) ? 0.3
-        : /[MW@%&]/.test(character) ? 0.8
-          : /[A-Z]/.test(character) ? 0.62
-            : 0.52;
+        : /[MW@%]/.test(character) ? 0.9
+          : /[mw]/.test(character) ? 0.75
+            : /[A-Z]/.test(character) ? 0.66
+              : 0.56;
     return width + factor * size;
-  }, 0);
+  }, 0) * 1.04;
 }
 
 function wrapText(value: string, width: number, size: number) {
   const lines: string[] = [];
-  let line = "";
-  for (const word of value.trim().split(/\s+/).filter(Boolean)) {
-    const next = line ? `${line} ${word}` : word;
-    if (line && estimatedTextWidth(next, size) > width) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = next;
+  const paragraphs = value.split(/\r?\n/);
+  for (const paragraph of paragraphs) {
+    let line = "";
+    for (const word of paragraph.trim().split(/\s+/).filter(Boolean)) {
+      let remaining = word;
+      while (remaining && estimatedTextWidth(line ? `${line} ${remaining}` : remaining, size) > width) {
+        if (line) {
+          lines.push(line);
+          line = "";
+          continue;
+        }
+
+        let splitAt = 1;
+        while (splitAt < remaining.length && estimatedTextWidth(remaining.slice(0, splitAt + 1), size) <= width) {
+          splitAt += 1;
+        }
+        lines.push(remaining.slice(0, splitAt));
+        remaining = remaining.slice(splitAt);
+      }
+
+      if (remaining) line = line ? `${line} ${remaining}` : remaining;
     }
+    if (line) lines.push(line);
   }
-  if (line) lines.push(line);
   return lines;
 }
 
@@ -63,7 +77,8 @@ export function svgText(
   const fit = estimatedTextWidth(content, size) > box.width
     ? ` textLength="${box.width}" lengthAdjust="spacingAndGlyphs"`
     : "";
-  return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${size}"${fit} fill="#111">${escapeFormText(content)}</text>`;
+  const text = `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${size}"${fit} fill="#111">${escapeFormText(content)}</text>`;
+  return `<svg x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" overflow="hidden" aria-hidden="true">${text}</svg>`;
 }
 
 export function svgWrappedText(
@@ -74,13 +89,10 @@ export function svgWrappedText(
   const size = options.size ?? 17;
   const lineHeight = options.lineHeight ?? 24;
   const maxLines = Math.max(1, Math.floor(box.height / lineHeight));
-  return wrapText(value, box.width, size).slice(0, maxLines).map((line, index) =>
-    svgText(line, {
-      ...box,
-      y: box.y + index * lineHeight,
-      height: lineHeight,
-    }, { ...options, size }),
+  const lines = wrapText(value, Math.max(1, box.width - 4), size).slice(0, maxLines).map((line, index) =>
+    `<text x="${box.x}" y="${box.y + index * lineHeight + lineHeight / 2}" text-anchor="${options.anchor ?? "start"}" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${size}" fill="#111">${escapeFormText(line)}</text>`,
   ).join("");
+  return `<svg x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" overflow="hidden" aria-hidden="true">${lines}</svg>`;
 }
 
 export function svgRoundedMark(box: FormBox) {

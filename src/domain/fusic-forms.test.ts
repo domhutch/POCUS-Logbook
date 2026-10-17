@@ -47,6 +47,7 @@ describe("FUSIC form box layout", () => {
     );
 
     expect(output.match(/<text /g)).toHaveLength(2);
+    expect(output).toContain('width="55" height="48" viewBox="10 20 55 48" overflow="hidden"');
     expect(output).toContain('x="10" y="32"');
     expect(output).toContain('y="56"');
     expect(output).not.toContain("epsilon");
@@ -62,6 +63,7 @@ describe("FUSIC form box layout", () => {
     expect(output).toContain('x="25" y="30"');
     expect(output).toContain('textLength="30" lengthAdjust="spacingAndGlyphs"');
     expect(output).toContain("LongUnbrokenValue");
+    expect(output).toContain('width="30" height="20" viewBox="10 20 30 20" overflow="hidden"');
   });
 
   it("uses a wider sign-off marker for Heart image quality Acceptable", () => {
@@ -107,7 +109,8 @@ describe("FUSIC form box layout", () => {
     expect(document.match(/class="ics-form-sheet"/g)).toHaveLength(2);
     expect(document).toContain("fusic-abdomen-report-form-v1-2025.svg");
     expect(document).toContain("fusic-abdomen-report-form-v1-2025-page2.svg");
-    expect(document).toContain("Age 52 · Female · BMI 24.5");
+    expect(document).toContain("Age 52 · Female · BMI</text>");
+    expect(document).toContain(">24.5</text>");
     expect(document).toContain("Sample Operator");
     expect(document).toContain("Abdominal pain");
     expect(document).toContain("Normal liver and diaphragm; no fluid seen.");

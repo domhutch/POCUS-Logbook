@@ -20,12 +20,12 @@ const assessmentRows = [
 ] as const;
 
 const heartTextBoxes = {
-  demographics: { x: 366, y: 337.5, width: 280, height: 50 },
-  operator: { x: 849, y: 337.5, width: 260, height: 50 },
+  demographics: { x: 366, y: 337.5, width: 220, height: 50 },
+  operator: { x: 849, y: 337.5, width: 220, height: 50 },
   indication: { x: 371, y: 397.5, width: 720, height: 50 },
-  heartRate: { x: 442, y: 504, width: 220, height: 24 },
-  bloodPressure: { x: 688, y: 504, width: 220, height: 24 },
-  centralVenousPressure: { x: 925, y: 504, width: 230, height: 24 },
+  heartRate: { x: 442, y: 504, width: 140, height: 24 },
+  bloodPressure: { x: 688, y: 504, width: 110, height: 24 },
+  centralVenousPressure: { x: 925, y: 504, width: 150, height: 24 },
   cardiovascularSupport: { x: 371, y: 551, width: 740, height: 24 },
   summary: { x: 615, y: 1139.5, width: 560, height: 175 },
 } satisfies Record<string, FormBox>;

@@ -20,7 +20,7 @@ const findings = ["lungSliding", "bLines", "consolidation", "pleuralEffusion"] a
 const responseCenters = [[333, 402], [476, 557], [642, 732], [815, 888]] as const;
 
 const lungTextBoxes = {
-  demographics: { x: 365, y: 294, width: 290, height: 48 },
+  demographics: { x: 365, y: 294, width: 205, height: 48 },
   operator: { x: 725, y: 294, width: 310, height: 48 },
   indication: { x: 365, y: 373, width: 720, height: 48 },
   comments: { x: 300, y: 1308, width: 650, height: 120 },

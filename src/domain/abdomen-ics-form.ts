@@ -9,7 +9,7 @@ import {
 } from "./fusic-forms";
 
 const firstPageTextBoxes = {
-  demographics: { x: 394, y: 390, width: 260, height: 74 },
+  demographics: { x: 394, y: 390, width: 200, height: 74 },
   operator: { x: 922, y: 390, width: 140, height: 74 },
   indication: { x: 394, y: 488, width: 660, height: 48 },
   rightUpperQuadrant: { x: 740, y: 746, width: 320, height: 56 },
@@ -54,7 +54,7 @@ function createAbdomenFormSheets(entry: AbdomenCaseFields, operatorName: string)
     entry.patientBmi.trim() && `BMI ${entry.patientBmi.trim()}`,
   ].filter(Boolean).join(" · ");
   firstPageFields.push(svgWrappedText(demographics, firstPageTextBoxes.demographics, { size: 15, lineHeight: 25 }));
-  firstPageFields.push(svgWrappedText(operatorName, firstPageTextBoxes.operator, { lineHeight: 25 }));
+  firstPageFields.push(svgWrappedText(operatorName, firstPageTextBoxes.operator, { size: 15, lineHeight: 25 }));
   firstPageFields.push(svgWrappedText(entry.indication, firstPageTextBoxes.indication, { lineHeight: 24 }));
   firstPageFields.push(svgWrappedText(entry.rightUpperQuadrant, firstPageTextBoxes.rightUpperQuadrant, { size: 15, lineHeight: 17 }));
   firstPageFields.push(svgWrappedText(entry.leftUpperQuadrant, firstPageTextBoxes.leftUpperQuadrant, { size: 15, lineHeight: 17 }));
