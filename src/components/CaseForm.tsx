@@ -1,7 +1,5 @@
 import { useState, type FormEvent } from "react";
 import {
-  HEART_FINDINGS,
-  HEART_VIEWS,
   DVT_SITES,
   DVT_SITE_FINDINGS,
   HD_QUESTIONS,
@@ -23,8 +21,6 @@ import {
   type CaseDraft,
   type CaseType,
   type HeartCaseFields,
-  type HeartFinding,
-  type HeartView,
   type ImageQuality,
   type ImpressionCategory,
   type LungCaseFields,
@@ -34,6 +30,7 @@ import {
 } from "../domain/logbook";
 import { findPrivacyWarnings } from "../domain/privacy-check";
 import { AbdomenFormFields } from "../pathways/abdomen/AbdomenFormFields";
+import { HeartFormFields } from "../pathways/heart/HeartFormFields";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -51,12 +48,6 @@ const VENTILATORY_SUPPORT = [
   "BiPAP",
   "CPAP / NHF",
 ];
-
-function updateArrayItem<T extends string>(values: T[], value: T) {
-  return values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
-}
 
 function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -102,14 +93,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         : [...draft.regions, region]
       : draft.regions.filter((recordedRegion) => recordedRegion !== region);
     onChange({ ...draft, findings: nextFindings, regions: nextRegions });
-  }
-
-  function updateHeartFinding(key: HeartFinding, value: Assessment) {
-    if (draft.pathway !== "heart") return;
-    onChange({
-      ...draft,
-      findings: { ...draft.findings, [key]: value },
-    });
   }
 
   function updateDvtFinding(site: DvtSite, finding: DvtSiteFinding, value: Assessment) {
@@ -318,12 +301,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               }
             />
           ) : draft.pathway === "heart" ? (
-            <HeartDetails
-              draft={draft}
-              onUpdateFinding={updateHeartFinding}
-              onUpdateViews={(views) => updateField("views", views)}
-              onUpdateField={(key, value) => updateField(key, value)}
-            />
+            <HeartFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "abdomen" ? (
             <AbdomenFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "dvt" ? (
@@ -604,143 +582,6 @@ function LungDetails({
           </section>
         ))}
       </section>
-    </div>
-  );
-}
-
-interface HeartDetailsProps {
-  draft: Extract<CaseDraft, { pathway: "heart" }>;
-  onUpdateFinding: (key: HeartFinding, value: Assessment) => void;
-  onUpdateViews: (views: HeartView[]) => void;
-  onUpdateField: <K extends keyof HeartCaseFields>(
-    key: K,
-    value: HeartCaseFields[K],
-  ) => void;
-}
-
-function HeartDetails({
-  draft,
-  onUpdateFinding,
-  onUpdateViews,
-  onUpdateField,
-}: HeartDetailsProps) {
-  return (
-    <div className="structured-content">
-      <div className="form-grid structured-top-fields">
-        <label className="form-field">
-          <span>Ventilatory support</span>
-          <select
-            value={draft.ventilatorySupport}
-            onChange={(event) =>
-              onUpdateField("ventilatorySupport", event.currentTarget.value)
-            }
-          >
-            {VENTILATORY_SUPPORT.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Cardiovascular support <span className="optional-mark">Optional</span></span>
-          <input
-            type="text"
-            maxLength={120}
-            value={draft.cardiovascularSupport}
-            onChange={(event) =>
-              onUpdateField("cardiovascularSupport", event.currentTarget.value)
-            }
-          />
-        </label>
-        <label className="form-field">
-          <span>Heart rate <span className="optional-mark">Optional</span></span>
-          <input
-            type="text"
-            maxLength={40}
-            value={draft.heartRate}
-            onChange={(event) =>
-              onUpdateField("heartRate", event.currentTarget.value)
-            }
-          />
-        </label>
-        <label className="form-field">
-          <span>Blood pressure <span className="optional-mark">Optional</span></span>
-          <input
-            type="text"
-            maxLength={40}
-            value={draft.bloodPressure}
-            onChange={(event) =>
-              onUpdateField("bloodPressure", event.currentTarget.value)
-            }
-          />
-        </label>
-        <label className="form-field">
-          <span>CVP <span className="optional-mark">Optional</span></span>
-          <input
-            type="text"
-            maxLength={40}
-            value={draft.centralVenousPressure}
-            onChange={(event) =>
-              onUpdateField("centralVenousPressure", event.currentTarget.value)
-            }
-          />
-        </label>
-      </div>
-      <fieldset className="checklist-fieldset">
-        <legend>Views obtained</legend>
-        <div className="heart-view-list">
-          {HEART_VIEWS.map((view) => (
-            <label className="check-option" key={view}>
-              <input
-                type="checkbox"
-                checked={draft.views.includes(view)}
-                onChange={() =>
-                  onUpdateViews(updateArrayItem(draft.views, view))
-                }
-              />
-              <span>{view}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <fieldset className="checklist-fieldset">
-        <legend>Assessment findings</legend>
-        <div className="heart-findings-list">
-          {HEART_FINDINGS.map(([key, label]) => {
-            const selected =
-              draft.findings[key] === "unable"
-                ? "not_assessed"
-                : draft.findings[key];
-            return (
-              <div className="heart-finding-control" key={key}>
-                <span className="heart-finding-label">{label}</span>
-                <div
-                  className="heart-assessment-options"
-                  role="group"
-                  aria-label={label}
-                >
-                  {(
-                    [
-                      ["yes", "Yes"],
-                      ["no", "No"],
-                      ["not_assessed", "Not assessed"],
-                    ] as const
-                  ).map(([value, optionLabel]) => (
-                    <button
-                      className="heart-assessment-option"
-                      type="button"
-                      key={value}
-                      aria-pressed={selected === value}
-                      onClick={() => onUpdateFinding(key, value)}
-                    >
-                      {optionLabel}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </fieldset>
     </div>
   );
 }
