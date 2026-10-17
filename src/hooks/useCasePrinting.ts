@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { createCasePrintDocument, createCaseReportsPrintDocument } from "../domain/case-print";
+import { createHeartIcsFormPrintDocument } from "../domain/heart-ics-form";
 import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -95,11 +96,11 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     setIsFrameReady(false);
   }
 
-  function printCase(entry: LogbookCase) {
+  function printCase(entry: LogbookCase, defaultOperatorName = "") {
     setError(null);
     try {
       printDocument(
-        createCasePrintDocument(entry),
+        createCasePrintDocument(entry, defaultOperatorName),
         `pocus-${entry.pathway}-case-${entry.date}.pdf`,
         ".sheet",
       );
@@ -108,11 +109,24 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     }
   }
 
-  function printLogbook(cases: LogbookCase[], pathway: Pathway) {
+  function printHeartIcsForm(entry: Extract<LogbookCase, { pathway: "heart" }>) {
     setError(null);
     try {
       printDocument(
-        createLogbookPrintDocument(cases, pathway),
+        createHeartIcsFormPrintDocument(entry),
+        `heart-ics-report-form-${entry.date}.pdf`,
+        ".ics-form-sheet",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The Heart report form could not be created."));
+    }
+  }
+
+  function printLogbook(cases: LogbookCase[], pathway: Pathway, operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createLogbookPrintDocument(cases, pathway, operatorName),
         `pocus-${pathway}-logbook.pdf`,
         "main",
       );
@@ -121,11 +135,11 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     }
   }
 
-  function printCaseReports(cases: LogbookCase[], pathway: Pathway) {
+  function printCaseReports(cases: LogbookCase[], pathway: Pathway, operatorName = "") {
     setError(null);
     try {
       printDocument(
-        createCaseReportsPrintDocument(cases, pathway),
+        createCaseReportsPrintDocument(cases, pathway, operatorName),
         `pocus-${pathway}-case-reports.pdf`,
         ".report-collection",
       );
@@ -175,6 +189,8 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
       .toolbar { display: none !important; }
       .sheet { padding: 0 !important; border: 0 !important; box-shadow: none !important; }
+      .sheet h1 { font-size: calc(var(--heading-one-size, 15pt) / var(--print-scale, 1)) !important; }
+      .sheet h2 { font-size: calc(var(--heading-two-size, 9pt) / var(--print-scale, 1)) !important; }
       .logbook-page { min-height: 0 !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
     `;
     sourceDocument.head.append(captureStyle);
@@ -191,7 +207,9 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       if (pageElements.length === 0) {
         throw new Error("The PDF preview does not contain any printable pages.");
       }
-      const margin = downloadInfo.contentSelector === "main" ? 10 : 8;
+      const margin = downloadInfo.contentSelector === "main"
+        ? 10
+        : downloadInfo.contentSelector === ".ics-form-sheet" ? 0 : 8;
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -256,6 +274,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     downloadError,
     frameRef,
     printCase,
+    printHeartIcsForm,
     printLogbook,
     printCaseReports,
     closePreview,

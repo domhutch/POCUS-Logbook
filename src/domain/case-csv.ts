@@ -47,7 +47,7 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
   const sequenceNumbers = getCaseSequenceNumbers(pathwayCases);
   const detailColumns = pathway === "lung"
     ? ["Ventilatory support", "Regions scanned", ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([, label]) => `${region} · ${label}`))]
-    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : pathway === "abdomen" ? ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"] : pathway === "dvt" ? DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([, label]) => `${site} · ${label}`)).concat("Other comments") : pathway === "hd" ? [...HD_QUESTIONS.flatMap(([, label]) => [`${label} · Finding`, `${label} · Notes`]), ...HD_MEASUREMENTS.map(([, label]) => label), "Other comments"] : ["Procedure category", "Procedure", "Site of insertion", "Type of line", "PICC/midline quota substitution", ...VASCULAR_ASSESSMENTS.map(([, label]) => label), "Comments"];
+    : pathway === "heart" ? ["Age (years)", "Gender", "BMI", "Operator", "Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : pathway === "abdomen" ? ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"] : pathway === "dvt" ? DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([, label]) => `${site} · ${label}`)).concat("Other comments") : pathway === "hd" ? [...HD_QUESTIONS.flatMap(([, label]) => [`${label} · Finding`, `${label} · Notes`]), ...HD_MEASUREMENTS.map(([, label]) => label), "Other comments"] : ["Procedure category", "Procedure", "Site of insertion", "Type of line", "PICC/midline quota substitution", ...VASCULAR_ASSESSMENTS.map(([, label]) => label), "Comments"];
   const headers = [...commonColumns(), ...detailColumns, "Summary of main findings", "Reflection"];
 
   const rows = pathwayCases
@@ -74,6 +74,10 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
             ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([key]) => assessment(entry.findings[region][key]))),
           ]
         : entry.pathway === "heart" ? [
+            entry.patientAge.trim(),
+            entry.patientGender.trim(),
+            entry.patientBmi.trim(),
+            entry.operatorName.trim(),
             entry.ventilatorySupport.trim(),
             entry.views.join("; "),
             entry.cardiovascularSupport.trim(),

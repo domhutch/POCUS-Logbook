@@ -98,7 +98,7 @@ function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
       .join("")}</tr>`;
   }).join("");
 
-  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
+  return `<section class="section"><h2>Demographics</h2><div class="field-grid">${field("Age (years)", entry.patientAge)}${field("Gender", entry.patientGender)}${field("BMI", entry.patientBmi)}</div><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
 }
 
 function abdomenDetails(entry: Extract<LogbookCase, { pathway: "abdomen" }>) {
@@ -123,7 +123,7 @@ function vascularDetails(entry: Extract<LogbookCase, { pathway: "vascular" }>) {
   return `<section class="section"><h2>Procedure details</h2><div class="field-grid">${field("Procedure category", VASCULAR_PROCEDURES.find(([key]) => key === entry.procedureCategory)?.[1] ?? entry.procedureCategory)}${field("Procedure", entry.procedure)}${field("Site of insertion", entry.insertionSite)}${field("Type of line", entry.lineType)}${field("PICC/midline quota substitution", entry.piccMidlineSubstitution ? "Yes, counted as an allowed substitute" : "No")}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Scan and procedure checks</h2><table class="report-table vascular-table"><tbody>${checks}</tbody></table>${field("Comments", entry.otherComments)}</section>`;
 }
 
-export function createCasePrintDocument(entry: LogbookCase) {
+export function createCasePrintDocument(entry: LogbookCase, defaultOperatorName = "") {
   const supervision = formatSupervision(entry);
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
@@ -133,6 +133,8 @@ export function createCasePrintDocument(entry: LogbookCase) {
   const management = entry.managementImpact === "not_recorded"
     ? ""
     : formatManagementImpact(entry.managementImpact);
+  const operatorName = defaultOperatorName.trim() ||
+    (entry.pathway === "heart" ? entry.operatorName : "");
   const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : entry.pathway === "abdomen" ? abdomenDetails(entry) : entry.pathway === "dvt" ? dvtDetails(entry) : entry.pathway === "hd" ? hdDetails(entry) : vascularDetails(entry);
 
   return `<!doctype html>
@@ -142,12 +144,12 @@ export function createCasePrintDocument(entry: LogbookCase) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(PATHWAYS[entry.pathway].label)} case · ${escapeHtml(entry.date)}</title>
   <style>
-    :root { --print-scale: 1; color: #213a34; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
+    :root { --print-scale: 1; --heading-one-size: 15pt; --heading-two-size: 9pt; color: #213a34; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
     * { box-sizing: border-box; }
     body { width: 194mm; margin: 0 auto; padding: 0; }
     h1, h2, h3, p { margin: 0; }
-    h1 { font-size: 16pt; letter-spacing: -.03em; }
-    h2 { margin: 2.5mm 0 1.2mm; padding-bottom: .7mm; border-bottom: .3mm solid #66746b; color: #213a34; font-size: 9pt; }
+    h1 { font-size: var(--heading-one-size); letter-spacing: -.03em; }
+    h2 { margin: 2.5mm 0 1.2mm; padding-bottom: .7mm; border-bottom: .3mm solid #66746b; color: #213a34; font-size: var(--heading-two-size); }
     .toolbar { display: flex; justify-content: flex-end; margin-bottom: 8mm; }
     .print-button { padding: 9px 14px; border: 0; border-radius: 6px; background: #17675d; color: white; font-size: 10pt; font-weight: 700; cursor: pointer; }
     .sheet { width: 194mm; padding: 6mm; border: .3mm solid #79847c; background: white; }
@@ -198,6 +200,8 @@ export function createCasePrintDocument(entry: LogbookCase) {
     @media print {
       body { width: 194mm; }
       .sheet { zoom: var(--print-scale, 1); padding: 0; border: 0; }
+      h1 { font-size: calc(var(--heading-one-size) / var(--print-scale, 1)); }
+      h2 { font-size: calc(var(--heading-two-size) / var(--print-scale, 1)); }
       .toolbar { display: none; }
       .sheet { break-inside: avoid; }
     }
@@ -217,6 +221,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
     <section class="section"><h2>Case details</h2><div class="field-grid">
       ${field("Case type", caseType)}
       ${field("Supervision", supervision)}
+      ${field("Operator", operatorName)}
       ${field("Indication for scan", entry.indication)}
       ${field("Diagnosis / impression", entry.diagnosis)}
       ${field("Impression category", impression)}
@@ -233,6 +238,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
     function fitPrintSheet() {
       const sheet = document.querySelector(".sheet");
       if (!sheet) return;
+      document.documentElement.style.setProperty("--print-scale", "1");
       const printableHeight = 275 * 96 / 25.4;
       const scale = Math.min(1, printableHeight / sheet.offsetHeight);
       document.documentElement.style.setProperty("--print-scale", scale.toFixed(4));
@@ -248,10 +254,11 @@ export function createCasePrintDocument(entry: LogbookCase) {
 export function createCaseReportsPrintDocument(
   cases: LogbookCase[],
   pathway: LogbookCase["pathway"],
+  operatorName = "",
 ) {
   const reports = cases
     .filter((entry) => entry.pathway === pathway)
-    .map((entry) => createCasePrintDocument(entry));
+    .map((entry) => createCasePrintDocument(entry, operatorName));
   if (reports.length === 0) {
     throw new Error("There are no saved cases to include in this PDF.");
   }
@@ -285,6 +292,7 @@ export function createCaseReportsPrintDocument(
   function fitReportSheets() {
     const printableHeight = 275 * 96 / 25.4;
     document.querySelectorAll(".report-collection .sheet").forEach((sheet) => {
+      sheet.style.setProperty("--print-scale", "1");
       const scale = Math.min(1, printableHeight / sheet.offsetHeight);
       sheet.style.setProperty("--print-scale", scale.toFixed(4));
     });

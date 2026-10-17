@@ -21,6 +21,7 @@ interface CaseListProps {
   onAddFirstCase: () => void;
   onReview: (entry: LogbookCase) => void;
   onPrint: (entry: LogbookCase) => void;
+  onPrintHeartIcsForm: (entry: Extract<LogbookCase, { pathway: "heart" }>) => void;
   onEdit: (entry: LogbookCase) => void;
   onDelete: (entry: LogbookCase) => void;
 }
@@ -68,6 +69,7 @@ function CaseList({
   onAddFirstCase,
   onReview,
   onPrint,
+  onPrintHeartIcsForm,
   onEdit,
   onDelete,
 }: CaseListProps) {
@@ -162,6 +164,7 @@ function CaseList({
                 <div className="case-actions">
                   <button className="text-button" onClick={() => onReview(entry)} aria-label={`Review ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Review</button>
                   <button className="text-button" onClick={() => onPrint(entry)} aria-label={`Print or save ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date} as PDF`}>PDF</button>
+                  {entry.pathway === "heart" && <button className="text-button" onClick={() => onPrintHeartIcsForm(entry)} aria-label={`Print or save the ICS Heart report form for case ${caseNumbers.get(entry.id)} from ${date}`}>ICS form</button>}
                   <button className="text-button" onClick={() => onEdit(entry)} aria-label={`Edit ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Edit</button>
                   <button className="text-button text-button-danger" onClick={() => onDelete(entry)} aria-label={`Delete ${PATHWAYS[pathway].label} case ${caseNumbers.get(entry.id)} from ${date}`}>Delete</button>
                 </div>

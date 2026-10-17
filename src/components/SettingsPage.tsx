@@ -40,6 +40,7 @@ function SettingsPage({
   onRestoreBackup,
 }: SettingsPageProps) {
   const [newSupervisor, setNewSupervisor] = useState("");
+  const [operatorName, setOperatorName] = useState(settings.operatorName);
   const [backupPassphrase, setBackupPassphrase] = useState("");
   const [confirmPassphrase, setConfirmPassphrase] = useState("");
   const [showAboutHelp, setShowAboutHelp] = useState(false);
@@ -147,6 +148,33 @@ function SettingsPage({
         ) : (
           <p className="settings-empty">No supervisors saved yet. You can still enter a name directly on a case.</p>
         )}
+      </section>
+
+      <section className="settings-panel" aria-labelledby="operator-heading">
+        <div className="settings-panel-heading">
+          <h3 id="operator-heading">Printout operator name</h3>
+          <p>This name is carried onto case, logbook and ICS Heart printouts. New Heart cases save it with the case.</p>
+        </div>
+        <form className="supervisor-add-form" onSubmit={(event) => {
+          event.preventDefault();
+          updateSettings({ ...settings, operatorName: operatorName.trim() });
+        }}>
+          <label className="settings-field">
+            <span>Your name for printouts</span>
+            <input
+              type="text"
+              maxLength={100}
+              value={operatorName}
+              onChange={(event) => setOperatorName(event.currentTarget.value)}
+              placeholder="Name to print on Heart reports"
+              disabled={isSaving}
+            />
+          </label>
+          <button className="button button-primary" type="submit" disabled={isSaving}>
+            Save operator name
+          </button>
+        </form>
+        {status && <p className="settings-status" role="status">{status}</p>}
       </section>
 
       <section className="settings-panel" aria-labelledby="curriculum-heading">

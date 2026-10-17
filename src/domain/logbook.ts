@@ -217,6 +217,10 @@ export interface LungCaseFields extends CaseFields {
 
 export interface HeartCaseFields extends CaseFields {
   pathway: "heart";
+  patientAge: string;
+  patientGender: string;
+  patientBmi: string;
+  operatorName: string;
   ventilatorySupport: string;
   cardiovascularSupport: string;
   heartRate: string;
@@ -376,6 +380,10 @@ export function createDraft(pathway: Pathway): CaseDraft {
   return {
     ...newCaseFields(),
     pathway,
+    patientAge: "",
+    patientGender: "",
+    patientBmi: "",
+    operatorName: "",
     ventilatorySupport: "Not recorded",
     cardiovascularSupport: "",
     heartRate: "",

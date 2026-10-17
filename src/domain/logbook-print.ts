@@ -59,6 +59,7 @@ function pageRows(pathway: Pathway, totalRows: number) {
 export function createLogbookPrintDocument(
   cases: LogbookCase[],
   pathway: Pathway,
+  operatorName = "",
 ) {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
   const sequenceNumbers = getCaseSequenceNumbers(pathwayCases);
@@ -69,6 +70,9 @@ export function createLogbookPrintDocument(
   const totalRows = Math.max(requirements.totalScans, pathwayCases.length);
   const capacities = pageRows(pathway, totalRows);
   const pathwayLabel = PATHWAYS[pathway].label;
+  const operatorLabel = operatorName.trim()
+    ? ` · Operator: ${escapeHtml(operatorName.trim())}`
+    : "";
   let studyNumber = 1;
 
   const pages = capacities.map((capacity, pageIndex) => {
@@ -82,7 +86,7 @@ export function createLogbookPrintDocument(
         <div>
           <p class="brand">CritSono: POCUS Logbook · Personal training record</p>
           <h1>${escapeHtml(pathwayLabel)} logbook</h1>
-          <p class="subtitle">Training logbook · Independent personal copy · Not an official FUSIC form</p>
+          <p class="subtitle">Training logbook · Independent personal copy · Not an official FUSIC form${operatorLabel}</p>
         </div>
         <div class="page-reference">${pageIndex + 1} / ${capacities.length}</div>
       </header>

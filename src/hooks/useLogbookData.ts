@@ -26,6 +26,7 @@ export function useLogbookData() {
     useState<Record<Pathway, boolean>>(INITIAL_TRAINING_MODES);
   const [appSettings, setAppSettings] = useState<AppSettings>({
     supervisors: [],
+    operatorName: "",
     textSize: "default",
     textScaleVersion: 2,
     curriculum: "fusic",

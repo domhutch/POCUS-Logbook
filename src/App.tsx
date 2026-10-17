@@ -130,9 +130,21 @@ function App() {
     setCaseSaveStatus(null);
     setReturnPage(activePage === "form" ? "overview" : activePage);
     const newDraft = createDraft(activePathway);
+    if (newDraft.pathway === "heart") newDraft.operatorName = appSettings.operatorName;
     initialDraftRef.current = JSON.stringify(newDraft);
     setDraft(newDraft);
     setActivePage("form");
+  }
+
+  function printCase(entry: LogbookCase) {
+    printing.printCase(entry, appSettings.operatorName);
+  }
+
+  function printHeartIcsForm(entry: Extract<LogbookCase, { pathway: "heart" }>) {
+    printing.printHeartIcsForm({
+      ...entry,
+      operatorName: appSettings.operatorName.trim() || entry.operatorName,
+    });
   }
 
   function startEditing(entry: LogbookCase) {
@@ -583,8 +595,8 @@ function App() {
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
             onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
-            onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway)}
-            onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway)}
+            onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway, appSettings.operatorName)}
+            onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway, appSettings.operatorName)}
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
             onExportBackup={(passphrase) => backup.exportBackup(passphrase)}
             onRestoreBackup={(event, passphrase) => backup.restoreBackupFromFile(event, passphrase)}
@@ -595,6 +607,8 @@ function App() {
           <CaseReview
             entry={reviewedCase}
             caseNumber={caseNumbers.get(reviewedCase.id) ?? 1}
+            onPrint={() => printCase(reviewedCase)}
+            onPrintHeartIcsForm={() => reviewedCase.pathway === "heart" && printHeartIcsForm(reviewedCase)}
             onEdit={() => startEditing(reviewedCase)}
             onClose={closeReview}
           />
@@ -627,7 +641,8 @@ function App() {
             onFilterChange={setCaseFilter}
             onAddFirstCase={startNewCase}
             onReview={startReviewing}
-            onPrint={printing.printCase}
+            onPrint={printCase}
+            onPrintHeartIcsForm={printHeartIcsForm}
             onEdit={startEditing}
             onDelete={(entry) => void handleDelete(entry)}
           />

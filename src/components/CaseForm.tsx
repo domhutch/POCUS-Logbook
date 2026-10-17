@@ -253,6 +253,22 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         <details className="structured-details optional-details" open>
           <summary>Case context and review markers <span>Optional</span></summary>
           <div className="form-grid">
+            {draft.pathway === "heart" && (
+              <>
+                <label className="form-field">
+                  <span>Age (years) <span className="optional-mark">Optional</span></span>
+                  <input type="number" min="0" max="120" step="1" value={draft.patientAge} onChange={(event) => updateField("patientAge", event.currentTarget.value)} />
+                </label>
+                <label className="form-field">
+                  <span>Gender <span className="optional-mark">Optional</span></span>
+                  <input type="text" maxLength={40} value={draft.patientGender} onChange={(event) => updateField("patientGender", event.currentTarget.value)} />
+                </label>
+                <label className="form-field">
+                  <span>BMI <span className="optional-mark">Optional</span></span>
+                  <input type="number" min="0" max="100" step="0.1" value={draft.patientBmi} onChange={(event) => updateField("patientBmi", event.currentTarget.value)} />
+                </label>
+              </>
+            )}
             <label className="form-field">
               <span>Indication <span className="optional-mark">Optional</span></span>
               <input type="text" maxLength={160} placeholder="e.g. breathlessness" value={draft.indication} onChange={(event) => updateField("indication", event.currentTarget.value)} />
@@ -288,6 +304,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               </select>
             </label>
           </div>
+          {draft.pathway === "heart" && <p className="privacy-note">Demographics are stored with this case and included in exports. Do not enter patient names, dates of birth, or record numbers.</p>}
         </details>
 
         <details className="structured-details" open>

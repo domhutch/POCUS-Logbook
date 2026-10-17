@@ -24,6 +24,8 @@ import {
 interface CaseReviewProps {
   entry: LogbookCase;
   caseNumber: number;
+  onPrint: () => void;
+  onPrintHeartIcsForm: () => void;
   onEdit: () => void;
   onClose: () => void;
 }
@@ -37,7 +39,7 @@ function ReviewField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
+function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onEdit, onClose }: CaseReviewProps) {
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
   const supervision = formatSupervision(entry);
@@ -66,6 +68,14 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
           {entry.diagnosis && <p className="case-review-diagnosis">{entry.diagnosis}</p>}
         </div>
         <div className="case-review-actions">
+          <button className="button button-secondary" type="button" onClick={onPrint}>
+            PDF
+          </button>
+          {entry.pathway === "heart" && (
+            <button className="button button-secondary" type="button" onClick={onPrintHeartIcsForm}>
+              ICS PDF
+            </button>
+          )}
           <button className="button button-secondary" type="button" onClick={onClose}>
             Back to cases
           </button>
@@ -76,9 +86,17 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
       </header>
 
       <section className="review-section" aria-labelledby="review-details-title">
-        <h3 id="review-details-title">Case details</h3>
+        <h3 id="review-details-title">Case context and review markers</h3>
         <dl className="review-fields">
           <ReviewField label="Case type" value={caseType} />
+          {entry.pathway === "heart" && (
+            <>
+              <ReviewField label="Age (years)" value={entry.patientAge} />
+              <ReviewField label="Gender" value={entry.patientGender} />
+              <ReviewField label="BMI" value={entry.patientBmi} />
+              <ReviewField label="Operator" value={entry.operatorName} />
+            </>
+          )}
           <ReviewField label="Indication" value={entry.indication} />
           <ReviewField label="Diagnosis / impression" value={entry.diagnosis} />
           <ReviewField label="Supervision" value={supervision} />

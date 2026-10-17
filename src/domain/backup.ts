@@ -31,7 +31,7 @@ import {
   type VascularAssessment,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 7;
+export const BACKUP_SCHEMA_VERSION = 8;
 export const BACKUP_APP_ID = "pocus-logbook";
 const VERSION_ONE_BACKUP = 1;
 const VERSION_TWO_BACKUP = 2;
@@ -39,6 +39,7 @@ const VERSION_THREE_BACKUP = 3;
 const VERSION_FOUR_BACKUP = 4;
 const VERSION_FIVE_BACKUP = 5;
 const VERSION_SIX_BACKUP = 6;
+const VERSION_SEVEN_BACKUP = 7;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -109,6 +110,20 @@ const lungCaseFields = [
   "findings",
 ];
 const heartCaseFields = [
+  ...caseFields,
+  "patientAge",
+  "patientGender",
+  "patientBmi",
+  "operatorName",
+  "ventilatorySupport",
+  "cardiovascularSupport",
+  "heartRate",
+  "bloodPressure",
+  "centralVenousPressure",
+  "views",
+  "findings",
+];
+const versionSevenHeartCaseFields = [
   ...caseFields,
   "ventilatorySupport",
   "cardiovascularSupport",
@@ -352,8 +367,13 @@ function isLogbookCase(
           ? versionOneHeartCaseFields
           : schemaVersion === VERSION_TWO_BACKUP
             ? versionTwoHeartCaseFields
-            : heartCaseFields,
+            : schemaVersion === BACKUP_SCHEMA_VERSION
+              ? heartCaseFields
+              : versionSevenHeartCaseFields,
       ) &&
+      (schemaVersion !== BACKUP_SCHEMA_VERSION ||
+        (isString(value.patientAge, 20) && isString(value.patientGender, 40) &&
+          isString(value.patientBmi, 20) && isString(value.operatorName, 100))) &&
       isString(value.cardiovascularSupport, 120) &&
       isString(value.heartRate, 40) &&
       isString(value.bloodPressure, 40) &&
@@ -380,7 +400,7 @@ function isLogbookCase(
       isHdStringRecord(value.questionNotes, hdQuestions) && isHdStringRecord(value.measurements, hdMeasurements) &&
       isString(value.otherComments);
   }
-  if (value.pathway === "vascular" && schemaVersion === BACKUP_SCHEMA_VERSION) {
+  if (value.pathway === "vascular" && schemaVersion >= VERSION_SEVEN_BACKUP && schemaVersion <= BACKUP_SCHEMA_VERSION) {
     return hasExactKeys(value, vascularCaseFields) && isEnum(value.procedureCategory, vascularProcedures) &&
       isString(value.procedure, 500) && isString(value.insertionSite, 160) && isString(value.lineType, 160) && typeof value.piccMidlineSubstitution === "boolean" &&
       isVascularAssessmentRecord(value.assessments) && isString(value.otherComments, 2000);
@@ -404,7 +424,7 @@ function isBackupEnvelope(value: unknown): value is BackupEnvelope {
     Array.isArray(value.cases) &&
     isRecord(value.pathwayModes) &&
     hasExactKeys(value.pathwayModes,
-      value.schemaVersion === BACKUP_SCHEMA_VERSION ? ["lung", "heart", "abdomen", "dvt", "hd", "vascular"] :
+      value.schemaVersion >= VERSION_SEVEN_BACKUP ? ["lung", "heart", "abdomen", "dvt", "hd", "vascular"] :
         value.schemaVersion === VERSION_SIX_BACKUP ? ["lung", "heart", "abdomen", "dvt", "hd"] :
         value.schemaVersion === VERSION_FIVE_BACKUP ? ["lung", "heart", "abdomen", "dvt"] :
         value.schemaVersion === VERSION_FOUR_BACKUP ? ["lung", "heart", "abdomen"] : ["lung", "heart"],
@@ -414,7 +434,7 @@ function isBackupEnvelope(value: unknown): value is BackupEnvelope {
     (value.schemaVersion < VERSION_FOUR_BACKUP || typeof value.pathwayModes.abdomen === "boolean") &&
     (value.schemaVersion < VERSION_FIVE_BACKUP || typeof value.pathwayModes.dvt === "boolean") &&
     (value.schemaVersion < VERSION_SIX_BACKUP || typeof value.pathwayModes.hd === "boolean") &&
-    (value.schemaVersion !== BACKUP_SCHEMA_VERSION || typeof value.pathwayModes.vascular === "boolean")
+    (value.schemaVersion < VERSION_SEVEN_BACKUP || typeof value.pathwayModes.vascular === "boolean")
   );
 }
 
@@ -449,6 +469,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       VERSION_FOUR_BACKUP,
       VERSION_FIVE_BACKUP,
       VERSION_SIX_BACKUP,
+      VERSION_SEVEN_BACKUP,
       BACKUP_SCHEMA_VERSION,
     ].includes(value.schemaVersion) ||
     !value.cases.every((entry) =>
@@ -534,6 +555,21 @@ export function parseBackup(serialized: string): LogbookBackup {
       exportedAt: value.exportedAt,
       cases: value.cases as VersionSixLogbookCase[],
       pathwayModes: { ...value.pathwayModes, vascular: true } as Record<Pathway, boolean>,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_SEVEN_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases.map((entry): LogbookCase => {
+        const legacyEntry = entry as unknown as LogbookCase;
+        return legacyEntry.pathway === "heart"
+          ? { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "", operatorName: "" }
+          : legacyEntry;
+      }),
+      pathwayModes: value.pathwayModes as Record<Pathway, boolean>,
     };
   }
 

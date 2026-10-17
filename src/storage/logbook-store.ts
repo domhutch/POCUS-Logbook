@@ -27,6 +27,7 @@ export const DEFAULT_ENABLED_MODULES: Record<Pathway, boolean> = {
 
 export interface AppSettings {
   supervisors: string[];
+  operatorName: string;
   textSize: TextSize;
   textScaleVersion: number;
   curriculum: Curriculum;
@@ -36,6 +37,7 @@ export interface AppSettings {
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
   supervisors: [],
+  operatorName: "",
   textSize: "default",
   textScaleVersion: 2,
   curriculum: "fusic",
@@ -105,7 +107,16 @@ const database = openDB<LogbookDatabase>("pocus-logbook", 4, {
 });
 
 export async function getCases(): Promise<LogbookCase[]> {
-  return (await database).getAll("cases");
+  const records = await (await database).getAll("cases");
+  return records.map((record) => record.pathway === "heart"
+    ? {
+        ...record,
+        patientAge: record.patientAge ?? "",
+        patientGender: record.patientGender ?? "",
+        patientBmi: record.patientBmi ?? "",
+        operatorName: record.operatorName ?? "",
+      }
+    : record);
 }
 
 export async function saveCase(draft: CaseDraft): Promise<void> {
@@ -163,6 +174,7 @@ export async function getAppSettings(): Promise<AppSettings> {
   if (!settings) return DEFAULT_APP_SETTINGS;
   if (
     settings.textScaleVersion !== 2 ||
+    typeof settings.operatorName !== "string" ||
     !settings.curriculum ||
     !settings.enabledModules ||
     typeof settings.onboardingComplete !== "boolean" ||
@@ -173,6 +185,7 @@ export async function getAppSettings(): Promise<AppSettings> {
   ) {
     const migrated: AppSettings = {
       supervisors: settings.supervisors,
+      operatorName: settings.operatorName ?? "",
       textSize:
         settings.textScaleVersion !== 2 && settings.textSize === "large"
           ? "default"
@@ -195,6 +208,7 @@ export async function getAppSettings(): Promise<AppSettings> {
   }
   return {
     supervisors: settings.supervisors,
+    operatorName: settings.operatorName,
     textSize: settings.textSize,
     textScaleVersion: settings.textScaleVersion,
     curriculum: settings.curriculum,
