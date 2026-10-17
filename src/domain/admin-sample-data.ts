@@ -64,6 +64,9 @@ function populateStructuredFields(draft: CaseDraft, index: number) {
   }
 
   if (draft.pathway === "abdomen") {
+    draft.patientAge = String(38 + (index % 47));
+    draft.patientGender = index % 2 ? "Female" : "Male";
+    draft.patientBmi = String((21 + (index % 17) * 0.7).toFixed(1));
     draft.examinationPoints = [...ABDOMEN_EXAMINATION_POINTS];
     draft.rightUpperQuadrant = index % 2 ? "Liver visualised; no free fluid in this view." : "Liver visualised; sample trace free fluid noted.";
     draft.leftUpperQuadrant = "Spleen and left subphrenic space visualised; no free fluid.";

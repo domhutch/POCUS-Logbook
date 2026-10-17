@@ -129,6 +129,7 @@ The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW
 - [x] Add contributor setup and contribution guidance, issue templates, and security reporting instructions.
 - [x] Generate production dependency notices and document the source and rights status of public assets.
 - [ ] Confirm redistribution rights for uncleared public assets or replace them before release; review generated notices before each release.
+- [ ] Verify permission to reproduce and redistribute FUSIC/ICS report-form artwork and logos in the app and source repository before treating the bundled templates as cleared for release.
 - [x] Run `npm ci` and `npm run check` on pull requests, and pin GitHub Actions to verified immutable commit SHAs.
 - [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.
 - [x] Extract case lifecycle, settings persistence, and sample-data management from `App.tsx` into focused hooks.

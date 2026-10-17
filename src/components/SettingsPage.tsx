@@ -12,6 +12,7 @@ interface SettingsPageProps {
   allCases: LogbookCase[];
   heartCases: Extract<LogbookCase, { pathway: "heart" }>[];
   lungCases: Extract<LogbookCase, { pathway: "lung" }>[];
+  abdomenCases: Extract<LogbookCase, { pathway: "abdomen" }>[];
   isHandlingBackup: boolean;
   backupStatus: string | null;
   onSave: (settings: AppSettings) => void;
@@ -20,6 +21,7 @@ interface SettingsPageProps {
   onDownloadFullLogbook: () => void;
   onDownloadHeartIcsForms: () => void;
   onDownloadLungIcsForms: () => void;
+  onDownloadAbdomenIcsForms: () => void;
   onExportCsv: () => void;
   onExportBackup: (passphrase: string) => Promise<void>;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>, passphrase: string) => Promise<void>;
@@ -39,6 +41,7 @@ function SettingsPage({
   allCases,
   heartCases,
   lungCases,
+  abdomenCases,
   isHandlingBackup,
   backupStatus,
   onSave,
@@ -47,6 +50,7 @@ function SettingsPage({
   onDownloadFullLogbook,
   onDownloadHeartIcsForms,
   onDownloadLungIcsForms,
+  onDownloadAbdomenIcsForms,
   onExportCsv,
   onExportBackup,
   onRestoreBackup,
@@ -165,7 +169,7 @@ function SettingsPage({
       <section className="settings-panel" aria-labelledby="operator-heading">
         <div className="settings-panel-heading">
           <h3 id="operator-heading">Printout operator name</h3>
-          <p>This name is carried onto case, logbook and ICS Heart printouts. New Heart cases save it with the case.</p>
+          <p>This name is carried onto case, logbook, and ICS report-form printouts. New Heart cases save it with the case.</p>
         </div>
         <form className="supervisor-add-form" onSubmit={(event) => {
           event.preventDefault();
@@ -178,7 +182,7 @@ function SettingsPage({
               maxLength={100}
               value={operatorName}
               onChange={(event) => setOperatorName(event.currentTarget.value)}
-              placeholder="Name to print on Heart reports"
+              placeholder="Name to print on report forms"
               disabled={isSaving}
             />
           </label>
@@ -267,6 +271,7 @@ function SettingsPage({
           <button className="button button-secondary" type="button" onClick={onDownloadFullLogbook} disabled={!allCases.length}>Download full logbook PDF</button>
           <button className="button button-secondary" type="button" onClick={onDownloadHeartIcsForms} disabled={!heartCases.length}>Download all ICS Heart forms PDF</button>
           <button className="button button-secondary" type="button" onClick={onDownloadLungIcsForms} disabled={!lungCases.length}>Download all ICS Lung forms PDF</button>
+          <button className="button button-secondary" type="button" onClick={onDownloadAbdomenIcsForms} disabled={!abdomenCases.length}>Download all ICS Abdomen forms PDF</button>
           <button className="button button-secondary" type="button" onClick={onExportCsv} disabled={isHandlingBackup}>Export CSV</button>
           <button
             className="button button-secondary"

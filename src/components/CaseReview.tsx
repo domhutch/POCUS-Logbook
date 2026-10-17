@@ -20,11 +20,12 @@ interface CaseReviewProps {
   onPrint: () => void;
   onPrintHeartIcsForm: () => void;
   onPrintLungIcsForm: () => void;
+  onPrintAbdomenIcsForm: () => void;
   onEdit: () => void;
   onClose: () => void;
 }
 
-function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLungIcsForm, onEdit, onClose }: CaseReviewProps) {
+function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLungIcsForm, onPrintAbdomenIcsForm, onEdit, onClose }: CaseReviewProps) {
   const caseType = entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
 
   return (
@@ -40,6 +41,7 @@ function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLu
           <button className="button button-secondary" type="button" onClick={onPrint}>PDF</button>
           {entry.pathway === "heart" && <button className="button button-secondary" type="button" onClick={onPrintHeartIcsForm}>ICS PDF</button>}
           {entry.pathway === "lung" && <button className="button button-secondary" type="button" onClick={onPrintLungIcsForm}>ICS PDF</button>}
+          {entry.pathway === "abdomen" && <button className="button button-secondary" type="button" onClick={onPrintAbdomenIcsForm}>ICS PDF</button>}
           <button className="button button-secondary" type="button" onClick={onClose}>Back to cases</button>
           <button className="button button-primary" type="button" onClick={onEdit}>Edit case</button>
         </div>

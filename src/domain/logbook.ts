@@ -235,6 +235,9 @@ export interface HeartCaseFields extends CaseFields {
 
 export interface AbdomenCaseFields extends CaseFields {
   pathway: "abdomen";
+  patientAge: string;
+  patientGender: string;
+  patientBmi: string;
   examinationPoints: AbdomenExaminationPoint[];
   rightUpperQuadrant: string;
   leftUpperQuadrant: string;
@@ -360,7 +363,7 @@ export function createDraft(pathway: Pathway): CaseDraft {
 
   if (pathway === "abdomen") {
     return {
-      ...newCaseFields(), pathway, examinationPoints: [],
+      ...newCaseFields(), pathway, patientAge: "", patientGender: "", patientBmi: "", examinationPoints: [],
       rightUpperQuadrant: "", leftUpperQuadrant: "", rightKidney: "",
       rightHydronephrosis: "not_assessed", leftKidney: "",
       leftHydronephrosis: "not_assessed", bladderSize: "not_assessed",

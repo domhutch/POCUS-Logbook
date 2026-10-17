@@ -39,6 +39,11 @@ function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3 | 4) {
       delete entry.patientBmi;
     }
     if (entry.pathway === "heart") delete entry.operatorName;
+    if (entry.pathway === "abdomen") {
+      delete entry.patientAge;
+      delete entry.patientGender;
+      delete entry.patientBmi;
+    }
   }
   return backup;
 }
@@ -75,6 +80,24 @@ describe("POCUS Logbook backups", () => {
     delete current.pathwayModes.hd;
     delete current.pathwayModes.vascular;
     expect(parseBackup(JSON.stringify(current)).pathwayModes).toEqual(pathwayModes);
+  });
+
+  it("adds blank Abdomen demographics when restoring version 9 backups", () => {
+    const current = JSON.parse(makeBackup([addTimestamps(createDraft("abdomen"))]));
+    current.schemaVersion = 9;
+    delete current.cases[0].patientAge;
+    delete current.cases[0].patientGender;
+    delete current.cases[0].patientBmi;
+
+    const restored = parseBackup(JSON.stringify(current));
+
+    expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
+    expect(restored.cases[0]).toMatchObject({
+      pathway: "abdomen",
+      patientAge: "",
+      patientGender: "",
+      patientBmi: "",
+    });
   });
 
   it("rejects malformed JSON", () => {

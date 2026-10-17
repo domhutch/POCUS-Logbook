@@ -88,7 +88,7 @@ export function svgRoundedMark(box: FormBox) {
 }
 
 export function createFusicFormSheet(templateUrl: string, fields: string) {
-  return `<main class="ics-form-sheet"><img class="ics-form-background" src="${templateUrl}" alt=""><svg class="ics-form-overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1192 1684" preserveAspectRatio="none" aria-hidden="true">${fields}</svg></main>`;
+  return `<section class="ics-form-sheet"><img class="ics-form-background" src="${templateUrl}" alt=""><svg class="ics-form-overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1192 1684" preserveAspectRatio="none" aria-hidden="true">${fields}</svg></section>`;
 }
 
 const FORM_STYLES = `

@@ -9,6 +9,9 @@ export function AbdomenReviewDetails({ entry }: { entry: AbdomenCase }) {
       <h3 id="review-abdomen-title">Abdominal findings</h3>
       {entry.examinationPoints.length > 0 && <div className="review-chip-list">{entry.examinationPoints.map((point) => <span key={point}>{point}</span>)}</div>}
       <dl className="review-fields">
+        <ReviewField label="Age (years)" value={entry.patientAge} />
+        <ReviewField label="Gender" value={entry.patientGender} />
+        <ReviewField label="BMI" value={entry.patientBmi} />
         <ReviewField label="RUQ · diaphragm and liver" value={entry.rightUpperQuadrant} />
         <ReviewField label="LUQ · diaphragm and spleen" value={entry.leftUpperQuadrant} />
         <ReviewField label="Right kidney · size and appearance" value={entry.rightKidney} />
