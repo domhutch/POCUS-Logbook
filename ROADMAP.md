@@ -23,7 +23,7 @@ The native apps must include the built web assets in the app package. They must 
 These are a practical starting order based on the open checklist below, not new commitments:
 
 1. Cover local persistence failure cases and ensure failed saves are never reported as successful.
-2. Implement a de-identified CSV export and test export formats.
+2. Add automated coverage for CSV and PDF export formats, including combined case reports.
 3. Verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
 
 Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
@@ -78,6 +78,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 - [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
 - [x] Produce a print-ready PDF sheet for an individual case using the browser/device print dialog.
 - [x] Produce a pathway-specific printable PDF logbook/report with the supplied training-logbook table layout, blank rows to the pathway reference, and continuation pages for extra cases.
+- [x] Download all saved case reports for a pathway as one PDF, with each case on its own A4 page; fit previews to the available screen width and provide A4 print margins.
 - [x] Use the native share sheet for backup and CSV files where supported, keep browser downloads as the web fallback, and show actionable errors when an export cannot be created or shared.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
 
@@ -120,10 +121,12 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
 - [x] **P1 · PDF date format:** use UK date formatting (`01/10/2026`) rather than US month-first formatting.
+- [x] **P1 · PDF preview and batch export:** fit case and logbook previews to screen width, retain print margins on A4, and download all saved case reports as a single PDF with one page per case. Disable the case-report export when the pathway has no cases; the blank logbook summary remains printable.
 - [x] **P2 · Lung form:** organise entry by finding, with Yes / No choices and a single-line Not assessed checkbox for each region. Keep region-keyed case data and show case review and print/PDF results by region. Existing U/A values remain supported.
 - [x] **P2 · Heart assessment input:** replace per-finding dropdowns with one-tap Yes, No, and Not assessed buttons; retain compatibility with existing saved responses.
 - [x] **P2 · Overview navigation:** make the case-count card open the Cases page when selected.
 - [x] **P2 · Supervisor management:** let users add and manage their own supervisors in Settings, then select a supervisor from a dropdown in the case forms.
+- [x] **P2 · Curriculum and modules:** add the FUSIC curriculum selection and Heart/Lung module toggles in Settings. Hide disabled modules from pathway selection while retaining their saved cases; keep at least one module enabled. Add future curriculum and module choices as they are implemented.
 - [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.
 - [x] **P2 · Responsive text and controls:** provide a usable way to scale text up or down on mobile, and ensure form inputs and buttons resize and reflow without clipping or breaking the layout.
 - [x] **P2 · Unsaved case protection:** warn before closing or cancelling a case with unsaved changes, and let the user return to editing without losing the draft.
