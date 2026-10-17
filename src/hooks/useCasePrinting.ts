@@ -5,6 +5,7 @@ import { Share } from "@capacitor/share";
 import { createCasePrintDocument, createCaseReportsPrintDocument, createFullLogbookPrintDocument } from "../domain/case-print";
 import { createHeartIcsFormPrintDocument, createHeartIcsFormsPrintDocument } from "../domain/heart-ics-form";
 import { createLungIcsFormPrintDocument, createLungIcsFormsPrintDocument } from "../domain/lung-ics-form";
+import { createAbdomenIcsFormPrintDocument, createAbdomenIcsFormsPrintDocument } from "../domain/abdomen-ics-form";
 import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -159,6 +160,33 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       );
     } catch (cause) {
       setError(errorMessage(cause, "The ICS Lung report forms could not be created."));
+    }
+
+  }
+
+  function printAbdomenIcsForm(entry: Extract<LogbookCase, { pathway: "abdomen" }>, operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createAbdomenIcsFormPrintDocument(entry, operatorName),
+        `abdomen-ics-report-form-${entry.date}.pdf`,
+        ".ics-form-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The Abdomen report form could not be created."));
+    }
+  }
+
+  function printAbdomenIcsForms(entries: Extract<LogbookCase, { pathway: "abdomen" }>[], operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createAbdomenIcsFormsPrintDocument(entries, operatorName),
+        `abdomen-ics-report-forms-all-${new Date().toISOString().slice(0, 10)}.pdf`,
+        ".ics-form-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The ICS Abdomen report forms could not be created."));
     }
   }
 
@@ -333,6 +361,8 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     printHeartIcsForms,
     printLungIcsForm,
     printLungIcsForms,
+    printAbdomenIcsForm,
+    printAbdomenIcsForms,
     printLogbook,
     printCaseReports,
     printFullLogbook,

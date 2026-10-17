@@ -27,6 +27,7 @@ interface CaseReviewProps {
   onPrint: () => void;
   onPrintHeartIcsForm: () => void;
   onPrintLungIcsForm: () => void;
+  onPrintAbdomenIcsForm: () => void;
   onEdit: () => void;
   onClose: () => void;
 }
@@ -40,7 +41,7 @@ function ReviewField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLungIcsForm, onEdit, onClose }: CaseReviewProps) {
+function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLungIcsForm, onPrintAbdomenIcsForm, onEdit, onClose }: CaseReviewProps) {
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
   const supervision = formatSupervision(entry);
@@ -82,6 +83,11 @@ function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLu
               ICS PDF
             </button>
           )}
+          {entry.pathway === "abdomen" && (
+            <button className="button button-secondary" type="button" onClick={onPrintAbdomenIcsForm}>
+              ICS PDF
+            </button>
+          )}
           <button className="button button-secondary" type="button" onClick={onClose}>
             Back to cases
           </button>
@@ -95,7 +101,7 @@ function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLu
         <h3 id="review-details-title">Case context and review markers</h3>
         <dl className="review-fields">
           <ReviewField label="Case type" value={caseType} />
-          {(entry.pathway === "heart" || entry.pathway === "lung") && (
+          {(entry.pathway === "heart" || entry.pathway === "lung" || entry.pathway === "abdomen") && (
             <>
               <ReviewField label="Age (years)" value={entry.patientAge} />
               <ReviewField label="Gender" value={entry.patientGender} />

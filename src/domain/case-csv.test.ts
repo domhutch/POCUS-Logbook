@@ -33,6 +33,19 @@ describe("CSV case export", () => {
     expect(csv.split("\r\n")).toHaveLength(2);
   });
 
+  it("includes Abdomen demographics in pathway exports", () => {
+    const draft = createDraft("abdomen");
+    if (draft.pathway !== "abdomen") throw new Error("Expected Abdomen case draft");
+    draft.patientAge = "52";
+    draft.patientGender = "Female";
+    draft.patientBmi = "24.5";
+
+    const csv = createCasesCsv([addTimestamps(draft)], "abdomen");
+
+    expect(csv).toContain('"Age (years)","Gender","BMI","Examination points attempted"');
+    expect(csv).toContain('"52","Female","24.5"');
+  });
+
   it("creates pathway-specific dated filenames", () => {
     expect(csvFilename("heart", new Date("2026-10-16T12:00:00.000Z")))
       .toBe("pocus-heart-logbook-2026-10-16.csv");

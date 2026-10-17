@@ -30,7 +30,7 @@ import {
   type VascularAssessment,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 9;
+export const BACKUP_SCHEMA_VERSION = 10;
 export const BACKUP_APP_ID = "pocus-logbook";
 const VERSION_ONE_BACKUP = 1;
 const VERSION_TWO_BACKUP = 2;
@@ -40,6 +40,7 @@ const VERSION_FIVE_BACKUP = 5;
 const VERSION_SIX_BACKUP = 6;
 const VERSION_SEVEN_BACKUP = 7;
 const VERSION_EIGHT_BACKUP = 8;
+const VERSION_NINE_BACKUP = 9;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -139,6 +140,11 @@ const versionSevenHeartCaseFields = [
   "findings",
 ];
 const abdomenCaseFields = [
+  ...caseFields, "patientAge", "patientGender", "patientBmi", "examinationPoints", "rightUpperQuadrant", "leftUpperQuadrant",
+  "rightKidney", "rightHydronephrosis", "leftKidney", "leftHydronephrosis",
+  "bladderSize", "bladderDescription", "freeFluid", "otherComments",
+];
+const versionNineAbdomenCaseFields = [
   ...caseFields, "examinationPoints", "rightUpperQuadrant", "leftUpperQuadrant",
   "rightKidney", "rightHydronephrosis", "leftKidney", "leftHydronephrosis",
   "bladderSize", "bladderDescription", "freeFluid", "otherComments",
@@ -356,11 +362,11 @@ function isLogbookCase(
           ? versionOneLungCaseFields
           : schemaVersion === VERSION_TWO_BACKUP
             ? versionTwoLungCaseFields
-            : schemaVersion === BACKUP_SCHEMA_VERSION
+            : schemaVersion >= VERSION_NINE_BACKUP
               ? lungCaseFields
               : versionEightLungCaseFields,
       ) &&
-      (schemaVersion !== BACKUP_SCHEMA_VERSION ||
+      (schemaVersion < VERSION_NINE_BACKUP ||
         (isString(value.patientAge, 20) && isString(value.patientGender, 40) && isString(value.patientBmi, 20))) &&
       isUniqueEnumArray(value.regions, lungRegions) &&
       isString(value.ventilatorySupport, 120) &&
@@ -394,7 +400,10 @@ function isLogbookCase(
   }
 
   if (value.pathway === "abdomen" && schemaVersion >= VERSION_FOUR_BACKUP && schemaVersion <= BACKUP_SCHEMA_VERSION) {
-    return hasExactKeys(value, abdomenCaseFields) && isUniqueEnumArray(value.examinationPoints, abdomenPoints) &&
+    return hasExactKeys(value, schemaVersion === BACKUP_SCHEMA_VERSION ? abdomenCaseFields : versionNineAbdomenCaseFields) &&
+      (schemaVersion !== BACKUP_SCHEMA_VERSION ||
+        (isString(value.patientAge, 20) && isString(value.patientGender, 40) && isString(value.patientBmi, 20))) &&
+      isUniqueEnumArray(value.examinationPoints, abdomenPoints) &&
       ["rightUpperQuadrant", "leftUpperQuadrant", "rightKidney", "leftKidney", "bladderDescription", "freeFluid", "otherComments"].every((key) => isString(value[key])) &&
       ["not_assessed", "none", "mild", "moderate", "severe"].includes(String(value.rightHydronephrosis)) &&
       ["not_assessed", "none", "mild", "moderate", "severe"].includes(String(value.leftHydronephrosis)) &&
@@ -427,6 +436,9 @@ function normalizeLegacyDemographics(entries: unknown[]): LogbookCase[] {
     }
     if (entry.pathway === "heart") {
       return { ...entry, patientAge: entry.patientAge ?? "", patientGender: entry.patientGender ?? "", patientBmi: entry.patientBmi ?? "", operatorName: entry.operatorName ?? "" };
+    }
+    if (entry.pathway === "abdomen") {
+      return { ...entry, patientAge: entry.patientAge ?? "", patientGender: entry.patientGender ?? "", patientBmi: entry.patientBmi ?? "" };
     }
     return entry;
   });
@@ -495,6 +507,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       VERSION_SIX_BACKUP,
       VERSION_SEVEN_BACKUP,
       VERSION_EIGHT_BACKUP,
+      VERSION_NINE_BACKUP,
       BACKUP_SCHEMA_VERSION,
     ].includes(value.schemaVersion) ||
     !value.cases.every((entry) =>
@@ -588,12 +601,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases.map((entry): LogbookCase => {
-        const legacyEntry = entry as unknown as LogbookCase;
-        if (legacyEntry.pathway === "heart") return { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "", operatorName: "" };
-        if (legacyEntry.pathway === "lung") return { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "" };
-        return legacyEntry;
-      }),
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: value.pathwayModes as Record<Pathway, boolean>,
     };
   }
@@ -603,12 +611,17 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases.map((entry): LogbookCase => {
-        const legacyEntry = entry as unknown as LogbookCase;
-        return legacyEntry.pathway === "lung"
-          ? { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "" }
-          : legacyEntry;
-      }),
+      cases: normalizeLegacyDemographics(value.cases),
+      pathwayModes: value.pathwayModes as Record<Pathway, boolean>,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_NINE_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: value.pathwayModes as Record<Pathway, boolean>,
     };
   }

@@ -118,7 +118,9 @@ export async function getCases(): Promise<LogbookCase[]> {
       }
     : record.pathway === "lung"
       ? { ...record, patientAge: record.patientAge ?? "", patientGender: record.patientGender ?? "", patientBmi: record.patientBmi ?? "" }
-      : record);
+      : record.pathway === "abdomen"
+        ? { ...record, patientAge: record.patientAge ?? "", patientGender: record.patientGender ?? "", patientBmi: record.patientBmi ?? "" }
+        : record);
 }
 
 export async function saveCase(draft: CaseDraft): Promise<void> {

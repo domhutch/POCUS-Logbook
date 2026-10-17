@@ -150,6 +150,10 @@ function App() {
     printing.printLungIcsForm(entry, appSettings.operatorName);
   }
 
+  function printAbdomenIcsForm(entry: Extract<LogbookCase, { pathway: "abdomen" }>) {
+    printing.printAbdomenIcsForm(entry, appSettings.operatorName);
+  }
+
   function startEditing(entry: LogbookCase) {
     setCaseSaveStatus(null);
     setReturnPage("cases");
@@ -598,6 +602,7 @@ function App() {
             allCases={entries}
             heartCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart")}
             lungCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "lung" }> => entry.pathway === "lung")}
+            abdomenCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "abdomen" }> => entry.pathway === "abdomen")}
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
             onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
@@ -610,6 +615,10 @@ function App() {
             )}
             onDownloadLungIcsForms={() => printing.printLungIcsForms(
               entries.filter((entry): entry is Extract<LogbookCase, { pathway: "lung" }> => entry.pathway === "lung"),
+              appSettings.operatorName,
+            )}
+            onDownloadAbdomenIcsForms={() => printing.printAbdomenIcsForms(
+              entries.filter((entry): entry is Extract<LogbookCase, { pathway: "abdomen" }> => entry.pathway === "abdomen"),
               appSettings.operatorName,
             )}
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
@@ -625,6 +634,7 @@ function App() {
             onPrint={() => printCase(reviewedCase)}
             onPrintHeartIcsForm={() => reviewedCase.pathway === "heart" && printHeartIcsForm(reviewedCase)}
             onPrintLungIcsForm={() => reviewedCase.pathway === "lung" && printLungIcsForm(reviewedCase)}
+            onPrintAbdomenIcsForm={() => reviewedCase.pathway === "abdomen" && printAbdomenIcsForm(reviewedCase)}
             onEdit={() => startEditing(reviewedCase)}
             onClose={closeReview}
           />
@@ -660,6 +670,7 @@ function App() {
             onPrint={printCase}
             onPrintHeartIcsForm={printHeartIcsForm}
             onPrintLungIcsForm={printLungIcsForm}
+            onPrintAbdomenIcsForm={printAbdomenIcsForm}
             onEdit={startEditing}
             onDelete={(entry) => void handleDelete(entry)}
           />

@@ -128,6 +128,7 @@ The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW
 
 - [x] Add contributor setup and contribution guidance, issue templates, and security reporting instructions.
 - [ ] Generate and review third-party dependency notices for distributed builds; document provenance and licenses for non-package assets.
+- [ ] Verify permission to reproduce and redistribute FUSIC/ICS report-form artwork and logos in the app and source repository before treating bundled templates as cleared for release.
 - [x] Run `npm ci` and `npm run check` on pull requests.
 - [ ] Pin GitHub Actions to verified immutable commit SHAs and keep readable version comments.
 - [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.

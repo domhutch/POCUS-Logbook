@@ -50,6 +50,20 @@ describe("printable case sheets", () => {
     expect(document).toContain('<strong class="selected">No</strong>');
     expect(document).toContain("LV dilated");
   });
+
+  it("includes Abdomen demographics and findings", () => {
+    const draft = createDraft("abdomen");
+    if (draft.pathway !== "abdomen") throw new Error("Expected Abdomen case draft");
+    draft.patientAge = "52";
+    draft.patientGender = "Female";
+    draft.patientBmi = "24.5";
+    draft.rightUpperQuadrant = "Synthetic RUQ finding";
+
+    const document = createCasePrintDocument(addTimestamps(draft));
+
+    expect(document).toContain('<span class="field-label">Age (years)</span>');
+    expect(document).toContain("Synthetic RUQ finding");
+  });
 });
 
 describe("combined case report PDFs", () => {

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createHeartIcsFormPrintDocument } from "./heart-ics-form";
 import { createLungIcsFormPrintDocument } from "./lung-ics-form";
-import { createDraft, type HeartCaseFields, type LungCaseFields } from "./logbook";
+import { createAbdomenIcsFormPrintDocument, createAbdomenIcsFormsPrintDocument } from "./abdomen-ics-form";
+import { createDraft, type AbdomenCaseFields, type HeartCaseFields, type LungCaseFields } from "./logbook";
 import { svgText, svgWrappedText } from "./fusic-forms";
 
 function heartCase(imageQuality: HeartCaseFields["imageQuality"]): HeartCaseFields {
@@ -18,6 +19,17 @@ function heartCase(imageQuality: HeartCaseFields["imageQuality"]): HeartCaseFiel
 function lungCase(imageQuality: LungCaseFields["imageQuality"]): LungCaseFields {
   const draft = createDraft("lung");
   if (draft.pathway !== "lung") throw new Error("Expected Lung case draft");
+  return {
+    ...draft,
+    imageQuality,
+    createdAt: "2026-10-17T00:00:00.000Z",
+    updatedAt: "2026-10-17T00:00:00.000Z",
+  };
+}
+
+function abdomenCase(imageQuality: AbdomenCaseFields["imageQuality"]): AbdomenCaseFields {
+  const draft = createDraft("abdomen");
+  if (draft.pathway !== "abdomen") throw new Error("Expected Abdomen case draft");
   return {
     ...draft,
     imageQuality,
@@ -73,5 +85,47 @@ describe("FUSIC form box layout", () => {
     const document = createLungIcsFormPrintDocument(lungCase("acceptable"));
 
     expect(document).toContain('<rect x="641" y="508" width="160" height="34"');
+  });
+
+  it("prints both Abdomen report pages with mapped findings and sign-off areas", () => {
+    const entry = abdomenCase("acceptable");
+    entry.patientAge = "52";
+    entry.patientGender = "Female";
+    entry.patientBmi = "24.5";
+    entry.indication = "Abdominal pain";
+    entry.examinationPoints = ["RUQ (diaphragm and liver)", "Right kidney", "Pelvis (bladder)"];
+    entry.rightUpperQuadrant = "Normal liver and diaphragm; no fluid seen.";
+    entry.rightHydronephrosis = "mild";
+    entry.bladderSize = "small";
+    entry.freeFluid = "No free fluid identified.";
+    entry.diagnosis = "Synthetic abdominal scan";
+    entry.summary = "Structured survey completed for preview.";
+
+    const document = createAbdomenIcsFormPrintDocument(entry, "Sample Operator");
+
+    expect(document).toContain("two-page ICS Abdomen report-form layout");
+    expect(document.match(/class="ics-form-sheet"/g)).toHaveLength(2);
+    expect(document).toContain("fusic-abdomen-report-form-v1-2025.svg");
+    expect(document).toContain("fusic-abdomen-report-form-v1-2025-page2.svg");
+    expect(document).toContain("Age 52 · Female · BMI 24.5");
+    expect(document).toContain("Sample Operator");
+    expect(document).toContain("Abdominal pain");
+    expect(document).toContain("Normal liver and diaphragm; no fluid seen.");
+    expect(document).toContain('<rect x="654" y="550" width="128" height="32"');
+    expect(document).toContain('<rect x="806" y="1102" width="44" height="32"');
+    expect(document).toContain('<rect x="736" y="1321" width="60" height="32"');
+    expect(document).toContain("Synthetic abdominal scan");
+    expect(document).toContain("Structured survey completed for preview.");
+  });
+
+  it("builds two Abdomen pages per case in bulk and rejects an empty collection", () => {
+    const entries = [abdomenCase("good"), abdomenCase("poor")];
+    const document = createAbdomenIcsFormsPrintDocument(entries, "Sample Operator");
+
+    expect(document.match(/class="ics-form-sheet"/g)).toHaveLength(4);
+    expect(document).toContain("Two ICS Abdomen report-form pages per saved case (2 cases)");
+    expect(() => createAbdomenIcsFormsPrintDocument([])).toThrow(
+      "There are no report forms to include in this PDF.",
+    );
   });
 });
