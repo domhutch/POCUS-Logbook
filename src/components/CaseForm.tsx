@@ -225,16 +225,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </div>
         )}
 
-        <details
-          className="structured-details optional-details"
-          open={Boolean(
-            draft.indication ||
-              draft.diagnosis ||
-              draft.impressionCategory !== "not_recorded" ||
-              draft.managementImpact !== "not_recorded" ||
-              draft.imageQuality !== "not_recorded",
-          )}
-        >
+        <details className="structured-details optional-details" open>
           <summary>Case context and review markers <span>Optional</span></summary>
           <div className="form-grid">
             <label className="form-field">
@@ -392,10 +383,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           )}
         </details>
 
-        <details
-          className="structured-details optional-details"
-          open={Boolean(draft.summary || draft.reflection)}
-        >
+        <details className="structured-details optional-details" open>
           <summary>Notes and reflection <span>Optional</span></summary>
           <div className="form-notes-grid">
             <label className="form-field">
