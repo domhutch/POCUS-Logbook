@@ -136,7 +136,7 @@ function CaseList({
                 </div>
                 <div className="case-main">
                   <h3>
-                    {PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "")} Case {caseNumbers.get(entry.id)}
+                    {PATHWAYS[pathway].label} Case {caseNumbers.get(entry.id)}
                   </h3>
                   {entry.diagnosis && <p className="case-diagnosis">{entry.diagnosis}</p>}
                   <p>{caseSummary(entry)}</p>

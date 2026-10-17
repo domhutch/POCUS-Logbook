@@ -161,7 +161,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
     <section className="entry-form-panel" aria-labelledby="form-title">
       <div className="form-heading">
         <div>
-          <p className="eyebrow">{PATHWAYS[draft.pathway].label.replace(/^FUSIC\s+/, "")} scan</p>
+          <p className="eyebrow">{PATHWAYS[draft.pathway].label} scan</p>
           <h2 id="form-title">
             {isNewCase ? "Record a case" : "Edit case"}
           </h2>

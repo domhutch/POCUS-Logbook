@@ -97,5 +97,5 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
 
 export function csvFilename(pathway: Pathway, now = new Date()) {
   const date = now.toISOString().slice(0, 10);
-  return `pocus-${PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "").toLowerCase()}-logbook-${date}.csv`;
+  return `pocus-${PATHWAYS[pathway].label.toLowerCase()}-logbook-${date}.csv`;
 }

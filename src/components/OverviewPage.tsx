@@ -192,7 +192,7 @@ function OverviewPage({
                 onClick={() => onPopulateTestCases(key)}
                 disabled={isHandlingTestData || !isReady}
               >
-                Add full {PATHWAYS[key].label.replace(/^FUSIC\s+/, "")} sample set
+                Add full {PATHWAYS[key].label} sample set
               </button>
             ))}
             <button

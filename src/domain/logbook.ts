@@ -14,7 +14,7 @@ export type ManagementImpact = "not_recorded" | "changed" | "unchanged";
 
 export const PATHWAYS = {
   heart: {
-    label: "FUSIC Heart",
+    label: "Heart",
     description:
       "Record a focused cardiac scan, review your cases and keep your own practice history.",
     icon: "H",
@@ -23,7 +23,7 @@ export const PATHWAYS = {
     source: `${PATHWAY_REQUIREMENTS.heart.source.title} ${PATHWAY_REQUIREMENTS.heart.source.version}`,
   },
   lung: {
-    label: "FUSIC Lung",
+    label: "Lung",
     description:
       "Record a lung ultrasound scan, review your cases and keep your own practice history.",
     icon: "L",
@@ -32,7 +32,7 @@ export const PATHWAYS = {
     source: `${PATHWAY_REQUIREMENTS.lung.source.title} ${PATHWAY_REQUIREMENTS.lung.source.version}`,
   },
   abdomen: {
-    label: "FUSIC Abdomen",
+    label: "Abdomen",
     description: "Record a focused abdominal ultrasound scan and review your cases.",
     icon: "A",
     totalTarget: PATHWAY_REQUIREMENTS.abdomen.totalScans,
@@ -40,7 +40,7 @@ export const PATHWAYS = {
     source: `${PATHWAY_REQUIREMENTS.abdomen.source.title} ${PATHWAY_REQUIREMENTS.abdomen.source.version}`,
   },
   dvt: {
-    label: "FUSIC DVT",
+    label: "DVT",
     description: "Record a focused DVT ultrasound scan and review your cases.",
     icon: "D",
     totalTarget: PATHWAY_REQUIREMENTS.dvt.totalScans,
@@ -48,7 +48,7 @@ export const PATHWAYS = {
     source: `${PATHWAY_REQUIREMENTS.dvt.source.title} ${PATHWAY_REQUIREMENTS.dvt.source.version}`,
   },
   hd: {
-    label: "FUSIC HD",
+    label: "HD",
     description: "Record a focused haemodynamic ultrasound study and review your cases.",
     icon: "HD",
     totalTarget: PATHWAY_REQUIREMENTS.hd.totalScans,
@@ -56,7 +56,7 @@ export const PATHWAYS = {
     source: `${PATHWAY_REQUIREMENTS.hd.source.title} ${PATHWAY_REQUIREMENTS.hd.source.version}`,
   },
   vascular: {
-    label: "FUSIC Vascular",
+    label: "Vascular",
     description: "Record vascular access ultrasound and review your cases.",
     icon: "V",
     totalTarget: PATHWAY_REQUIREMENTS.vascular.totalScans,

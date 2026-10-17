@@ -54,7 +54,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             {isSampleCase(entry) && " · Sample data"}
           </p>
           <h2 id="review-title">
-            {PATHWAYS[entry.pathway].label.replace(/^FUSIC\s+/, "")} Case {caseNumber}
+            {PATHWAYS[entry.pathway].label} Case {caseNumber}
           </h2>
           <p className="case-review-date">
             {formatCaseDate(entry.date, "en-GB", {

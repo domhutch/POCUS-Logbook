@@ -269,7 +269,7 @@ export function createCaseReportsPrintDocument(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "")} case reports</title>
+  <title>${PATHWAYS[pathway].label} case reports</title>
   <style>${styles}
     @media print { body { width: 194mm; } }
     .report-collection .sheet { margin: 0 auto; break-after: page; page-break-after: always; }

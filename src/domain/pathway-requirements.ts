@@ -62,7 +62,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
   Record<CurriculumPathway, PathwayRequirements>
 > = {
   heart: {
-    label: "FUSIC Heart",
+    label: "Heart",
     source: {
       title: "FUSIC Heart Training Pack",
       version: "v13 (2025)",
@@ -78,7 +78,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       "Attempt all four FUSIC Heart views on each scan; adequate images may not be possible in every view.",
   },
   lung: {
-    label: "FUSIC Lung",
+    label: "Lung",
     source: {
       title: "FUSIC Lung Training Pack",
       version: "v10 (2025)",
@@ -93,7 +93,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       "Attempt all examination points on each scan, with imaging from three points on each side.",
   },
   dvt: {
-    label: "FUSIC DVT",
+    label: "DVT",
     source: {
       title: "FUSIC DVT Training Pack",
       version: "v1 (2026)",
@@ -118,7 +118,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       "Use at least the three-point technique (saphenofemoral junction, common femoral vein, and popliteal vein) and attempt all required views on every scan. Distal views beyond the popliteal trifurcation are optional.",
   },
   abdomen: {
-    label: "FUSIC Abdomen",
+    label: "Abdomen",
     source: {
       title: "FUSIC Abdomen Training Pack",
       version: "v11 (2025)",
@@ -139,7 +139,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       "Attempt the required FUSIC Abdomen examination points on each scan; adequate images may not be possible in every view.",
   },
   vascular: {
-    label: "FUSIC Vascular",
+    label: "Vascular",
     source: {
       title: "FUSIC Vascular Training Pack",
       version: "v1 (2026)",
@@ -180,7 +180,7 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       "Attempt the required FUSIC Vascular views on each scan; adequate images may not be possible in every view.",
   },
   hd: {
-    label: "FUSIC HD",
+    label: "HD",
     source: {
       title: "FUSIC HD Training Pack",
       version: "v11 (2026)",

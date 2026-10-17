@@ -18,7 +18,7 @@ describe("printable case sheets", () => {
 
     const document = createCasePrintDocument(addTimestamps(draft));
 
-    expect(document).toContain("FUSIC Lung");
+    expect(document).toContain("Lung");
     expect(document).toContain(">01/10/2026</span>");
     expect(document).toContain("@page { size: A4 portrait; margin: 8mm; }");
     expect(document).toContain("const printableHeight = 275 * 96 / 25.4");

@@ -321,15 +321,25 @@ button:disabled {
   text-align: left;
 }
 
+.brand-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
 .brand-name {
   color: var(--ink);
+  font-size: 1.12em;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .brand-pathway {
   color: var(--muted);
-  font-size: 0.82em;
+  font-size: 0.84em;
   font-weight: 600;
+  line-height: 1;
+  transform: translateY(2px);
   white-space: nowrap;
 }
 
@@ -2785,7 +2795,7 @@ summary:focus-visible {
   }
 
   .brand-pathway {
-    font-size: 0.78em;
+    font-size: 0.8em;
   }
 
   .brand-mark {

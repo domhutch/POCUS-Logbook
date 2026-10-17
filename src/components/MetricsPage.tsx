@@ -125,7 +125,7 @@ function MetricsPage({
 }: MetricsPageProps) {
   const [period, setPeriod] = useState<MetricsPeriod>("rolling_12_months");
   const metrics = summarizeCases(cases, pathway, new Date(), period);
-  const pathwayName = PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "");
+  const pathwayName = PATHWAYS[pathway].label;
 
   return (
     <section className="metrics-page" aria-labelledby="metrics-heading">

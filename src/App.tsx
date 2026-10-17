@@ -89,7 +89,7 @@ function App() {
     () => (Object.keys(PATHWAYS) as Pathway[]).filter((module) => appSettings.enabledModules[module]),
     [appSettings.enabledModules],
   );
-  const pathwayLogbookName = `${pathway.label.replace(/^FUSIC\s+/, "")} Logbook`;
+  const pathwayLogbookName = `${pathway.label} Logbook`;
   const sampleMetricCases = useMemo(
     () => createSampleCases(activePathway),
     [activePathway],
@@ -221,7 +221,7 @@ function App() {
     try {
       const addedCount = await addSampleCases(createAdminSampleCases(pathwayToPopulate));
       await refreshEntries();
-      const pathwayName = PATHWAYS[pathwayToPopulate].label.replace(/^FUSIC\s+/, "");
+      const pathwayName = PATHWAYS[pathwayToPopulate].label;
       setTestDataStatus(
         addedCount > 0
           ? `Added ${addedCount} ${pathwayName} sample cases to this device.`
@@ -369,14 +369,16 @@ function App() {
           className="brand"
           type="button"
           onClick={goToOverview}
-          aria-label={`Go to CritSono ${pathway.label.replace(/^FUSIC\s+/, "")} overview`}
+          aria-label={`Go to CritSono ${pathway.label} overview`}
         >
           <span className="brand-mark" aria-hidden="true">
             {pathway.icon}
           </span>
-          <span className="brand-name">CritSono</span>
-          <span className="brand-pathway">
-            {pathway.label.replace(/^FUSIC\s+/, "")}
+          <span className="brand-copy">
+            <span className="brand-name">CritSono</span>
+            <span className="brand-pathway">
+              {pathway.label}
+            </span>
           </span>
         </button>
         {activePage === "form" ? (

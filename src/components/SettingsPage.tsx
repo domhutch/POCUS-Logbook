@@ -193,7 +193,7 @@ function SettingsPage({
             return (
               <label className="module-toggle" key={module}>
                 <span>
-                  <strong>{PATHWAYS[module].label.replace(/^FUSIC\s+/, "")}</strong>
+                  <strong>{PATHWAYS[module].label}</strong>
                   <small>{enabled ? "Available in the logbook" : "Hidden from the logbook"}</small>
                 </span>
                 <input
@@ -208,7 +208,7 @@ function SettingsPage({
                       [module]: event.currentTarget.checked,
                     },
                   })}
-                  aria-label={`${PATHWAYS[module].label.replace(/^FUSIC\s+/, "")} module`}
+                  aria-label={`${PATHWAYS[module].label} module`}
                 />
               </label>
             );

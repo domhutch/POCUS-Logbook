@@ -168,7 +168,7 @@ function createFullSampleCase(pathway: Pathway, index: number, total: number, no
     ? [0, 1, 2, 5, 8, 12, 18].includes(index)
     : index < supervisedTarget;
   draft.supervisorName = draft.supervised ? "Sample trainer" : "";
-  draft.indication = `Synthetic ${PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "")} assessment`;
+  draft.indication = `Synthetic ${PATHWAYS[pathway].label} assessment`;
   draft.diagnosis = `Sample case ${index + 1}; not for clinical use`;
   draft.impressionCategory = pathway === "hd"
     ? index < 8 ? "normal" : index % 3 === 0 ? "indeterminate" : "abnormal"
