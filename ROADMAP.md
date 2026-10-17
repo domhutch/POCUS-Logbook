@@ -128,10 +128,11 @@ The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW
 
 - [x] Add contributor setup and contribution guidance, issue templates, and security reporting instructions.
 - [ ] Generate and review third-party dependency notices for distributed builds; document provenance and licenses for non-package assets.
-- [ ] Run `npm ci` and `npm run check` on pull requests, and pin GitHub Actions to verified immutable commit SHAs.
+- [x] Run `npm ci` and `npm run check` on pull requests.
+- [ ] Pin GitHub Actions to verified immutable commit SHAs and keep readable version comments.
 - [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.
 - [x] Move shared interface colors into `src/theme.css` and reuse semantic palette tokens across pages and pathways.
-- [ ] Refactor oversized UI modules only when a concrete behavior change can be isolated and regression-tested.
+- [ ] Continue responsibility-driven refactoring: extract a module only when a real feature change reveals a cohesive responsibility that can be named, understood, and checked independently. Backup transfer orchestration is already separated; consider `App.tsx` and `styles.css` as future changes expose clear seams. Do not split files mechanically to meet a line-count target.
 
 ## User feedback backlog
 
