@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import type { LogbookCase } from "../domain/logbook";
 import type { AppSettings, TextSize } from "../storage/logbook-store";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
-import { googleDriveClientId, loadGoogleIdentityServices } from "../cloud/google-drive";
-import { Capacitor } from "@capacitor/core";
 import AboutHelpPage from "./AboutHelpPage";
 
 interface SettingsPageProps {
@@ -19,8 +17,6 @@ interface SettingsPageProps {
   onExportCsv: () => void;
   onExportBackup: (passphrase: string) => Promise<void>;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>, passphrase: string) => Promise<void>;
-  onUploadBackupToGoogleDrive: (passphrase: string, clientId: string) => Promise<void>;
-  onRestoreBackupFromGoogleDrive: (passphrase: string, clientId: string) => Promise<void>;
 }
 
 const TEXT_SIZES: { value: TextSize; label: string; description: string }[] = [
@@ -42,29 +38,12 @@ function SettingsPage({
   onExportCsv,
   onExportBackup,
   onRestoreBackup,
-  onUploadBackupToGoogleDrive,
-  onRestoreBackupFromGoogleDrive,
 }: SettingsPageProps) {
   const [newSupervisor, setNewSupervisor] = useState("");
   const [backupPassphrase, setBackupPassphrase] = useState("");
   const [confirmPassphrase, setConfirmPassphrase] = useState("");
-  const [googleDriveReady, setGoogleDriveReady] = useState(false);
-  const [googleDriveError, setGoogleDriveError] = useState<string | null>(null);
   const [showAboutHelp, setShowAboutHelp] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
-  const googleClientId = googleDriveClientId();
-  const isNativeBuild = Capacitor.isNativePlatform();
-
-  useEffect(() => {
-    if (!googleClientId || isNativeBuild) return;
-    let active = true;
-    void loadGoogleIdentityServices().then(() => {
-      if (active) setGoogleDriveReady(true);
-    }).catch((cause: unknown) => {
-      if (active) setGoogleDriveError(cause instanceof Error ? cause.message : "Google sign-in could not be loaded.");
-    });
-    return () => { active = false; };
-  }, [googleClientId, isNativeBuild]);
 
   function updateSettings(next: AppSettings) {
     onSave(next);
@@ -257,30 +236,6 @@ function SettingsPage({
           >
             Export encrypted backup
           </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            disabled={isHandlingBackup || isNativeBuild || !googleDriveReady || backupPassphrase.length < 14}
-            onClick={() => void onUploadBackupToGoogleDrive(backupPassphrase, googleClientId).finally(() => {
-              setBackupPassphrase("");
-              setConfirmPassphrase("");
-            })}
-            title={!googleClientId ? "Google Drive is not configured for this build." : undefined}
-          >
-            Save encrypted backup to Google Drive
-          </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            disabled={isHandlingBackup || isNativeBuild || !googleDriveReady || backupPassphrase.length < 14}
-            onClick={() => void onRestoreBackupFromGoogleDrive(backupPassphrase, googleClientId).finally(() => {
-              setBackupPassphrase("");
-              setConfirmPassphrase("");
-            })}
-            title={!googleClientId ? "Google Drive is not configured for this build." : undefined}
-          >
-            Restore latest from Google Drive
-          </button>
           <button className="button button-primary" type="button" disabled={isHandlingBackup} onClick={() => backupInputRef.current?.click()}>
             Restore / merge backup
           </button>
@@ -296,15 +251,6 @@ function SettingsPage({
             })}
           />
         </div>
-        <p className="backup-privacy">
-          {isNativeBuild
-            ? "Google Drive backup is available in the web app. Native builds need a separate system-browser OAuth flow."
-            : googleClientId
-            ? googleDriveError ?? (googleDriveReady
-              ? "Google Drive access is requested only when you use these controls. Access tokens stay in memory and may need renewal; each upload creates a dated backup in the app-specific Drive folder."
-              : "Loading Google Drive sign-in…")
-            : "Google Drive is not configured for this build. Set VITE_GOOGLE_CLIENT_ID to a Google OAuth web client ID to enable it."}
-        </p>
         <p className="backup-privacy">New backups are encrypted on this device before export. Older unencrypted JSON backups can still be restored. PDF and CSV exports are not encrypted; check free-text fields before sharing them. Keep the passphrase separate: it cannot be reset or recovered.</p>
         {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
       </section>

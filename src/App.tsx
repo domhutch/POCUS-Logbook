@@ -588,8 +588,6 @@ function App() {
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
             onExportBackup={(passphrase) => backup.exportBackup(passphrase)}
             onRestoreBackup={(event, passphrase) => backup.restoreBackupFromFile(event, passphrase)}
-            onUploadBackupToGoogleDrive={(passphrase, clientId) => backup.uploadBackupToGoogleDrive(passphrase, clientId)}
-            onRestoreBackupFromGoogleDrive={(passphrase, clientId) => backup.restoreBackupFromGoogleDrive(passphrase, clientId)}
           />
         )}
 
