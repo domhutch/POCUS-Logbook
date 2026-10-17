@@ -32,6 +32,14 @@ function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3 | 4) {
   delete backup.pathwayModes.dvt;
   delete backup.pathwayModes.hd;
   delete backup.pathwayModes.vascular;
+  for (const entry of backup.cases) {
+    if (entry.pathway === "lung" || entry.pathway === "heart") {
+      delete entry.patientAge;
+      delete entry.patientGender;
+      delete entry.patientBmi;
+    }
+    if (entry.pathway === "heart") delete entry.operatorName;
+  }
   return backup;
 }
 
@@ -166,6 +174,12 @@ describe("POCUS Logbook backups", () => {
 
     expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
     expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true, dvt: true, hd: true, vascular: true });
-    expect(restored.cases).toEqual(backup.cases);
+    expect(restored.cases).toEqual([{
+      ...backup.cases[0],
+      patientAge: "",
+      patientGender: "",
+      patientBmi: "",
+      operatorName: "",
+    }]);
   });
 });
