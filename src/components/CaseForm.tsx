@@ -2,8 +2,6 @@ import { useState, type FormEvent } from "react";
 import {
   DVT_SITES,
   DVT_SITE_FINDINGS,
-  HD_QUESTIONS,
-  HD_MEASUREMENTS,
   VASCULAR_ASSESSMENTS,
   VASCULAR_PROCEDURES,
   PATHWAYS,
@@ -15,7 +13,6 @@ import {
   type HdCaseFields,
   type VascularCaseFields,
   type VascularAssessment,
-  type HdQuestion,
   type CaseDraft,
   type CaseType,
   type HeartCaseFields,
@@ -28,6 +25,7 @@ import { findPrivacyWarnings } from "../domain/privacy-check";
 import { AbdomenFormFields } from "../pathways/abdomen/AbdomenFormFields";
 import { HeartFormFields } from "../pathways/heart/HeartFormFields";
 import { LungFormFields } from "../pathways/lung/LungFormFields";
+import { HdFormFields } from "../pathways/hd/HdFormFields";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -80,16 +78,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         [site]: { ...draft.findings[site], [finding]: value },
       },
     });
-  }
-
-  function updateHdQuestion(question: HdQuestion, value: Assessment) {
-    if (draft.pathway !== "hd") return;
-    onChange({ ...draft, questionFindings: { ...draft.questionFindings, [question]: value } });
-  }
-
-  function updateHdQuestionNote(question: HdQuestion, value: string) {
-    if (draft.pathway !== "hd") return;
-    onChange({ ...draft, questionNotes: { ...draft.questionNotes, [question]: value } });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -304,45 +292,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               </label>
             </div>
           ) : draft.pathway === "hd" ? (
-            <div className="hd-details">
-              <p className="case-mix-protocol">Attempt the FUSIC HD minimum dataset where possible. This form reflects the revised dataset for scans from 1 February 2026; use the official reporting form and trainer guidance for full requirements.</p>
-              <fieldset className="checklist-fieldset hd-questions">
-                <legend>Ten clinical questions</legend>
-                {HD_QUESTIONS.map(([key, question]) => (
-                  <div className="hd-question" key={key}>
-                    <label className="form-field">
-                      <span>{question}</span>
-                      <select value={draft.questionFindings[key]} onChange={(event) => updateHdQuestion(key, event.currentTarget.value as Assessment)}>
-                        <option value="not_assessed">Not assessed</option>
-                        <option value="no">No</option>
-                        <option value="yes">Yes</option>
-                        <option value="unable">Unable to assess</option>
-                      </select>
-                    </label>
-                    <label className="form-field">
-                      <span>Key findings <span className="optional-mark">Optional</span></span>
-                      <input type="text" maxLength={500} value={draft.questionNotes[key]} onChange={(event) => updateHdQuestionNote(key, event.currentTarget.value)} />
-                    </label>
-                  </div>
-                ))}
-              </fieldset>
-              <fieldset className="checklist-fieldset hd-measurements">
-                <legend>Measurements and Doppler</legend>
-                <p>Record values and interpretation as documented on the scan. Fields are optional when not obtained or not applicable.</p>
-                <div className="form-grid">
-                  {HD_MEASUREMENTS.map(([key, label]) => (
-                    <label className="form-field" key={key}>
-                      <span>{label}</span>
-                      <input type="text" maxLength={120} value={draft.measurements[key]} onChange={(event) => updateField("measurements", { ...draft.measurements, [key]: event.currentTarget.value })} />
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="form-field">
-                <span>Other comments <span className="optional-mark">Optional</span></span>
-                <textarea maxLength={2000} value={draft.otherComments} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
-              </label>
-            </div>
+            <HdFormFields draft={draft} onChange={onChange} />
           ) : (
             <div className="vascular-details">
               <p className="case-mix-protocol">Use the official FUSIC Vascular reporting form for full documentation. Attempt all required views; document training scans without patient-identifying details and have unverified training findings reviewed by an appropriate trainer.</p>
