@@ -130,7 +130,8 @@ The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW
 - [ ] Confirm redistribution rights for uncleared public assets or replace them before release; review generated notices before each release.
 - [x] Run `npm ci` and `npm run check` on pull requests, and pin GitHub Actions to verified immutable commit SHAs.
 - [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.
-- [ ] Refactor oversized UI modules only when a concrete behavior change can be isolated and regression-tested.
+- [x] Extract case lifecycle, settings persistence, and sample-data management from `App.tsx` into focused hooks.
+- [ ] Continue refactoring oversized UI modules alongside concrete changes that can be regression-tested.
 
 ## User feedback backlog
 
