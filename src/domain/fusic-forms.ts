@@ -8,33 +8,36 @@ export function escapeFormText(value: string) {
   })[character]!);
 }
 
-export function svgText(
-  value: string,
-  x: number,
-  y: number,
-  options: { size?: number; anchor?: "start" | "middle" | "end" } = {},
-) {
-  const content = value.trim();
-  if (!content) return "";
-  const anchor = options.anchor ?? "start";
-  const size = options.size ?? 18;
-  return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${size}" fill="#111">${escapeFormText(content)}</text>`;
+export interface FormBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
-export function svgWrappedText(
-  value: string,
-  x: number,
-  y: number,
-  maxCharacters: number,
-  maxLines: number,
-  options: { size?: number; lineHeight?: number } = {},
-) {
-  const words = value.trim().split(/\s+/).filter(Boolean);
+interface TextBoxOptions {
+  size?: number;
+  anchor?: "start" | "middle" | "end";
+  lineHeight?: number;
+}
+
+function estimatedTextWidth(value: string, size: number) {
+  return [...value].reduce((width, character) => {
+    const factor = character === " " ? 0.28
+      : /[ilI1.,:;'|]/.test(character) ? 0.3
+        : /[MW@%&]/.test(character) ? 0.8
+          : /[A-Z]/.test(character) ? 0.62
+            : 0.52;
+    return width + factor * size;
+  }, 0);
+}
+
+function wrapText(value: string, width: number, size: number) {
   const lines: string[] = [];
   let line = "";
-  for (const word of words) {
+  for (const word of value.trim().split(/\s+/).filter(Boolean)) {
     const next = line ? `${line} ${word}` : word;
-    if (next.length > maxCharacters && line) {
+    if (line && estimatedTextWidth(next, size) > width) {
       lines.push(line);
       line = word;
     } else {
@@ -42,15 +45,46 @@ export function svgWrappedText(
     }
   }
   if (line) lines.push(line);
+  return lines;
+}
+
+export function svgText(
+  value: string,
+  box: FormBox,
+  options: TextBoxOptions = {},
+) {
+  const content = value.trim();
+  if (!content) return "";
+  const anchor = options.anchor ?? "start";
+  const size = options.size ?? 18;
+  const x = anchor === "middle" ? box.x + box.width / 2
+    : anchor === "end" ? box.x + box.width : box.x;
+  const y = box.y + box.height / 2;
+  const fit = estimatedTextWidth(content, size) > box.width
+    ? ` textLength="${box.width}" lengthAdjust="spacingAndGlyphs"`
+    : "";
+  return `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="${size}"${fit} fill="#111">${escapeFormText(content)}</text>`;
+}
+
+export function svgWrappedText(
+  value: string,
+  box: FormBox,
+  options: TextBoxOptions = {},
+) {
   const size = options.size ?? 17;
   const lineHeight = options.lineHeight ?? 24;
-  return lines.slice(0, maxLines).map((item, index) =>
-    svgText(item, x, y + index * lineHeight, { size }),
+  const maxLines = Math.max(1, Math.floor(box.height / lineHeight));
+  return wrapText(value, box.width, size).slice(0, maxLines).map((line, index) =>
+    svgText(line, {
+      ...box,
+      y: box.y + index * lineHeight,
+      height: lineHeight,
+    }, { ...options, size }),
   ).join("");
 }
 
-export function svgRoundedMark(x: number, y: number, width = 34, height = 34) {
-  return `<rect x="${x - width / 2}" y="${y - height / 2}" width="${width}" height="${height}" rx="6" fill="none" stroke="#111" stroke-width="2.5"/>`;
+export function svgRoundedMark(box: FormBox) {
+  return `<rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" rx="6" fill="none" stroke="#111" stroke-width="2.5"/>`;
 }
 
 export function createFusicFormSheet(templateUrl: string, fields: string) {

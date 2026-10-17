@@ -48,6 +48,8 @@ npm run build
 npm run preview
 ```
 
+After adding or updating a form template in `public/templates/`, run `npm run optimize:forms` to optimize all SVG templates. The checked-in SVGO configuration preserves the glyph IDs used by the converted form text.
+
 The production web app is written to `dist/`. The PWA service worker caches the built app shell for offline use.
 
 ## Deploy a GitHub Pages test

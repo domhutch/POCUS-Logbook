@@ -1,5 +1,6 @@
 import type { LungCaseFields } from "./logbook";
 import {
+  type FormBox,
   createFusicFormCollectionPrintDocument,
   createFusicFormPrintDocument,
   createFusicFormSheet,
@@ -18,6 +19,22 @@ const regions = [
 const findings = ["lungSliding", "bLines", "consolidation", "pleuralEffusion"] as const;
 const responseCenters = [[333, 402], [476, 557], [642, 732], [815, 888]] as const;
 
+const lungTextBoxes = {
+  demographics: { x: 365, y: 294, width: 290, height: 48 },
+  operator: { x: 725, y: 294, width: 310, height: 48 },
+  indication: { x: 365, y: 373, width: 720, height: 48 },
+  comments: { x: 300, y: 1308, width: 650, height: 120 },
+} satisfies Record<string, FormBox>;
+
+function centeredBox(
+  centerX: number,
+  centerY: number,
+  width: number,
+  height = 34,
+): FormBox {
+  return { x: centerX - width / 2, y: centerY - height / 2, width, height };
+}
+
 function createLungFormSheet(entry: LungCaseFields, operatorName = "") {
   const fields: string[] = [];
   const demographics = [
@@ -25,34 +42,48 @@ function createLungFormSheet(entry: LungCaseFields, operatorName = "") {
     entry.patientGender.trim(),
     entry.patientBmi.trim() && `BMI ${entry.patientBmi.trim()}`,
   ].filter(Boolean).join(" · ");
-  fields.push(svgWrappedText(demographics, 365, 306, 30, 2));
-  fields.push(svgWrappedText(operatorName, 725, 306, 32, 2));
-  fields.push(svgWrappedText(entry.indication, 365, 385, 76, 2));
+  fields.push(svgWrappedText(demographics, lungTextBoxes.demographics));
+  fields.push(svgWrappedText(operatorName, lungTextBoxes.operator));
+  fields.push(svgWrappedText(entry.indication, lungTextBoxes.indication));
 
   const ventilatoryCenters: Record<string, [number, number]> = {
     None: [422, 64], IPPV: [534, 64], "PSV / spontaneous": [653, 100], "PSV/SPONT": [653, 100],
     BiPAP: [791, 76], BIPAP: [791, 76], "CPAP / NHF": [968, 116], "CPAP/NHF": [968, 116],
   };
   const ventilation = ventilatoryCenters[entry.ventilatorySupport.trim()];
-  if (ventilation) fields.push(svgRoundedMark(ventilation[0], 454, ventilation[1]));
+  if (ventilation) fields.push(svgRoundedMark(centeredBox(
+    ventilation[0],
+    454,
+    ventilation[1],
+  )));
 
-  const qualityMarks = { good: [474, 78], acceptable: [721, 120], poor: [968, 78] } as const;
-  if (entry.imageQuality in qualityMarks) {
-    const [x, width] = qualityMarks[entry.imageQuality as keyof typeof qualityMarks];
-    fields.push(svgRoundedMark(x, 525, width));
+  const qualityBoxes: Partial<Record<LungCaseFields["imageQuality"], FormBox>> = {
+    good: centeredBox(474, 525, 78),
+    acceptable: centeredBox(721, 525, 160),
+    poor: centeredBox(968, 525, 78),
+  };
+  const qualityBox = qualityBoxes[entry.imageQuality];
+  if (qualityBox) {
+    fields.push(svgRoundedMark(qualityBox));
   }
 
   for (const [region, y] of regions) {
     const responses = entry.findings[region];
     findings.forEach((finding, index) => {
       const value = responses[finding];
-      if (value === "yes" || value === "no") fields.push(svgRoundedMark(responseCenters[index][value === "yes" ? 0 : 1], y, 58));
+      if (value === "yes" || value === "no") {
+        fields.push(svgRoundedMark(centeredBox(
+          responseCenters[index][value === "yes" ? 0 : 1],
+          y,
+          58,
+        )));
+      }
     });
   }
 
   const comments = [entry.diagnosis.trim() && `Diagnosis: ${entry.diagnosis.trim()}`, entry.summary.trim()]
     .filter(Boolean).join("\n");
-  fields.push(svgWrappedText(comments, 300, 1320, 68, 5));
+  fields.push(svgWrappedText(comments, lungTextBoxes.comments));
 
   const base = import.meta.env.BASE_URL;
   const templateUrl = `${base}templates/fusic-lung-report-form-v10.svg`;
