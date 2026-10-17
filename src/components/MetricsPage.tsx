@@ -133,7 +133,7 @@ function MetricsPage({
           <p className="eyebrow">Personal review</p>
           <h2 id="metrics-heading">Metrics</h2>
           <p className="metrics-intro">
-            Explore patterns in your recorded {pathway === "lung" ? "lung" : "heart"} cases.
+            Explore patterns in your recorded {pathway === "lung" ? "lung" : pathway === "heart" ? "heart" : "abdomen"} cases.
             These summaries describe your logbook; they do not assess competence.
           </p>
         </div>
@@ -159,7 +159,7 @@ function MetricsPage({
           <h3>No cases to summarize yet</h3>
           <p>Once you have recorded cases, this page will show activity and case-detail patterns.</p>
           <button className="button button-primary" type="button" onClick={onAddCase}>
-            Add a {pathway === "lung" ? "lung" : "heart"} case
+            Add an {pathway === "abdomen" ? "abdomen" : pathway === "lung" ? "lung" : "heart"} case
           </button>
         </div>
       ) : (
@@ -183,14 +183,16 @@ function MetricsPage({
           <div className="metrics-grid">
             <Activity metrics={metrics} period={period} onPeriodChange={setPeriod} />
             <Breakdown
-              title={pathway === "lung" ? "Regions attempted" : "Views obtained"}
-              description="Number of cases with each region or view recorded"
+              title={pathway === "lung" ? "Regions attempted" : pathway === "heart" ? "Views obtained" : "Examination points attempted"}
+              description={pathway === "abdomen" ? "Number of cases with each required examination point recorded" : "Number of cases with each region or view recorded"}
               items={metrics.scanDetails}
             />
             <Breakdown
-              title="Findings marked Yes"
+              title={pathway === "abdomen" ? "Structured details recorded" : "Findings marked Yes"}
               description={
-                pathway === "lung"
+                pathway === "abdomen"
+                  ? "Cases with structured renal and free-fluid details recorded"
+                  : pathway === "lung"
                   ? "Cases with each finding marked Yes in at least one region"
                   : "Cases with each finding marked Yes"
               }

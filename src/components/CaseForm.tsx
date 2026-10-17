@@ -2,9 +2,11 @@ import { useState, type FormEvent } from "react";
 import {
   HEART_FINDINGS,
   HEART_VIEWS,
+  ABDOMEN_EXAMINATION_POINTS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
   type Assessment,
+  type AbdomenCaseFields,
   type CaseDraft,
   type CaseType,
   type HeartCaseFields,
@@ -54,7 +56,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
       ? draft.regions.length > 0 ||
         draft.ventilatorySupport !== "Not recorded" ||
         draft.imageQuality !== "not_recorded"
-      : draft.views.length > 0 ||
+      : draft.pathway === "heart" ? draft.views.length > 0 ||
         Object.values(draft.findings).some((finding) => finding !== "not_assessed") ||
         draft.ventilatorySupport !== "Not recorded" ||
         Boolean(
@@ -62,13 +64,14 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
             draft.heartRate ||
             draft.bloodPressure ||
             draft.centralVenousPressure,
-        );
+        ) : draft.examinationPoints.length > 0 || draft.imageQuality !== "not_recorded" || draft.rightHydronephrosis !== "not_assessed" || draft.leftHydronephrosis !== "not_assessed" || draft.bladderSize !== "not_assessed" || Boolean(draft.rightUpperQuadrant || draft.leftUpperQuadrant || draft.rightKidney || draft.leftKidney || draft.bladderDescription || draft.freeFluid || draft.otherComments);
 
-  function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields>(
+  function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields | keyof AbdomenCaseFields>(
     key: K,
     value:
       | LungCaseFields[K & keyof LungCaseFields]
-      | HeartCaseFields[K & keyof HeartCaseFields],
+      | HeartCaseFields[K & keyof HeartCaseFields]
+      | AbdomenCaseFields[K & keyof AbdomenCaseFields],
   ) {
     onChange({ ...draft, [key]: value } as CaseDraft);
   }
@@ -130,7 +133,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
     <section className="entry-form-panel" aria-labelledby="form-title">
       <div className="form-heading">
         <div>
-          <p className="eyebrow">{draft.pathway === "lung" ? "Lung" : "Heart"} scan</p>
+          <p className="eyebrow">{draft.pathway === "lung" ? "Lung" : draft.pathway === "heart" ? "Heart" : "Abdomen"} scan</p>
           <h2 id="form-title">
             {isNewCase ? "Record a case" : "Edit case"}
           </h2>
@@ -301,13 +304,91 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               }
               onUpdateQuality={(value) => updateField("imageQuality", value)}
             />
-          ) : (
+          ) : draft.pathway === "heart" ? (
             <HeartDetails
               draft={draft}
               onUpdateFinding={updateHeartFinding}
               onUpdateViews={(views) => updateField("views", views)}
               onUpdateField={(key, value) => updateField(key, value)}
             />
+          ) : (
+            <div className="form-grid">
+              <fieldset className="checklist-fieldset abdomen-points">
+                <legend>Examination points attempted</legend>
+                <div className="abdomen-point-list">
+                  {ABDOMEN_EXAMINATION_POINTS.map((point) => (
+                    <label className="check-option" key={point}>
+                      <input
+                        type="checkbox"
+                        checked={draft.examinationPoints.includes(point)}
+                        onChange={(event) => updateField(
+                          "examinationPoints",
+                          event.currentTarget.checked
+                            ? [...draft.examinationPoints, point]
+                            : draft.examinationPoints.filter((item) => item !== point),
+                        )}
+                      />
+                      <span>{point}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <label className="form-field">
+                <span>RUQ · diaphragm and liver</span>
+                <textarea value={draft.rightUpperQuadrant} maxLength={500} onChange={(event) => updateField("rightUpperQuadrant", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>LUQ · diaphragm and spleen</span>
+                <textarea value={draft.leftUpperQuadrant} maxLength={500} onChange={(event) => updateField("leftUpperQuadrant", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Right kidney · size and appearance</span>
+                <textarea value={draft.rightKidney} maxLength={500} onChange={(event) => updateField("rightKidney", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Right hydronephrosis</span>
+                <select value={draft.rightHydronephrosis} onChange={(event) => updateField("rightHydronephrosis", event.currentTarget.value as AbdomenCaseFields["rightHydronephrosis"])}>
+                  {["not_assessed", "none", "mild", "moderate", "severe"].map((value) => <option key={value} value={value}>{value === "not_assessed" ? "Not assessed" : value === "none" ? "None" : value[0].toUpperCase() + value.slice(1)}</option>)}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Left kidney · size and appearance</span>
+                <textarea value={draft.leftKidney} maxLength={500} onChange={(event) => updateField("leftKidney", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Left hydronephrosis</span>
+                <select value={draft.leftHydronephrosis} onChange={(event) => updateField("leftHydronephrosis", event.currentTarget.value as AbdomenCaseFields["leftHydronephrosis"])}>
+                  {["not_assessed", "none", "mild", "moderate", "severe"].map((value) => <option key={value} value={value}>{value === "not_assessed" ? "Not assessed" : value === "none" ? "None" : value[0].toUpperCase() + value.slice(1)}</option>)}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Bladder size</span>
+                <select value={draft.bladderSize} onChange={(event) => updateField("bladderSize", event.currentTarget.value as AbdomenCaseFields["bladderSize"])}>
+                  {["not_assessed", "not_seen", "small", "normal", "large"].map((value) => <option key={value} value={value}>{value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}</option>)}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Bladder location and description</span>
+                <textarea value={draft.bladderDescription} maxLength={500} onChange={(event) => updateField("bladderDescription", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Free fluid · location and description</span>
+                <textarea value={draft.freeFluid} maxLength={500} onChange={(event) => updateField("freeFluid", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Other comments</span>
+                <textarea value={draft.otherComments} maxLength={500} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
+              </label>
+              <label className="form-field">
+                <span>Image quality</span>
+                <select value={draft.imageQuality} onChange={(event) => updateField("imageQuality", event.currentTarget.value as ImageQuality)}>
+                  <option value="not_recorded">Not recorded</option>
+                  <option value="good">Good</option>
+                  <option value="acceptable">Acceptable</option>
+                  <option value="poor">Poor</option>
+                </select>
+              </label>
+            </div>
           )}
         </details>
 

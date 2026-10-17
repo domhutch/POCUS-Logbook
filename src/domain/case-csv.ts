@@ -33,7 +33,6 @@ function commonColumns() {
     "Impression",
     "Management impact",
     "Image quality",
-    "Ventilatory support",
   ];
 }
 
@@ -41,8 +40,8 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
   const sequenceNumbers = getCaseSequenceNumbers(pathwayCases);
   const detailColumns = pathway === "lung"
-    ? ["Regions scanned", ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([, label]) => `${region} · ${label}`))]
-    : ["Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)];
+    ? ["Ventilatory support", "Regions scanned", ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([, label]) => `${region} · ${label}`))]
+    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"];
   const headers = [...commonColumns(), ...detailColumns, "Summary of main findings", "Reflection"];
 
   const rows = pathwayCases
@@ -61,21 +60,22 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
         entry.impressionCategory === "not_recorded" ? "Not recorded" : entry.impressionCategory,
         entry.managementImpact === "not_recorded" ? "Not recorded" : entry.managementImpact,
         entry.imageQuality === "not_recorded" ? "Not recorded" : entry.imageQuality,
-        entry.ventilatorySupport.trim(),
       ];
       const details = entry.pathway === "lung"
         ? [
+            entry.ventilatorySupport.trim(),
             entry.regions.join("; "),
             ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([key]) => assessment(entry.findings[region][key]))),
           ]
-        : [
+        : entry.pathway === "heart" ? [
+            entry.ventilatorySupport.trim(),
             entry.views.join("; "),
             entry.cardiovascularSupport.trim(),
             entry.heartRate.trim(),
             entry.bloodPressure.trim(),
             entry.centralVenousPressure.trim(),
             ...HEART_FINDINGS.map(([key]) => assessment(entry.findings[key])),
-          ];
+          ] : [entry.examinationPoints.join("; "), entry.rightUpperQuadrant, entry.leftUpperQuadrant, entry.rightKidney, entry.rightHydronephrosis, entry.leftKidney, entry.leftHydronephrosis, entry.bladderSize, entry.bladderDescription, entry.freeFluid, entry.otherComments];
       return [...common, ...details, entry.summary.trim(), entry.reflection.trim()];
     });
 

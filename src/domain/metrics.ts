@@ -3,6 +3,7 @@ import {
   HEART_FINDINGS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
+  ABDOMEN_EXAMINATION_POINTS,
   type CaseDraft,
   type ImageQuality,
   type ImpressionCategory,
@@ -174,12 +175,12 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
           "Pleural assessment",
           "Ventilatory support review",
         ][index % 4]
-      : [
+      : pathway === "heart" ? [
           "Hypotension",
           "Shock assessment",
           "Fluid status review",
           "Breathlessness",
-        ][index % 4];
+        ][index % 4] : ["Abdominal assessment", "Free fluid assessment", "Renal assessment", "Bladder assessment"][index % 4];
   draft.diagnosis =
     pathway === "lung"
       ? [
@@ -188,12 +189,12 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
           "Small pleural effusion",
           "Indeterminate study",
         ][index % 4]
-      : [
+      : pathway === "heart" ? [
           "No significant abnormality",
           "Reduced LV function",
           "RV dilatation",
           "Indeterminate study",
-        ][index % 4];
+        ][index % 4] : ["No significant abnormality", "Free fluid noted", "Indeterminate study", "Renal finding recorded"][index % 4];
   draft.imageQuality = imageQualities[index % imageQualities.length];
   draft.impressionCategory = impressions[index % impressions.length];
   draft.managementImpact = managementImpacts[index % managementImpacts.length];
@@ -210,7 +211,7 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
       if (index % 5 === 3) draft.findings[region].consolidation = "yes";
     }
     draft.summary = "Sample case for exploring logbook metrics.";
-  } else {
+  } else if (draft.pathway === "heart") {
     draft.views = HEART_VIEWS.filter(
       (_, viewIndex) => (viewIndex + index) % 3 !== 0,
     );
@@ -218,6 +219,12 @@ function createSampleDraft(pathway: Pathway, index: number): CaseDraft {
     if (index % 4 === 2) draft.findings.rvDilated = "yes";
     if (index % 5 === 3) draft.findings.pericardialFluid = "yes";
     draft.heartRate = String(68 + (index % 7) * 4);
+    draft.summary = "Sample case for exploring logbook metrics.";
+  } else {
+    draft.examinationPoints = ["RUQ (diaphragm and liver)", "Right kidney", "Pelvis (bladder)"];
+    draft.rightUpperQuadrant = index % 2 ? "No free fluid seen" : "Liver visualised";
+    draft.rightHydronephrosis = "none";
+    draft.bladderSize = "normal";
     draft.summary = "Sample case for exploring logbook metrics.";
   }
 
@@ -273,11 +280,14 @@ export function summarizeCases(
             (entry) => entry.pathway === "lung" && entry.regions.includes(region),
           ).length,
         }))
-      : HEART_VIEWS.map((view) => ({
+      : pathway === "heart" ? HEART_VIEWS.map((view) => ({
           label: view,
           count: pathwayCases.filter(
             (entry) => entry.pathway === "heart" && entry.views.includes(view),
           ).length,
+        })) : ABDOMEN_EXAMINATION_POINTS.map((point) => ({
+          label: point,
+          count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && entry.examinationPoints.includes(point)).length,
         }));
   const findings =
     pathway === "lung"
@@ -289,12 +299,16 @@ export function summarizeCases(
               LUNG_REGIONS.some((region) => entry.findings[region][key] === "yes"),
           ).length,
         }))
-      : HEART_FINDINGS.map(([key, label]) => ({
+      : pathway === "heart" ? HEART_FINDINGS.map(([key, label]) => ({
           label,
           count: pathwayCases.filter(
             (entry) => entry.pathway === "heart" && entry.findings[key] === "yes",
           ).length,
-        }));
+        })) : [
+          { label: "Right kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.rightKidney)).length },
+          { label: "Left kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.leftKidney)).length },
+          { label: "Free fluid field completed", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.freeFluid)).length },
+        ];
 
   return {
     totalCases: pathwayCases.length,

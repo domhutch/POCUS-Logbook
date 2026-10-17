@@ -29,7 +29,7 @@ describe("restoreBackup", () => {
       diagnosis: "A conflicting backup must not replace this case",
     };
     const importedCase = addTimestamps(createDraft("heart"));
-    const modes: Record<Pathway, boolean> = { lung: false, heart: false };
+    const modes: Record<Pathway, boolean> = { lung: false, heart: false, abdomen: true };
     const backup = parseBackup(
       JSON.stringify(createBackup([conflictingCase, importedCase], modes)),
     );

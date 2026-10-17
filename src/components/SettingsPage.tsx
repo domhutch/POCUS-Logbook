@@ -4,6 +4,7 @@ import type { AppSettings, TextSize } from "../storage/logbook-store";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
 import { googleDriveClientId, loadGoogleIdentityServices } from "../cloud/google-drive";
 import { Capacitor } from "@capacitor/core";
+import AboutHelpPage from "./AboutHelpPage";
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -49,6 +50,7 @@ function SettingsPage({
   const [confirmPassphrase, setConfirmPassphrase] = useState("");
   const [googleDriveReady, setGoogleDriveReady] = useState(false);
   const [googleDriveError, setGoogleDriveError] = useState<string | null>(null);
+  const [showAboutHelp, setShowAboutHelp] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
   const googleClientId = googleDriveClientId();
   const isNativeBuild = Capacitor.isNativePlatform();
@@ -76,6 +78,10 @@ function SettingsPage({
     setNewSupervisor("");
   }
 
+  if (showAboutHelp) {
+    return <AboutHelpPage onBack={() => setShowAboutHelp(false)} />;
+  }
+
   return (
     <section className="settings-page" aria-labelledby="settings-heading">
       <div className="settings-heading">
@@ -84,6 +90,13 @@ function SettingsPage({
           <h2 id="settings-heading">Settings</h2>
           <p>Manage local preferences, backups, and exports.</p>
         </div>
+        <button
+          className="button button-secondary"
+          type="button"
+          onClick={() => setShowAboutHelp(true)}
+        >
+          About &amp; Help
+        </button>
       </div>
 
       <section className="settings-panel" aria-labelledby="text-size-heading">

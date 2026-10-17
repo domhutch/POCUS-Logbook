@@ -94,6 +94,10 @@ function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
   return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
 }
 
+function abdomenDetails(entry: Extract<LogbookCase, { pathway: "abdomen" }>) {
+  return `<section class="section"><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Examination points attempted</h2><div class="view-list">${entry.examinationPoints.map((point) => `<span class="view-item"><span class="checkbox checked"></span>${escapeHtml(point)}</span>`).join("") || '<span class="not-recorded">None recorded</span>'}</div><h2>Findings</h2><div class="field-grid">${field("RUQ · diaphragm and liver", entry.rightUpperQuadrant)}${field("LUQ · diaphragm and spleen", entry.leftUpperQuadrant)}${field("Right kidney · size and appearance", entry.rightKidney)}${field("Right hydronephrosis", entry.rightHydronephrosis.replaceAll("_", " "))}${field("Left kidney · size and appearance", entry.leftKidney)}${field("Left hydronephrosis", entry.leftHydronephrosis.replaceAll("_", " "))}${field("Bladder size", entry.bladderSize.replaceAll("_", " "))}${field("Bladder location and description", entry.bladderDescription)}${field("Free fluid · location and description", entry.freeFluid)}${field("Other comments", entry.otherComments)}</div></section>`;
+}
+
 export function createCasePrintDocument(entry: LogbookCase) {
   const supervision = formatSupervision(entry);
   const caseType =
@@ -104,8 +108,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   const management = entry.managementImpact === "not_recorded"
     ? ""
     : formatManagementImpact(entry.managementImpact);
-  const details =
-    entry.pathway === "lung" ? lungDetails(entry) : heartDetails(entry);
+  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : abdomenDetails(entry);
 
   return `<!doctype html>
 <html lang="en">
@@ -230,7 +233,7 @@ export function createCaseReportsPrintDocument(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${pathway === "lung" ? "Lung" : "Heart"} case reports</title>
+  <title>${PATHWAYS[pathway].label.replace(/^FUSIC\s+/, "")} case reports</title>
   <style>${styles}
     @media print { body { width: 194mm; } }
     .report-collection .sheet { margin: 0 auto; break-after: page; page-break-after: always; }

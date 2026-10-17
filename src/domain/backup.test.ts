@@ -15,6 +15,7 @@ const exportedAt = "2026-10-15T12:00:00.000Z";
 const pathwayModes: Record<Pathway, boolean> = {
   lung: false,
   heart: true,
+  abdomen: true,
 };
 
 function makeBackup(cases: LogbookCase[] = []) {

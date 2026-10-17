@@ -1,6 +1,6 @@
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
-export type Pathway = "lung" | "heart";
+export type Pathway = "lung" | "heart" | "abdomen";
 
 export type CaseType = "clinical" | "healthy_volunteer";
 export type ImageQuality = "not_recorded" | "good" | "acceptable" | "poor";
@@ -31,7 +31,26 @@ export const PATHWAYS = {
     supervisedTarget: PATHWAY_REQUIREMENTS.lung.directlySupervisedScans,
     source: `${PATHWAY_REQUIREMENTS.lung.source.title} ${PATHWAY_REQUIREMENTS.lung.source.version}`,
   },
+  abdomen: {
+    label: "FUSIC Abdomen",
+    description: "Record a focused abdominal ultrasound scan and review your cases.",
+    icon: "A",
+    totalTarget: PATHWAY_REQUIREMENTS.abdomen.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.abdomen.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.abdomen.source.title} ${PATHWAY_REQUIREMENTS.abdomen.source.version}`,
+  },
 } as const;
+
+export const ABDOMEN_EXAMINATION_POINTS = [
+  "RUQ (diaphragm and liver)",
+  "LUQ (diaphragm and spleen)",
+  "Right kidney",
+  "Left kidney",
+  "Pelvis (bladder)",
+  "RIF and LIF (ascites)",
+] as const;
+export type AbdomenExaminationPoint = (typeof ABDOMEN_EXAMINATION_POINTS)[number];
+export type Hydronephrosis = "not_assessed" | "none" | "mild" | "moderate" | "severe";
 
 export const LUNG_REGIONS = [
   "Right upper anterior",
@@ -112,7 +131,22 @@ export interface HeartCaseFields extends CaseFields {
   findings: Record<HeartFinding, Assessment>;
 }
 
-export type LogbookCase = LungCaseFields | HeartCaseFields;
+export interface AbdomenCaseFields extends CaseFields {
+  pathway: "abdomen";
+  examinationPoints: AbdomenExaminationPoint[];
+  rightUpperQuadrant: string;
+  leftUpperQuadrant: string;
+  rightKidney: string;
+  rightHydronephrosis: Hydronephrosis;
+  leftKidney: string;
+  leftHydronephrosis: Hydronephrosis;
+  bladderSize: "not_assessed" | "not_seen" | "small" | "normal" | "large";
+  bladderDescription: string;
+  freeFluid: string;
+  otherComments: string;
+}
+
+export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields;
 export const SAMPLE_CASE_ID_PREFIX = "pocus-sample:";
 
 export function isSampleCase(entry: Pick<LogbookCase, "id">) {
@@ -173,6 +207,16 @@ export function createDraft(pathway: Pathway): CaseDraft {
       ventilatorySupport: "Not recorded",
       regions: [],
       findings: emptyLungFindings(),
+    };
+  }
+
+  if (pathway === "abdomen") {
+    return {
+      ...newCaseFields(), pathway, examinationPoints: [],
+      rightUpperQuadrant: "", leftUpperQuadrant: "", rightKidney: "",
+      rightHydronephrosis: "not_assessed", leftKidney: "",
+      leftHydronephrosis: "not_assessed", bladderSize: "not_assessed",
+      bladderDescription: "", freeFluid: "", otherComments: "",
     };
   }
 

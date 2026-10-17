@@ -79,7 +79,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
           <ReviewField label="Impression category" value={impression} />
           <ReviewField label="Management impact" value={management} />
           <ReviewField label="Image quality" value={imageQuality} />
-          <ReviewField label="Ventilatory support" value={entry.ventilatorySupport} />
+          {entry.pathway !== "abdomen" && <ReviewField label="Ventilatory support" value={entry.ventilatorySupport} />}
           {entry.pathway === "heart" && (
             <>
               <ReviewField
@@ -122,7 +122,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             ))}
           </div>
         </section>
-      ) : (
+      ) : entry.pathway === "heart" ? (
         <>
           <section className="review-section" aria-labelledby="review-views-title">
             <h3 id="review-views-title">Views obtained</h3>
@@ -147,6 +147,23 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             </dl>
           </section>
         </>
+      ) : (
+        <section className="review-section" aria-labelledby="review-abdomen-title">
+          <h3 id="review-abdomen-title">Abdominal findings</h3>
+          <div className="review-chip-list">{entry.examinationPoints.map((point) => <span key={point}>{point}</span>)}</div>
+          <dl className="review-fields">
+            <ReviewField label="RUQ · diaphragm and liver" value={entry.rightUpperQuadrant} />
+            <ReviewField label="LUQ · diaphragm and spleen" value={entry.leftUpperQuadrant} />
+            <ReviewField label="Right kidney · size and appearance" value={entry.rightKidney} />
+            <ReviewField label="Right hydronephrosis" value={entry.rightHydronephrosis.replaceAll("_", " ")} />
+            <ReviewField label="Left kidney · size and appearance" value={entry.leftKidney} />
+            <ReviewField label="Left hydronephrosis" value={entry.leftHydronephrosis.replaceAll("_", " ")} />
+            <ReviewField label="Bladder size" value={entry.bladderSize.replaceAll("_", " ")} />
+            <ReviewField label="Bladder location and description" value={entry.bladderDescription} />
+            <ReviewField label="Free fluid" value={entry.freeFluid} />
+            <ReviewField label="Other comments" value={entry.otherComments} />
+          </dl>
+        </section>
       )}
 
       <section className="review-section" aria-labelledby="review-notes-title">

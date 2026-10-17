@@ -29,6 +29,7 @@ interface LogbookRoute {
 interface PathwayRequirements {
   label: string;
   source: RequirementSource;
+  assessmentSource?: RequirementSource;
   totalScans: number;
   directlySupervisedScans: number;
   collectionWindowMonths: number;
@@ -115,6 +116,11 @@ export const PATHWAY_REQUIREMENTS: Readonly<
       title: "FUSIC Abdomen Training Pack",
       version: "v11 (2025)",
       url: "https://ics.ac.uk/static/ef0ddaff-73a2-484d-95acc7a5ab3be630/FUSICAbdomen-Training-Packv11-2025.pdf",
+    },
+    assessmentSource: {
+      title: "FUSIC Abdomen Assessment Pack",
+      version: "v11 (2025)",
+      url: "https://ics.ac.uk/static/4f58cbc7-b6d1-4ed4-9dcb9d4990a126ec/FUSIC-Abdomen-Assessment-Pack-2025-v11.pdf",
     },
     totalScans: 25,
     directlySupervisedScans: 10,

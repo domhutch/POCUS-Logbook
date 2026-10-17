@@ -101,6 +101,7 @@ export function useLogbookBackup({
       const backup = createBackup(storedCases, {
         lung: storedModes.lung ?? trainingModes.lung,
         heart: storedModes.heart ?? trainingModes.heart,
+        abdomen: storedModes.abdomen ?? trainingModes.abdomen,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
@@ -190,6 +191,7 @@ export function useLogbookBackup({
       const backup = createBackup(storedCases, {
         lung: storedModes.lung ?? trainingModes.lung,
         heart: storedModes.heart ?? trainingModes.heart,
+        abdomen: storedModes.abdomen ?? trainingModes.abdomen,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {

@@ -18,10 +18,11 @@ import {
   type LungCaseFields,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 3;
+export const BACKUP_SCHEMA_VERSION = 4;
 export const BACKUP_APP_ID = "pocus-logbook";
 const VERSION_ONE_BACKUP = 1;
 const VERSION_TWO_BACKUP = 2;
+const VERSION_THREE_BACKUP = 3;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -43,13 +44,14 @@ type VersionOneLogbookCase =
 type VersionTwoLogbookCase =
   | (LungCaseFields & { curriculumPlus: boolean })
   | (HeartCaseFields & { curriculumPlus: boolean });
+type VersionThreeLogbookCase = LungCaseFields | HeartCaseFields;
 
 interface BackupEnvelope {
   app: typeof BACKUP_APP_ID;
   schemaVersion: number;
   exportedAt: string;
   cases: unknown[];
-  pathwayModes: Record<Pathway, boolean>;
+  pathwayModes: Record<string, boolean>;
 }
 
 const legacyCaseFields = [
@@ -97,6 +99,12 @@ const heartCaseFields = [
   "views",
   "findings",
 ];
+const abdomenCaseFields = [
+  ...caseFields, "examinationPoints", "rightUpperQuadrant", "leftUpperQuadrant",
+  "rightKidney", "rightHydronephrosis", "leftKidney", "leftHydronephrosis",
+  "bladderSize", "bladderDescription", "freeFluid", "otherComments",
+];
+const abdomenPoints = ["RUQ (diaphragm and liver)", "LUQ (diaphragm and spleen)", "Right kidney", "Left kidney", "Pelvis (bladder)", "RIF and LIF (ascites)"];
 const versionOneLungCaseFields = [
   ...legacyCaseFields,
   "ventilatorySupport",
@@ -255,8 +263,7 @@ function isCommonCase(
     isString(value.summary) &&
     isString(value.reflection) &&
     isIsoTimestamp(value.createdAt) &&
-    isIsoTimestamp(value.updatedAt) &&
-    isString(value.ventilatorySupport, 120)
+    isIsoTimestamp(value.updatedAt)
   );
 }
 
@@ -277,6 +284,7 @@ function isLogbookCase(
             : lungCaseFields,
       ) &&
       isUniqueEnumArray(value.regions, lungRegions) &&
+      isString(value.ventilatorySupport, 120) &&
       isLungFindings(value.findings)
     );
   }
@@ -295,11 +303,19 @@ function isLogbookCase(
       isString(value.heartRate, 40) &&
       isString(value.bloodPressure, 40) &&
       isString(value.centralVenousPressure, 40) &&
+      isString(value.ventilatorySupport, 120) &&
       isUniqueEnumArray(value.views, heartViews) &&
       isHeartFindings(value.findings)
     );
   }
 
+  if (value.pathway === "abdomen" && schemaVersion === BACKUP_SCHEMA_VERSION) {
+    return hasExactKeys(value, abdomenCaseFields) && isUniqueEnumArray(value.examinationPoints, abdomenPoints) &&
+      ["rightUpperQuadrant", "leftUpperQuadrant", "rightKidney", "leftKidney", "bladderDescription", "freeFluid", "otherComments"].every((key) => isString(value[key])) &&
+      ["not_assessed", "none", "mild", "moderate", "severe"].includes(String(value.rightHydronephrosis)) &&
+      ["not_assessed", "none", "mild", "moderate", "severe"].includes(String(value.leftHydronephrosis)) &&
+      ["not_assessed", "not_seen", "small", "normal", "large"].includes(String(value.bladderSize));
+  }
   return false;
 }
 
@@ -318,9 +334,10 @@ function isBackupEnvelope(value: unknown): value is BackupEnvelope {
     isIsoTimestamp(value.exportedAt) &&
     Array.isArray(value.cases) &&
     isRecord(value.pathwayModes) &&
-    hasExactKeys(value.pathwayModes, ["lung", "heart"]) &&
+    hasExactKeys(value.pathwayModes, value.schemaVersion === BACKUP_SCHEMA_VERSION ? ["lung", "heart", "abdomen"] : ["lung", "heart"]) &&
     typeof value.pathwayModes.lung === "boolean" &&
-    typeof value.pathwayModes.heart === "boolean"
+    typeof value.pathwayModes.heart === "boolean" &&
+    (value.schemaVersion !== BACKUP_SCHEMA_VERSION || typeof value.pathwayModes.abdomen === "boolean")
   );
 }
 
@@ -351,6 +368,7 @@ export function parseBackup(serialized: string): LogbookBackup {
     ![
       VERSION_ONE_BACKUP,
       VERSION_TWO_BACKUP,
+      VERSION_THREE_BACKUP,
       BACKUP_SCHEMA_VERSION,
     ].includes(value.schemaVersion) ||
     !value.cases.every((entry) =>
@@ -379,7 +397,7 @@ export function parseBackup(serialized: string): LogbookBackup {
           managementImpact: "not_recorded",
         }),
       ),
-      pathwayModes: value.pathwayModes,
+      pathwayModes: { ...value.pathwayModes, abdomen: true } as Record<Pathway, boolean>,
     };
   }
 
@@ -395,7 +413,17 @@ export function parseBackup(serialized: string): LogbookBackup {
         } = entry as VersionTwoLogbookCase;
         return currentEntry;
       }),
-      pathwayModes: value.pathwayModes,
+      pathwayModes: { ...value.pathwayModes, abdomen: true } as Record<Pathway, boolean>,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_THREE_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases as VersionThreeLogbookCase[],
+      pathwayModes: { ...value.pathwayModes, abdomen: true } as Record<Pathway, boolean>,
     };
   }
 

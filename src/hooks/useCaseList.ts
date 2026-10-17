@@ -13,6 +13,10 @@ function searchableClinicalDetails(entry: LogbookCase) {
       ),
     ];
   }
+  if (entry.pathway === "abdomen") return [
+    ...entry.examinationPoints, entry.rightUpperQuadrant, entry.leftUpperQuadrant,
+    entry.rightKidney, entry.leftKidney, entry.freeFluid, entry.otherComments,
+  ];
   return [
     ...entry.views,
     entry.ventilatorySupport,

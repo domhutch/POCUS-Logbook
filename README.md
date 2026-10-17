@@ -28,7 +28,7 @@ npm run dev
 - [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
 - [`src/hooks/`](./src/hooks) contains app behavior that is reused or easier to understand separately, such as loading local data, searching cases, backups, and printing.
 - [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
-- [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support remains Heart and Lung.
+- [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support includes Heart, Lung, and Abdomen.
 - [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
 - [`src/styles.css`](./src/styles.css) contains the app layout and visual styles.
 
@@ -61,7 +61,7 @@ Browser storage is isolated by site origin. Cases saved at `localhost` will not 
 
 ## Logbook data
 
-Lung and Heart cases are stored locally in this browser's IndexedDB; they are not continuously uploaded or synced. A user can explicitly upload an encrypted backup to Google Drive from Settings. Training targets can be hidden independently for each pathway without changing its saved cases.
+Lung, Heart, and Abdomen cases are stored locally in this browser's IndexedDB; they are not continuously uploaded or synced. A user can explicitly upload an encrypted backup to Google Drive from Settings. Training targets can be hidden independently for each pathway without changing its saved cases.
 
 Choose one pathway at a time from the **Logbook type** selector. The app has **Overview**, **Cases**, **Metrics**, and **Settings** pages for pathway progress, case history, descriptive case patterns, and local preferences. Create or edit a case on its own screen; saving returns to the Cases page. Logbook print, CSV, backup, and restore controls are in Settings; individual case PDFs are available from Cases.
 

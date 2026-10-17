@@ -25,12 +25,20 @@ interface CaseListProps {
 }
 
 function caseSummary(entry: LogbookCase) {
-  const hasStructuredDetails =
-    entry.pathway === "lung" ? entry.regions.length > 0 : entry.views.length > 0;
+  const hasStructuredDetails = entry.pathway === "lung"
+    ? entry.regions.length > 0
+    : entry.pathway === "heart"
+      ? entry.views.length > 0
+      : entry.examinationPoints.length > 0 || Boolean(
+          entry.rightUpperQuadrant || entry.leftUpperQuadrant || entry.rightKidney ||
+          entry.leftKidney || entry.bladderDescription || entry.freeFluid || entry.otherComments,
+        );
   const scanDetails = hasStructuredDetails
     ? entry.pathway === "lung"
       ? `${entry.regions.length} of 6 regions recorded`
-      : `${entry.views.length} views recorded`
+      : entry.pathway === "heart"
+        ? `${entry.views.length} views recorded`
+        : `${entry.examinationPoints.length} examination points recorded`
     : "Structured details not added";
   return [entry.indication, scanDetails].filter(Boolean).join(" · ");
 }
