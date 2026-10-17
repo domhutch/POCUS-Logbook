@@ -1,126 +1,15 @@
+import { PATHWAYS, type LogbookCase } from "./logbook";
 import {
-  HEART_FINDINGS,
-  DVT_SITES,
-  DVT_SITE_FINDINGS,
-  HD_QUESTIONS,
-  HD_MEASUREMENTS,
-  VASCULAR_ASSESSMENTS,
-  VASCULAR_PROCEDURES,
-  LUNG_FINDINGS,
-  LUNG_REGIONS,
-  PATHWAYS,
-  type Assessment,
-  type LogbookCase,
-} from "./logbook";
-import {
-  ASSESSMENT_LABELS,
-  formatImageQuality,
   formatImpression,
   formatManagementImpact,
   formatSupervision,
 } from "./case-display";
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (character) => {
-    const entities: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    };
-    return entities[character];
-  });
-}
-
-function displayValue(value: string) {
-  return value.trim() ? escapeHtml(value.trim()) : '<span class="muted">Not recorded</span>';
-}
+import { escapeHtml, field } from "./case-print-format";
+import { pathwayPrintDetails } from "../pathways/print";
 
 function formatUkDate(date: string) {
   const [year, month, day] = date.split("-");
   return `${day}/${month}/${year}`;
-}
-
-function field(label: string, value: string) {
-  return `<div class="field"><span class="field-label">${escapeHtml(label)}</span><span class="field-value">${displayValue(value)}</span></div>`;
-}
-
-function assessmentChoices(value: Assessment) {
-  if (value === "not_assessed") {
-    return '<span class="not-recorded">Not recorded</span>';
-  }
-  const options = [
-    ["yes", "Yes"],
-    ["no", "No"],
-    ["unable", "U/A"],
-  ] as const;
-  return `<span class="choices">${options
-    .map(
-      ([key, label]) =>
-        `<span class="choice ${value === key ? "selected" : ""}">${label}</span>`,
-    )
-    .join("")}</span>`;
-}
-
-function lungDetails(entry: Extract<LogbookCase, { pathway: "lung" }>) {
-  const rows = LUNG_REGIONS.map((region) => {
-    const attempted = entry.regions.includes(region);
-    const findings = LUNG_FINDINGS.map(
-      ([key]) =>
-        `<td>${assessmentChoices(entry.findings[region][key])}</td>`,
-    ).join("");
-    return `<tr><th scope="row"><span class="checkbox ${attempted ? "checked" : ""}"></span>${escapeHtml(region)}</th>${findings}</tr>`;
-  }).join("");
-
-  return `<section class="section"><h2>Demographics</h2><div class="field-grid">${field("Age (years)", entry.patientAge)}${field("Gender", entry.patientGender)}${field("BMI", entry.patientBmi)}</div><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Regional findings</h2><table class="report-table lung-table"><thead><tr><th scope="col">Probe position</th>${LUNG_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`;
-}
-
-function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
-  const views = entry.views
-    .map(
-      (view) =>
-        `<span class="view-item"><span class="checkbox checked"></span>${escapeHtml(view)}</span>`,
-    )
-    .join("") || '<span class="not-recorded">No views recorded</span>';
-  const findings = HEART_FINDINGS.map(([key, label]) => {
-    const value = entry.findings[key];
-    const options = [
-      ["yes", "Yes"],
-      ["no", "No"],
-      ["unable", "U/A"],
-    ] as const;
-    return `<tr><th scope="row">${escapeHtml(label)}</th>${options
-      .map(
-        ([option, text]) =>
-          `<td class="choice-cell">${value === option ? `<strong class="selected">${text}</strong>` : ""}</td>`,
-      )
-      .join("")}</tr>`;
-  }).join("");
-
-  return `<section class="section"><h2>Demographics</h2><div class="field-grid">${field("Age (years)", entry.patientAge)}${field("Gender", entry.patientGender)}${field("BMI", entry.patientBmi)}</div><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Cardiovascular support", entry.cardiovascularSupport)}${field("Heart rate", entry.heartRate)}${field("Blood pressure", entry.bloodPressure)}${field("Central venous pressure", entry.centralVenousPressure)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Views obtained</h2><div class="view-list">${views}</div><h2>Assessment findings</h2><table class="report-table heart-table"><thead><tr><th scope="col">Finding</th><th scope="col">Yes</th><th scope="col">No</th><th scope="col">U/A</th></tr></thead><tbody>${findings}</tbody></table><p class="table-legend">Selected responses are outlined; blank responses are not assessed. U/A = unable to assess.</p></section>`;
-}
-
-function abdomenDetails(entry: Extract<LogbookCase, { pathway: "abdomen" }>) {
-  return `<section class="section"><h2>Demographics</h2><div class="field-grid">${field("Age (years)", entry.patientAge)}${field("Gender", entry.patientGender)}${field("BMI", entry.patientBmi)}</div><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Examination points attempted</h2><div class="view-list">${entry.examinationPoints.map((point) => `<span class="view-item"><span class="checkbox checked"></span>${escapeHtml(point)}</span>`).join("") || '<span class="not-recorded">None recorded</span>'}</div><h2>Findings</h2><div class="field-grid">${field("RUQ · diaphragm and liver", entry.rightUpperQuadrant)}${field("LUQ · diaphragm and spleen", entry.leftUpperQuadrant)}${field("Right kidney · size and appearance", entry.rightKidney)}${field("Right hydronephrosis", entry.rightHydronephrosis.replaceAll("_", " "))}${field("Left kidney · size and appearance", entry.leftKidney)}${field("Left hydronephrosis", entry.leftHydronephrosis.replaceAll("_", " "))}${field("Bladder size", entry.bladderSize.replaceAll("_", " "))}${field("Bladder location and description", entry.bladderDescription)}${field("Free fluid · location and description", entry.freeFluid)}${field("Other comments", entry.otherComments)}</div></section>`;
-}
-
-function dvtDetails(entry: Extract<LogbookCase, { pathway: "dvt" }>) {
-  const rows = DVT_SITES.map((site) => `<tr><th scope="row">${escapeHtml(site)}</th>${DVT_SITE_FINDINGS.map(([key]) => `<td>${assessmentChoices(entry.findings[site][key])}</td>`).join("")}</tr>`).join("");
-  return `<section class="section"><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Venous findings</h2><table class="report-table dvt-table"><thead><tr><th scope="col">Examination site</th>${DVT_SITE_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table><p class="table-legend">Not assessed fields are left blank. U/A = unable to assess.</p>${field("Other comments", entry.otherComments)}</section>`;
-}
-
-function hdDetails(entry: Extract<LogbookCase, { pathway: "hd" }>) {
-  const questionRows = HD_QUESTIONS.map(([key, question]) =>
-    `<tr><th scope="row">${escapeHtml(question)}</th><td>${escapeHtml(ASSESSMENT_LABELS[entry.questionFindings[key]])}</td><td>${displayValue(entry.questionNotes[key])}</td></tr>`,
-  ).join("");
-  const measurements = HD_MEASUREMENTS.map(([key, label]) => field(label, entry.measurements[key])).join("");
-  return `<section class="section"><h2>FUSIC HD clinical questions</h2><table class="report-table hd-table"><thead><tr><th scope="col">Question</th><th scope="col">Finding</th><th scope="col">Notes</th></tr></thead><tbody>${questionRows}</tbody></table><h2>Measurements and Doppler</h2><div class="field-grid">${measurements}</div>${field("Other comments", entry.otherComments)}</section>`;
-}
-
-function vascularDetails(entry: Extract<LogbookCase, { pathway: "vascular" }>) {
-  const checks = VASCULAR_ASSESSMENTS.map(([key, label]) => `<tr><th scope="row">${escapeHtml(label)}</th><td>${assessmentChoices(entry.assessments[key])}</td></tr>`).join("");
-  return `<section class="section"><h2>Procedure details</h2><div class="field-grid">${field("Procedure category", VASCULAR_PROCEDURES.find(([key]) => key === entry.procedureCategory)?.[1] ?? entry.procedureCategory)}${field("Procedure", entry.procedure)}${field("Site of insertion", entry.insertionSite)}${field("Type of line", entry.lineType)}${field("PICC/midline quota substitution", entry.piccMidlineSubstitution ? "Yes, counted as an allowed substitute" : "No")}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Scan and procedure checks</h2><table class="report-table vascular-table"><tbody>${checks}</tbody></table>${field("Comments", entry.otherComments)}</section>`;
 }
 
 export function createCasePrintDocument(entry: LogbookCase, defaultOperatorName = "") {
@@ -135,7 +24,7 @@ export function createCasePrintDocument(entry: LogbookCase, defaultOperatorName 
     : formatManagementImpact(entry.managementImpact);
   const operatorName = defaultOperatorName.trim() ||
     (entry.pathway === "heart" ? entry.operatorName : "");
-  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : entry.pathway === "abdomen" ? abdomenDetails(entry) : entry.pathway === "dvt" ? dvtDetails(entry) : entry.pathway === "hd" ? hdDetails(entry) : vascularDetails(entry);
+  const details = pathwayPrintDetails(entry);
 
   return `<!doctype html>
 <html lang="en">

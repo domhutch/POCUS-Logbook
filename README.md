@@ -4,9 +4,9 @@ Offline-first POCUS logbook scaffold for the web, with a path to bundled iOS and
 
 ## License
 
-The project code is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the license text. This license applies to contributions and other material in this repository unless a file or its accompanying notice says otherwise.
+The project code is licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the license text. The ordinary CritSono case reports and logbook summaries use project-authored layouts covered by this license. The separate Heart and Lung ICS form exports use FUSIC®/Intensive Care Society (ICS) report-form templates; those templates and embedded branding remain subject to their own rights and are attributed in [ASSET_CREDITS.md](./ASSET_CREDITS.md). Production dependency notices are included in [`public/THIRD_PARTY_NOTICES.txt`](./public/THIRD_PARTY_NOTICES.txt), and the Apache-2.0 license is copied to `public/PROJECT_LICENSE.txt` for app distributions. Regenerate both with `npm run licenses:notices`. Public asset sources and rights status are tracked in [`ASSET_CREDITS.md`](./ASSET_CREDITS.md).
 
-Curriculum names, requirements, and linked training-pack documents are reference material published by the Intensive Care Society (ICS). They remain subject to their respective rights and terms; this repository does not grant permission to redistribute ICS documents. The app links to source documents and summarizes selected logbook requirements for informational purposes. See [ROADMAP.md](./ROADMAP.md) and [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) for source references.
+Curriculum names, requirements, and linked training-pack documents are reference material published by the Intensive Care Society (ICS). They remain subject to their respective rights and terms; this repository does not grant permission to redistribute ICS documents. The app links to source documents and summarizes selected logbook requirements for informational purposes. See [ROADMAP.md](./ROADMAP.md) and [`src/curricula/fusic/`](./src/curricula/fusic/) for source references.
 
 See [ROADMAP.md](./ROADMAP.md) for the planned product scope, curriculum research, and milestones.
 
@@ -28,9 +28,9 @@ npm run dev
 
 - [`src/App.tsx`](./src/App.tsx) connects the main screens and coordinates app state.
 - [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
-- [`src/hooks/`](./src/hooks) contains React workflows and UI state, including loading local data, searching cases, backup actions, and printing.
+- [`src/hooks/`](./src/hooks) contains app behavior that is reused or easier to understand separately, such as loading local data, searching cases, backups, and printing.
 - [`src/services/`](./src/services) contains application workflows that coordinate storage and domain rules. The backup service prepares, encrypts, validates, and restores portable backups before any remote transfer.
-- [`src/domain/`](./src/domain) contains case types and rules, backup schema validation and migration, encryption, metrics, and print formatting. Domain rules should not depend on the React interface or remote providers.
+- [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
 - [`src/cloud/`](./src/cloud) contains remote transport adapters. Backup providers receive and return opaque encrypted payloads; authentication and provider-specific API details stay in the adapter.
 - [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support includes Heart, Lung, Abdomen, DVT, HD, and Vascular.
 - [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
@@ -88,11 +88,11 @@ Lung structured entry is organised by finding, with Yes and No choices and a sin
 
 Heart assessment findings use one-tap Yes, No, and Not assessed buttons. Existing Unable to assess values are presented as Not assessed in the form and remain supported in saved records.
 
-Each case can be opened as a print-ready, single-page A4 report with **PDF** from the Cases list. The compact table layout follows the structure of the official FUSIC logbook report forms without reproducing their logos or assessment branding. Heart, Lung, and Abdomen cases also have an **ICS form** action for printing the matching report form; Abdomen uses the two-page report and leaves trainee/trainer signatures and feedback blank for completion by hand. Settings can download all saved ICS forms for each of those pathways. The in-app PDF preview can print the report or download a PDF directly; native iOS and Android builds offer the system share sheet to save it to Files or another destination. The preview has a close control that returns to the logbook.
+Each case can be opened as a print-ready, single-page A4 report with **PDF** from the Cases list. This is a CritSono-authored report layout covered by Apache-2.0. Heart, Lung, and Abdomen cases also have an **ICS form** action for printing the matching report form; Abdomen uses two pages and leaves trainee/trainer signatures and feedback blank for completion by hand. Settings can download all saved ICS forms for these pathways. The in-app PDF preview can print the report or download a PDF directly; native iOS and Android builds offer the system share sheet to save it to Files or another destination. The preview has a close control that returns to the logbook.
 
-Abdomen, Heart, and Lung cases can store optional age, gender, and BMI for report forms. Do not enter patient names, dates of birth, or record numbers.
+Abdomen, Heart, and Lung cases can store optional age, gender, and BMI for review and report forms. Do not enter patient names, dates of birth, or record numbers.
 
-From **Overview**, choose **Print logbook / PDF** for the selected pathway to create a multi-page training logbook. Its table follows the supplied logbook layout: study number, date, diagnosis, summary of main findings, and supervisor. It includes blank numbered rows up to the pathway reference and continues onto extra pages when there are more cases. The in-app PDF preview can print or download the report and provides a close control to return to Overview. This is a personal report using the fields recorded in the app, not an official FUSIC form or assessment document.
+From **Overview**, choose **Print logbook / PDF** for the selected pathway to create a multi-page training logbook. This is a CritSono-authored layout covered by Apache-2.0. Its table uses these fields: study number, date, diagnosis, summary of main findings, and supervisor. It includes blank numbered rows up to the pathway reference and continues onto extra pages when there are more cases. The in-app PDF preview can print or download the report and provides a close control to return to Overview. This is a personal report using the fields recorded in the app, not an official FUSIC form or assessment document.
 
 ## Capacitor
 

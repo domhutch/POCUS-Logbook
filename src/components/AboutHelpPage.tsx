@@ -75,6 +75,16 @@ function AboutHelpPage({ onBack }: AboutHelpPageProps) {
         </div>
       </section>
 
+      <section className="settings-panel" aria-labelledby="licenses-heading">
+        <h3 id="licenses-heading">Open-source licenses</h3>
+        <p>CritSono is licensed under Apache-2.0. Production dependency notices are included with this app.</p>
+        <p className="about-help-note">
+          <a href={`${import.meta.env.BASE_URL}PROJECT_LICENSE.txt`}>Project license</a>
+          {" · "}
+          <a href={`${import.meta.env.BASE_URL}THIRD_PARTY_NOTICES.txt`}>Third-party dependency notices</a>
+        </p>
+      </section>
+
       <p className="about-help-note">
         Curriculum references can change. Check the current training pack and your local training guidance when planning your training.
       </p>

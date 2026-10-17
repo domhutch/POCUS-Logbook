@@ -1,4 +1,4 @@
-import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
+import { getDefaultCurriculumProfile } from "./pathway-requirements";
 
 export type Pathway = "lung" | "heart" | "abdomen" | "dvt" | "hd" | "vascular";
 
@@ -18,50 +18,50 @@ export const PATHWAYS = {
     description:
       "Record a focused cardiac scan, review your cases and keep your own practice history.",
     icon: "H",
-    totalTarget: PATHWAY_REQUIREMENTS.heart.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.heart.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.heart.source.title} ${PATHWAY_REQUIREMENTS.heart.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("heart").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("heart").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("heart").source.title} ${getDefaultCurriculumProfile("heart").source.version}`,
   },
   lung: {
     label: "Lung",
     description:
       "Record a lung ultrasound scan, review your cases and keep your own practice history.",
     icon: "L",
-    totalTarget: PATHWAY_REQUIREMENTS.lung.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.lung.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.lung.source.title} ${PATHWAY_REQUIREMENTS.lung.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("lung").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("lung").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("lung").source.title} ${getDefaultCurriculumProfile("lung").source.version}`,
   },
   abdomen: {
     label: "Abdomen",
     description: "Record a focused abdominal ultrasound scan and review your cases.",
     icon: "A",
-    totalTarget: PATHWAY_REQUIREMENTS.abdomen.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.abdomen.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.abdomen.source.title} ${PATHWAY_REQUIREMENTS.abdomen.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("abdomen").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("abdomen").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("abdomen").source.title} ${getDefaultCurriculumProfile("abdomen").source.version}`,
   },
   dvt: {
     label: "DVT",
     description: "Record a focused DVT ultrasound scan and review your cases.",
     icon: "D",
-    totalTarget: PATHWAY_REQUIREMENTS.dvt.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.dvt.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.dvt.source.title} ${PATHWAY_REQUIREMENTS.dvt.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("dvt").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("dvt").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("dvt").source.title} ${getDefaultCurriculumProfile("dvt").source.version}`,
   },
   hd: {
     label: "HD",
     description: "Record a focused haemodynamic ultrasound study and review your cases.",
     icon: "HD",
-    totalTarget: PATHWAY_REQUIREMENTS.hd.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.hd.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.hd.source.title} ${PATHWAY_REQUIREMENTS.hd.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("hd").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("hd").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("hd").source.title} ${getDefaultCurriculumProfile("hd").source.version}`,
   },
   vascular: {
     label: "Vascular",
     description: "Record vascular access ultrasound and review your cases.",
     icon: "V",
-    totalTarget: PATHWAY_REQUIREMENTS.vascular.totalScans,
-    supervisedTarget: PATHWAY_REQUIREMENTS.vascular.directlySupervisedScans,
-    source: `${PATHWAY_REQUIREMENTS.vascular.source.title} ${PATHWAY_REQUIREMENTS.vascular.source.version}`,
+    totalTarget: getDefaultCurriculumProfile("vascular").totalScans,
+    supervisedTarget: getDefaultCurriculumProfile("vascular").directlySupervisedScans,
+    source: `${getDefaultCurriculumProfile("vascular").source.title} ${getDefaultCurriculumProfile("vascular").source.version}`,
   },
 } as const;
 

@@ -1,7 +1,6 @@
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import CaseForm from "./components/CaseForm";
@@ -12,36 +11,24 @@ import OverviewPage from "./components/OverviewPage";
 import SettingsPage from "./components/SettingsPage";
 import WelcomeScreen from "./components/WelcomeScreen";
 import { getCaseSequenceNumbers } from "./domain/case-display";
-import { createAdminSampleCases, createFullAdminSampleCases } from "./domain/admin-sample-data";
 import {
   createSampleCases,
   summarizeCaseMix,
   summarizeTrainingProgress,
 } from "./domain/metrics";
 import {
-  createDraft,
-  isSampleCase,
   PATHWAYS,
-  type CaseDraft,
   type LogbookCase,
   type Pathway,
 } from "./domain/logbook";
-import {
-  addSampleCases,
-  deleteSampleCases,
-  deleteCase,
-  saveAppSettings,
-  saveCase,
-  savePathwayMode,
-  type AppSettings,
-} from "./storage/logbook-store";
 import { useCaseList } from "./hooks/useCaseList";
 import { useCasePrinting } from "./hooks/useCasePrinting";
 import { useLogbookBackup } from "./hooks/useLogbookBackup";
 import { useLogbookData } from "./hooks/useLogbookData";
 import { usePathwayMenu } from "./hooks/usePathwayMenu";
-
-type Page = "overview" | "cases" | "metrics" | "settings" | "form" | "review";
+import { useCaseWorkflow } from "./hooks/useCaseWorkflow";
+import { useSampleDataManagement } from "./hooks/useSampleDataManagement";
+import { useSettingsWorkflow } from "./hooks/useSettingsWorkflow";
 
 function App() {
   const [activePathway, setActivePathway] = useState<Pathway>("heart");
@@ -56,18 +43,24 @@ function App() {
     setError,
     refreshEntries,
   } = useLogbookData();
-  const [activePage, setActivePage] = useState<Page>("overview");
-  const [returnPage, setReturnPage] = useState<Exclude<Page, "form">>("overview");
-  const [draft, setDraft] = useState<CaseDraft | null>(null);
-  const initialDraftRef = useRef<string | null>(null);
-  const [caseSaveStatus, setCaseSaveStatus] = useState<string | null>(null);
-  const [reviewedCase, setReviewedCase] = useState<LogbookCase | null>(null);
+  const {
+    activePage,
+    setActivePage,
+    draft,
+    setDraft,
+    caseSaveStatus,
+    reviewedCase,
+    startNewCase,
+    startEditing,
+    startReviewing,
+    closeReview,
+    cancelForm,
+    goToOverview,
+    handleSave,
+    handleDelete,
+  } = useCaseWorkflow({ activePathway, appSettings, refreshEntries, setError });
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
-  const [isHandlingTestData, setIsHandlingTestData] = useState(false);
-  const [testDataStatus, setTestDataStatus] = useState<string | null>(null);
-  const [isSavingSettings, setIsSavingSettings] = useState(false);
-  const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
   const [isPreviewingWelcome, setIsPreviewingWelcome] = useState(false);
   const pathwayMenuRef = usePathwayMenu();
   const caseNumbers = useMemo(() => getCaseSequenceNumbers(entries), [entries]);
@@ -82,6 +75,26 @@ function App() {
   } = useCaseList(entries, activePathway);
   const backup = useLogbookBackup({ trainingModes, refreshEntries, setError });
   const printing = useCasePrinting(setError);
+  const settingsWorkflow = useSettingsWorkflow({
+    activePathway,
+    setActivePathway,
+    setAppSettings,
+    setTrainingModes,
+    setError,
+  });
+  const {
+    sampleCaseCount,
+    isHandlingTestData,
+    testDataStatus,
+    populateCases,
+    exportFullDataset,
+    clearCases,
+  } = useSampleDataManagement({
+    entries,
+    refreshEntries,
+    exportFullBackup: backup.exportAdminSampleBackup,
+    setError,
+  });
 
   const pathway = PATHWAYS[activePathway];
   const enabledPathways = useMemo(
@@ -95,7 +108,6 @@ function App() {
   );
   const trainingProgress = summarizeTrainingProgress(entries, activePathway);
   const caseMix = summarizeCaseMix(entries, activePathway);
-  const sampleCaseCount = entries.filter(isSampleCase).length;
   const canManageTestData =
     import.meta.env.DEV ||
     new URLSearchParams(window.location.search).get("admin") === "1";
@@ -125,16 +137,6 @@ function App() {
     }
   }, [activePathway, enabledPathways, resetFilters]);
 
-  function startNewCase() {
-    setCaseSaveStatus(null);
-    setReturnPage(activePage === "form" ? "overview" : activePage);
-    const newDraft = createDraft(activePathway);
-    if (newDraft.pathway === "heart") newDraft.operatorName = appSettings.operatorName;
-    initialDraftRef.current = JSON.stringify(newDraft);
-    setDraft(newDraft);
-    setActivePage("form");
-  }
-
   function printCase(entry: LogbookCase) {
     printing.printCase(entry, appSettings.operatorName);
   }
@@ -154,218 +156,13 @@ function App() {
     printing.printAbdomenIcsForm(entry, appSettings.operatorName);
   }
 
-  function startEditing(entry: LogbookCase) {
-    setCaseSaveStatus(null);
-    setReturnPage("cases");
-    const editedDraft = { ...entry };
-    initialDraftRef.current = JSON.stringify(editedDraft);
-    setDraft(editedDraft);
-    setReviewedCase(null);
-    setActivePage("form");
-  }
-
-  function startReviewing(entry: LogbookCase) {
-    setReviewedCase(entry);
-    setActivePage("review");
-  }
-
-  function closeReview() {
-    setReviewedCase(null);
-    setActivePage("cases");
-  }
-
-  function cancelForm() {
-    if (
-      draft &&
-      initialDraftRef.current !== JSON.stringify(draft) &&
-      !window.confirm("Discard your unsaved changes to this case?")
-    ) {
-      return;
-    }
-    setActivePage(returnPage);
-    setDraft(null);
-    initialDraftRef.current = null;
-  }
-
-  function goToOverview() {
-    if (
-      activePage === "form" &&
-      draft &&
-      initialDraftRef.current !== JSON.stringify(draft) &&
-      !window.confirm("Discard your unsaved changes to this case and return to Overview?")
-    ) {
-      return;
-    }
-    setDraft(null);
-    initialDraftRef.current = null;
-    setActivePage("overview");
-  }
-
-  async function handleSave(draftToSave: CaseDraft): Promise<boolean> {
-    try {
-      await saveCase(draftToSave);
-      await refreshEntries();
-      setActivePage("cases");
-      setDraft(null);
-      initialDraftRef.current = null;
-      setCaseSaveStatus("Case saved successfully.");
-      return true;
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "The case could not be saved to this device.",
-      );
-      return false;
-    }
-  }
-
-  async function handleDelete(entry: LogbookCase) {
-    if (!window.confirm("Delete this logbook entry from this device?")) return;
-    try {
-      await deleteCase(entry.id);
-      await refreshEntries();
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "The case could not be deleted from this device.",
-      );
-    }
-  }
-
-  async function handlePopulateTestCases(pathwayToPopulate: Pathway) {
-    setIsHandlingTestData(true);
-    setTestDataStatus(null);
-    try {
-      const addedCount = await addSampleCases(createAdminSampleCases(pathwayToPopulate));
-      await refreshEntries();
-      const pathwayName = PATHWAYS[pathwayToPopulate].label;
-      setTestDataStatus(
-        addedCount > 0
-          ? `Added ${addedCount} ${pathwayName} sample cases to this device.`
-          : `${pathwayName} sample cases are already on this device.`,
-      );
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Sample cases could not be added to this device.",
-      );
-    } finally {
-      setIsHandlingTestData(false);
-    }
-  }
-
-  async function handleExportFullTestData() {
-    setIsHandlingTestData(true);
-    setTestDataStatus(null);
-    setError(null);
-    try {
-      const cases = createFullAdminSampleCases();
-      const delivery = await backup.exportAdminSampleBackup(cases);
-      setTestDataStatus(
-        delivery === "shared"
-          ? `Prepared a full ${cases.length}-case sample backup to share. Restore / merge it from Settings.`
-          : `Downloaded a full ${cases.length}-case sample backup. Restore / merge it from Settings.`,
-      );
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "The full sample backup could not be exported.");
-    } finally {
-      setIsHandlingTestData(false);
-    }
-  }
-
-  async function handleClearTestCases() {
-    if (sampleCaseCount === 0) return;
-    if (
-      !window.confirm(
-        `Remove ${sampleCaseCount} clearly marked sample cases from this device? Real cases will not be changed.`,
-      )
-    ) {
-      return;
-    }
-    setIsHandlingTestData(true);
-    setTestDataStatus(null);
-    try {
-      const removedCount = await deleteSampleCases();
-      await refreshEntries();
-      setTestDataStatus(`Removed ${removedCount} sample cases.`);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Sample cases could not be removed from this device.",
-      );
-    } finally {
-      setIsHandlingTestData(false);
-    }
-  }
-
-  async function handleTrainingModeChange(enabled: boolean) {
-    try {
-      await savePathwayMode(activePathway, enabled);
-      setTrainingModes((current) => ({
-        ...current,
-        [activePathway]: enabled,
-      }));
-      setError(null);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "The pathway view preference could not be saved.",
-      );
-    }
-  }
-
-  async function handleSettingsSave(nextSettings: AppSettings) {
-    setIsSavingSettings(true);
-    setSettingsStatus(null);
-    try {
-      await saveAppSettings(nextSettings);
-      setAppSettings(nextSettings);
-      setSettingsStatus("Settings saved on this device.");
-      setError(null);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Settings could not be saved on this device.",
-      );
-    } finally {
-      setIsSavingSettings(false);
-    }
-  }
-
-  async function handleOnboardingComplete(nextSettings: AppSettings) {
-    setIsSavingSettings(true);
-    setError(null);
-    try {
-      await saveAppSettings(nextSettings);
-      setAppSettings(nextSettings);
-      const firstEnabledPathway = (Object.keys(PATHWAYS) as Pathway[]).find(
-        (module) => nextSettings.enabledModules[module],
-      );
-      if (firstEnabledPathway) setActivePathway(firstEnabledPathway);
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Your setup could not be saved on this device.",
-      );
-    } finally {
-      setIsSavingSettings(false);
-    }
-  }
-
   if (isReady && (isPreviewingWelcome || !appSettings.onboardingComplete)) {
     return (
       <WelcomeScreen
         settings={appSettings}
-        isSaving={isSavingSettings}
+        isSaving={settingsWorkflow.isSaving}
         error={error}
-        onComplete={(nextSettings) => void handleOnboardingComplete(nextSettings)}
+        onComplete={(nextSettings) => void settingsWorkflow.completeOnboarding(nextSettings)}
         isPreview={isPreviewingWelcome}
         onExitPreview={() => {
           document.documentElement.dataset.textSize = appSettings.textSize;
@@ -572,13 +369,11 @@ function App() {
             changedManagementCount={changedManagementCount}
             trainingMode={trainingModes[activePathway]}
             isReady={isReady}
-            onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}
+            onTrainingModeChange={(enabled) => void settingsWorkflow.changeTrainingMode(enabled)}
             onShowCases={() => setActivePage("cases")}
-            onPopulateTestCases={(pathwayToPopulate) =>
-              void handlePopulateTestCases(pathwayToPopulate)
-            }
-            onExportFullTestData={() => void handleExportFullTestData()}
-            onClearTestCases={() => void handleClearTestCases()}
+            onPopulateTestCases={(pathwayToPopulate) => void populateCases(pathwayToPopulate)}
+            onExportFullTestData={() => void exportFullDataset()}
+            onClearTestCases={() => void clearCases()}
             onPreviewWelcome={() => setIsPreviewingWelcome(true)}
           />
         )}
@@ -596,8 +391,8 @@ function App() {
         {isReady && activePage === "settings" && (
           <SettingsPage
             settings={appSettings}
-            isSaving={isSavingSettings}
-            status={settingsStatus}
+            isSaving={settingsWorkflow.isSaving}
+            status={settingsWorkflow.status}
             cases={pathwayEntries}
             allCases={entries}
             heartCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart")}
@@ -605,7 +400,7 @@ function App() {
             abdomenCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "abdomen" }> => entry.pathway === "abdomen")}
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
-            onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
+            onSave={(nextSettings) => void settingsWorkflow.saveSettings(nextSettings)}
             onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway, appSettings.operatorName)}
             onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway, appSettings.operatorName)}
             onDownloadFullLogbook={() => printing.printFullLogbook(entries, appSettings.operatorName)}

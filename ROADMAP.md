@@ -43,7 +43,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 ### 1. Curriculum and data model
 
-- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). The catalogue documents seven pathways; the app currently supports Heart, Lung, Abdomen, DVT, HD, and Vascular. Focused TOE is documented for future consideration and is not planned for the current release.
+- [x] Complete a versioned pathway requirements catalogue, including scan-type quotas, case-mix constraints, and collection windows. See [`src/curricula/fusic/`](./src/curricula/fusic/). The catalogue documents seven pathways; the app currently supports Heart, Lung, Abdomen, DVT, HD, and Vascular. Focused TOE is documented for future consideration and is not planned for the current release.
 - [x] Record the source document and version for the initial total and directly supervised references.
 - [x] Define a de-identified case record with date, pathway, clinical/healthy-volunteer case type, supervision, optional supervisor, report fields, structured pathway details, and reflection.
 - [x] Allow editing and deletion; use a scan date rather than patient-linked or timestamp-derived dates; allow multiple entries on the same date.
@@ -127,13 +127,14 @@ These are optional follow-ons after reliable local backup and restore:
 The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW.md`](./OPEN_SOURCE_REVIEW.md). The codebase uses open-source packages and has domain, storage, provider, hook, and UI boundaries; the following release-readiness improvements remain:
 
 - [x] Add contributor setup and contribution guidance, issue templates, and security reporting instructions.
-- [ ] Generate and review third-party dependency notices for distributed builds; document provenance and licenses for non-package assets.
-- [ ] Verify permission to reproduce and redistribute FUSIC/ICS report-form artwork and logos in the app and source repository before treating bundled templates as cleared for release.
-- [x] Run `npm ci` and `npm run check` on pull requests.
-- [ ] Pin GitHub Actions to verified immutable commit SHAs and keep readable version comments.
+- [x] Generate production dependency notices and document the source and rights status of public assets.
+- [ ] Confirm redistribution rights for uncleared public assets or replace them before release; review generated notices before each release.
+- [ ] Verify permission to reproduce and redistribute FUSIC/ICS report-form artwork and logos in the app and source repository before treating the bundled templates as cleared for release.
+- [x] Run `npm ci` and `npm run check` on pull requests, and pin GitHub Actions to verified immutable commit SHAs.
 - [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.
+- [x] Extract case lifecycle, settings persistence, and sample-data management from `App.tsx` into focused hooks.
 - [x] Move shared interface colors into `src/theme.css` and reuse semantic palette tokens across pages and pathways.
-- [ ] Continue responsibility-driven refactoring: extract a module only when a real feature change reveals a cohesive responsibility that can be named, understood, and checked independently. Backup transfer orchestration is already separated; consider `App.tsx` and `styles.css` as future changes expose clear seams. Do not split files mechanically to meet a line-count target.
+- [ ] Refactor oversized UI modules only when a concrete behavior change can be isolated and regression-tested.
 
 ## User feedback backlog
 
@@ -182,7 +183,7 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 
 ## Verified curriculum catalogue (16 October 2026)
 
-The source versions and structured requirements are recorded in [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts). Each linked training pack is published by the Intensive Care Society. These are logbook requirements, not a claim that the app implements or awards accreditation. All seven pathways specify a 12-month scan-collection window.
+The source versions and structured requirements are recorded in [`src/curricula/fusic/`](./src/curricula/fusic/). Each linked training pack is published by the Intensive Care Society. These are logbook requirements, not a claim that the app implements or awards accreditation. All seven pathways specify a 12-month scan-collection window.
 
 | Pathway and source | Total / directly supervised | Case mix and scan-type requirements |
 | --- | --- | --- |

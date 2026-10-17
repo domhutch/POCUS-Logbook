@@ -1,6 +1,6 @@
 import { formatCaseDate, getCaseSequenceNumbers } from "./case-display";
 import { isSampleCase, PATHWAYS, type LogbookCase, type Pathway } from "./logbook";
-import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
+import { getDefaultCurriculumProfile } from "./pathway-requirements";
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => {
@@ -66,7 +66,7 @@ export function createLogbookPrintDocument(
   const casesByNumber = new Map(
     pathwayCases.map((entry) => [sequenceNumbers.get(entry.id)!, entry]),
   );
-  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const requirements = getDefaultCurriculumProfile(pathway);
   const totalRows = Math.max(requirements.totalScans, pathwayCases.length);
   const capacities = pageRows(pathway, totalRows);
   const pathwayLabel = PATHWAYS[pathway].label;

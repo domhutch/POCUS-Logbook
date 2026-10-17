@@ -99,7 +99,7 @@ function createHeartFormSheet(entry: HeartCaseFields) {
 export function createHeartIcsFormPrintDocument(entry: HeartCaseFields) {
   return createFusicFormPrintDocument({
     title: `Heart case report form · ${entry.date}`,
-    previewNote: "Prefilled from this CritSono case record using the ICS Heart report-form layout (Assessment Pack 2025 v13). Demographics appear when recorded; signatures, mentor feedback, and unsupported ventilation choices remain blank for completion by hand.",
+    previewNote: "Prefilled from this CritSono case record using the FUSIC® Heart report-form template from the Intensive Care Society (ICS) Assessment Pack, v13 (2025). Demographics appear when recorded; signatures, mentor feedback, and unsupported ventilation choices remain blank for completion by hand.",
     sheet: createHeartFormSheet(entry),
   });
 }
@@ -118,7 +118,7 @@ export function createHeartIcsFormsPrintDocument(
   }));
   return createFusicFormCollectionPrintDocument({
     title: "ICS Heart logbook report forms",
-    previewNote: `One ICS Heart logbook report form per saved Heart case (${entries.length} cases). Demographics appear when recorded; signatures and mentor feedback remain blank for completion by hand.`,
+    previewNote: `One FUSIC® Heart report form per saved Heart case (${entries.length} cases), based on the Intensive Care Society (ICS) Assessment Pack, v13 (2025). Demographics appear when recorded; signatures and mentor feedback remain blank for completion by hand.`,
     sheets,
   });
 }

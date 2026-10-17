@@ -1,14 +1,8 @@
 import {
   HEART_VIEWS,
-  HEART_FINDINGS,
-  LUNG_FINDINGS,
   LUNG_REGIONS,
-  ABDOMEN_EXAMINATION_POINTS,
   DVT_SITES,
-  DVT_SITE_FINDINGS,
   HD_QUESTIONS,
-  VASCULAR_ASSESSMENTS,
-  VASCULAR_PROCEDURES,
   type CaseDraft,
   type ImageQuality,
   type ImpressionCategory,
@@ -18,7 +12,9 @@ import {
   SAMPLE_CASE_ID_PREFIX,
 } from "./logbook";
 import { addTimestamps, createDraft } from "./logbook";
-import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
+import { getDefaultCurriculumProfile } from "./pathway-requirements";
+import { pathwayMetrics } from "../pathways/metrics";
+import { pathwayCaseMixMetrics } from "../pathways/caseMixMetrics";
 
 const sampleCasesPerMonth = [2, 3, 4, 2, 5, 3];
 const imageQualities: ImageQuality[] = [
@@ -96,7 +92,7 @@ export function summarizeTrainingProgress(
   pathway: Pathway,
 ): TrainingProgress {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
-  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const requirements = getDefaultCurriculumProfile(pathway);
   const supervisedCases = pathwayCases.filter((entry) => entry.supervised).length;
 
   return {
@@ -114,8 +110,9 @@ export function summarizeCaseMix(
   pathway: Pathway,
 ): CaseMixSummary {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
-  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const requirements = getDefaultCurriculumProfile(pathway);
   const scanTypeQuotas = requirements.scanTypeQuotas;
+  const pathwayMixMetrics = pathwayCaseMixMetrics(pathwayCases, pathway, scanTypeQuotas ?? []);
   const healthyVolunteerCases = pathwayCases.filter(
     (entry) => entry.caseType === "healthy_volunteer",
   ).length;
@@ -133,23 +130,9 @@ export function summarizeCaseMix(
     normalScanMaximum: requirements.caseMix.normalScanMaximum ?? null,
     pathologyRangeRequired: requirements.caseMix.pathologyRangeRequired,
     protocolCoverage: requirements.protocolCoverage ?? null,
-    scanTypeQuotas: scanTypeQuotas?.map((quota, index) => {
-      const procedureCategory = (["cvc", "picc_midline", "peripheral_access"] as const)[index];
-      const quotaCases = pathway === "vascular"
-        ? pathwayCases.filter((entry) => entry.pathway === "vascular" && (entry.procedureCategory === procedureCategory || (procedureCategory === "picc_midline" && entry.procedureCategory === "peripheral_access" && entry.piccMidlineSubstitution)))
-        : [];
-      return {
-        ...quota,
-        recordedScans: quotaCases.length,
-        supervisedScans: quotaCases.filter((entry) => entry.supervised).length,
-      };
-    }) ?? [],
+    scanTypeQuotas: pathwayMixMetrics.scanTypeQuotas,
     minimumPositiveScans: requirements.caseMix.minimumPositiveScans ?? null,
-    positiveScans: pathway === "dvt"
-      ? pathwayCases.filter((entry) => entry.pathway === "dvt" && DVT_SITES.some((site) =>
-          entry.findings[site].occlusiveThrombus === "yes" || entry.findings[site].nonOcclusiveThrombus === "yes",
-        )).length
-      : null,
+    positiveScans: pathwayMixMetrics.positiveScans,
   };
 }
 
@@ -324,61 +307,7 @@ export function summarizeCases(
     {},
   );
 
-  const scanDetails =
-    pathway === "lung"
-      ? LUNG_REGIONS.map((region) => ({
-          label: region,
-          count: pathwayCases.filter(
-            (entry) => entry.pathway === "lung" && entry.regions.includes(region),
-          ).length,
-        }))
-      : pathway === "heart" ? HEART_VIEWS.map((view) => ({
-          label: view,
-          count: pathwayCases.filter(
-            (entry) => entry.pathway === "heart" && entry.views.includes(view),
-          ).length,
-        })) : pathway === "abdomen" ? ABDOMEN_EXAMINATION_POINTS.map((point) => ({
-          label: point,
-          count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && entry.examinationPoints.includes(point)).length,
-        })) : pathway === "dvt" ? DVT_SITES.map((site) => ({
-          label: site,
-          count: pathwayCases.filter((entry) => entry.pathway === "dvt" && Object.values(entry.findings[site]).some((finding) => finding !== "not_assessed")).length,
-        })) : pathway === "hd" ? HD_QUESTIONS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] !== "not_assessed").length,
-        })) : VASCULAR_PROCEDURES.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter((entry) => entry.pathway === "vascular" && entry.procedureCategory === key).length,
-        }));
-  const findings =
-    pathway === "lung"
-      ? LUNG_FINDINGS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter(
-            (entry) =>
-              entry.pathway === "lung" &&
-              LUNG_REGIONS.some((region) => entry.findings[region][key] === "yes"),
-          ).length,
-        }))
-      : pathway === "heart" ? HEART_FINDINGS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter(
-            (entry) => entry.pathway === "heart" && entry.findings[key] === "yes",
-          ).length,
-        })) : pathway === "abdomen" ? [
-          { label: "Right kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.rightKidney)).length },
-          { label: "Left kidney details", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.leftKidney)).length },
-          { label: "Free fluid field completed", count: pathwayCases.filter((entry) => entry.pathway === "abdomen" && Boolean(entry.freeFluid)).length },
-        ] : pathway === "dvt" ? DVT_SITE_FINDINGS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter((entry) => entry.pathway === "dvt" && DVT_SITES.some((site) => entry.findings[site][key] === "yes")).length,
-        })) : pathway === "hd" ? HD_QUESTIONS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter((entry) => entry.pathway === "hd" && entry.questionFindings[key] === "yes").length,
-        })) : VASCULAR_ASSESSMENTS.map(([key, label]) => ({
-          label,
-          count: pathwayCases.filter((entry) => entry.pathway === "vascular" && entry.assessments[key] === "yes").length,
-        }));
+  const { scanDetails, findings } = pathwayMetrics(pathwayCases, pathway);
   return {
     totalCases: pathwayCases.length,
     monthlyActivity: months.map((month) => ({

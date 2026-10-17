@@ -93,15 +93,18 @@ function createLungFormSheet(entry: LungCaseFields, operatorName = "") {
 export function createLungIcsFormPrintDocument(entry: LungCaseFields, operatorName = "") {
   return createFusicFormPrintDocument({
     title: `Lung case report form · ${entry.date}`,
-    previewNote: "Prefilled from this CritSono Lung case using the ICS Lung report-form layout (Assessment Pack 2025 v10). Demographics and operator appear when recorded; unsupported findings and unrecorded fields remain blank for completion by hand.",
+    previewNote: "Prefilled from this CritSono Lung case using the FUSIC® Lung report-form template from the Intensive Care Society (ICS) Assessment Pack, v10 (2025). Demographics and operator appear when recorded; unsupported findings and unrecorded fields remain blank for completion by hand.",
     sheet: createLungFormSheet(entry, operatorName),
   });
 }
 
 export function createLungIcsFormsPrintDocument(entries: LungCaseFields[], operatorName = "") {
+  if (entries.length === 0) {
+    throw new Error("There are no Lung cases to include in this ICS PDF.");
+  }
   return createFusicFormCollectionPrintDocument({
     title: "ICS Lung logbook report forms",
-    previewNote: `One ICS Lung logbook report form per saved Lung case (${entries.length} cases). Demographics and operator appear when recorded; unsupported fields remain blank for completion by hand.`,
+    previewNote: `One FUSIC® Lung report form per saved Lung case (${entries.length} cases), based on the Intensive Care Society (ICS) Assessment Pack, v10 (2025). Demographics and operator appear when recorded; unsupported fields remain blank for completion by hand.`,
     sheets: entries.map((entry) => createLungFormSheet(entry, operatorName)),
   });
 }

@@ -2,30 +2,31 @@
 
 Review date: 17 October 2026
 
-This is a practical repository review, not legal advice or a complete compliance audit. Dependency findings are based on the checked-in `package-lock.json` and license metadata in the installed packages. Recheck before publishing a release.
+This is a practical repository review, not legal advice or a complete compliance audit. Dependency counts below are based on the checked-in `package-lock.json` license metadata. Recheck package contents, asset provenance, and redistribution terms before publishing a release.
 
 ## Current assessment
 
-The project is already built on open-source packages and has a recognizable modular structure. The direct runtime packages declare MIT or ISC licenses: React, Capacitor, html2canvas, jsPDF, and idb. The development toolchain is also made up of open-source packages. The lockfile contains 522 installed packages and no missing license metadata in the current install. License metadata includes MIT, ISC, Apache-2.0, BSD, BlueOak-1.0.0, CC-BY-4.0, and MPL-2.0/Apache-2.0 options; those less familiar entries and redistribution notices still deserve a release-time review.
+**Open-source readiness: good at the source-code level, with release-distribution work still open.** The project declares Apache-2.0 and includes the license text. The direct runtime stack is made of established open-source packages (React, Capacitor, html2canvas, jsPDF, and idb). The lockfile contains 522 third-party package entries with declared license metadata. `public/THIRD_PARTY_NOTICES.txt` now carries the license and notice files for the 32 installed production dependencies; compound or alternative expressions are flagged for release review. The lockfile inventory also includes development and platform-specific packages that do not ship with the PWA. Neither source establishes rights for non-package assets.
 
-The repository itself declares Apache-2.0 and includes the license text. The README distinguishes project code from ICS curriculum materials and links to their sources. The `Source Material/` and `curriculum/` directories are excluded from Git, which helps avoid accidentally redistributing supplied documents.
+**Modifiability: good for contributors comfortable with TypeScript and React; not a runtime plugin system.** The six supported scan pathways have separate form, review, case-summary, metric, CSV, and print modules. Curriculum requirements are data-only typed profiles in `src/curricula/fusic/`, registered statically. A contributor can add a curriculum profile without inventing another case type. A new scan modality still crosses shared case types, draft defaults, backup validation, persistence compatibility, dispatchers, and tests; the contributor guide documents those touchpoints.
 
-Code is divided into `domain`, `storage`, `cloud`, `hooks`, and `components`. Domain rules and export generation are mostly separated from React and browser storage. The tests cover domain calculations, backup behavior, storage behavior, and selected document formats. This is a real structure to build on, not an unstructured single-file prototype.
+This is a maintainable small application, not a configurable platform. FUSIC is the only active curriculum, and adding curriculum profiles requires editing TypeScript and rebuilding. There is no public plugin API, dynamic module loading, or runtime curriculum editor. That is consistent with the stated goal of allowing code contributions while keeping imported curriculum content out of the app.
+
+The main contributor friction is concentrated in shared files: `src/App.tsx` is 526 lines after extracting case, settings, and sample-data workflows into hooks; `src/domain/backup.ts` is 617 lines; `src/domain/logbook.ts` is 413 lines; and `src/styles.css` is 3,157 lines. The remaining app file primarily coordinates pages and shared layout. These sizes are reasons to extract a cohesive workflow when it is next changed, not to split files mechanically. Automated coverage spans domain, backup, storage, and export behavior; UI-level coverage and real-device PWA checks remain limited.
 
 ## Gaps and suggested improvements
 
 | Priority | Finding | Suggested improvement | Difficulty |
 | --- | --- | --- | --- |
-| Before first public release | No `CONTRIBUTING.md`, security reporting instructions, or issue templates are present. | Add a short contributor guide with setup, checks, data-model/migration guidance, and a clear way to report bugs or security issues. Add issue forms for bugs and feature requests. A code of conduct is optional but useful if accepting community contributions. | Easy |
-| Before distributing builds | The lockfile records license metadata, but there is no generated third-party license/notice report for shipped bundles. Asset provenance is also not documented alongside each asset. | Generate and review a dependency license inventory; identify which notices must accompany web/native distributions. Record the source and license for icons and images in an asset credits file. | Moderate |
-| Before accepting pull requests | A pull-request workflow now runs `npm ci` and `npm run check`. GitHub Actions are still referenced by version tags rather than immutable commit SHAs. | Pin each action to a verified full commit SHA and keep a readable version comment beside it. | Easy |
-| Maintainability | `src/App.tsx` still coordinates several app-level workflows, `src/domain/backup.ts` owns the portable backup schema and validation, and `src/styles.css` remains a large global stylesheet. Backup transfer orchestration has been separated into `src/services/logbook-backup.ts`, with encrypted-file providers defined in `src/cloud/backup-provider.ts`. | Treat large-file refactoring as an ongoing practice, not a line-count target. When a real feature change exposes a cohesive responsibility, extract that responsibility into a named module, preserve behavior, and cover the seam with focused checks. Possible seams include app-level workflows in `App.tsx` and feature or component styles in `styles.css`; split `backup.ts` only if a distinct schema or validation responsibility emerges. | Moderate to difficult |
-| Test confidence | Most tests are domain/storage tests; browser-dependent flows such as case-save feedback, print preview, and export delivery do not have UI-level regression coverage. | Add a lightweight component test setup only when a specific UI regression needs it; prioritize save failure feedback and print/export actions. Avoid adding a large test stack without a use case. | Moderate |
-| Contributor readability | The README has useful setup and product documentation, but the app's data flow and extension points are not summarized in one short architecture guide. | Add a small architecture note showing UI → hooks → domain/storage/cloud boundaries, plus how a pathway is added and how persisted data is migrated. | Easy |
+| Before distributing builds | A reproducible notice file now includes the installed production dependency licenses. Asset provenance is documented in `ASSET_CREDITS.md`, but attribution to FUSIC® and the Intensive Care Society (ICS) is now recorded for the Heart and Lung report-form SVGs, while redistribution terms remain unconfirmed. The portrait illustration source and rights also remain unresolved. | Confirm project asset ownership; review redistribution terms for the attributed FUSIC®/ICS form templates and obtain rights or replace them before distribution. Confirm the portrait illustration source and rights, or replace it. Regenerate and review dependency notices after dependency changes. | Moderate; external confirmation may be needed |
+| Before accepting pull requests | Pull requests targeting `main` now run `npm ci` and `npm run check` in `.github/workflows/pull-request-check.yml`. The Pages workflow and PR check pin each GitHub Action to an immutable commit SHA, with the verified release version in a comment. | Keep action pins current through deliberate updates and verify the SHA against the action's official release before changing it. | Complete; ongoing maintenance |
+| Modularity | Pathway UI and reporting behavior is separated, but a new modality still requires coordinated edits to shared domain types/defaults, backup validation, persistence compatibility, and dispatch points. `App.tsx` is down to 526 lines after moving case lifecycle, settings persistence, and sample-data management into focused hooks; `backup.ts` remains large. | Keep the discriminated case model and explicit backup schema. Extract remaining shared dispatch/validation or UI composition only alongside concrete changes that give each module a clear owner. | Ongoing |
+| UI confidence | Automated tests cover domain rules, persistence, backups, and selected exports. Important browser behaviors such as install/upgrade, offline use, save feedback, print preview, and actual file delivery still rely on manual verification. | Keep a short browser/device release checklist; add UI automation only for a repeatable release-critical flow or a concrete regression. | Moderate |
+| Contributor onboarding | Setup, privacy, migrations, and pathway/profile extension steps are documented in `CONTRIBUTING.md`, but there is no architecture/data-flow guide or runnable example contribution. | Add a short architecture guide when the data flow or extension steps change enough that the contributor guide no longer makes the system easy to navigate. | Easy |
 
 ## Important licensing boundary
 
-The app links to and summarizes selected ICS curriculum requirements, while official training and assessment documents remain under their own rights and are excluded from the repository. Continue to keep official PDFs and supplied source packs out of commits and generated public bundles unless redistribution rights are confirmed. The package-license inventory does not resolve rights for curriculum content, fonts, images, or other non-package assets.
+CritSono’s normal case and logbook print layouts are project-authored and covered by Apache-2.0. The separate Heart and Lung ICS form exports use FUSIC®/Intensive Care Society report-form templates; their source forms and branding are attributed in `ASSET_CREDITS.md` and remain under their own rights. `Source Material/` and `curriculum/` are ignored by Git, but ignore rules do not prevent other copied or derived assets from being committed. The portrait illustration still lacks a recorded source and license. The package-license inventory does not establish rights for curriculum content or any non-package asset.
 
 ## Modularity boundaries
 
@@ -35,4 +36,56 @@ The app links to and summarizes selected ICS curriculum requirements, while offi
 - `src/hooks/`: app workflows that coordinate domain operations and UI state.
 - `src/components/`: screens and form controls.
 
-The main improvement is not a wholesale rewrite or a target line count. Preserve these boundaries and extract a large module only when a real feature change reveals a cohesive responsibility that can be named, understood, and checked independently. The backup transfer split is one example; `App.tsx` and `styles.css` remain candidates as future changes expose clear seams.
+All six pathways now own their structured form fields, review details, case-card summaries, metric breakdowns, CSV columns and values, and individual PDF detail layouts under `src/pathways/`. Shared components and domain export builders retain common fields, formatting, and output assembly, then dispatch to pathway modules. Versioned curriculum profile data is now separated into `src/curricula/fusic/` with a static registry. FUSIC is still the only active curriculum, and no per-user or per-case profile selection is stored. Backup validation is contained in `src/domain/backup.ts`, and synthetic sample-case generation is contained in `src/domain/admin-sample-data.ts`; both already have clear module boundaries. Case lifecycle, settings persistence, and sample-data management for the app now live in dedicated hooks. `App.tsx` coordinates pages and shared layout, and the app uses static TypeScript extension points rather than user-installable modules. Extract further only when a UI boundary or workflow needs independent ownership or focused tests.
+
+## Proposed extension model
+
+Keep **scan modality** separate from **curriculum profile**:
+
+- A **modality module** describes the case shape and behavior for one scan type, such as Heart, Lung, or DVT. It owns its structured fields, form section, review section, case summary, privacy-text extraction, and pathway-specific export mapping where needed.
+- A **curriculum profile** describes versioned requirements for a modality: totals, supervision, quotas, case mix, protocol guidance, source documents, and effective dates. For example, FUSIC Heart v13 is a profile for Heart, not a second Heart case type.
+- Shared **logbook modules** own navigation, pathway selection, case lists, filtering, common case fields, local settings, and the common progress/review shell.
+- Shared **case review** owns common case metadata and delegates the structured details area to the selected modality module.
+
+Curriculum additions should be ordinary TypeScript modules imported into a registry at build time. This meets the goal of allowing contributors to add curricula by coding, without a runtime curriculum editor, downloaded definitions, or ingestion of training packs. Keep curriculum facts and source citations in data-focused profile files; keep form behavior in modality components.
+
+An eventual layout could look like this (names are illustrative):
+
+```text
+src/
+  app/                         # routing and app-level coordination
+  features/logbook/            # case list, overview, settings, shared case workflow
+  features/case-review/        # common review shell
+  pathways/
+    registry.ts                # statically imported modality modules
+    heart/
+      case.ts                  # Heart-specific case fields and defaults
+      CaseFields.tsx           # Heart form fields
+      CaseDetails.tsx          # Heart review fields
+      metrics.ts               # Heart-specific metrics contributions
+      exports.ts               # Heart-specific CSV/PDF mappings
+    lung/
+      ...
+  curricula/                   # curriculum profiles and static registries
+    fusic/
+      registry.ts
+      heart.ts                  # versioned requirements and sources
+      ...
+  domain/                      # common case types and pure shared rules
+  storage/                     # IndexedDB schema, backup, and migrations
+```
+
+Do not create empty folders or move files solely to match this sketch. Extract a module when it has a cohesive responsibility and can be tested independently.
+
+## Suggested modularization order
+
+1. **Define the boundaries before moving code (mapped).** This document separates modality modules from curriculum profiles and records the proposed extension points. Keep the existing discriminated case union; it gives TypeScript useful checks.
+2. **Extract form sections (complete, moderate).** `CaseForm` remains the shared shell for date, supervision, demographics, and notes. All six current pathways have structured fields in pathway-owned `...FormFields.tsx` components under `src/pathways/`. Each receives a pathway-specific draft and reports changes through the shared `CaseDraft` callback. The case data shape remains unchanged.
+3. **Extract case review and list summaries (complete, moderate).** Common metadata and actions remain in `CaseReview` and `CaseList`; pathway-owned review details are in `...ReviewDetails.tsx`, and pathway-owned case-card summaries are in each module's `caseSummary.ts`. Shared UI dispatches through explicit discriminated-union cases.
+4. **Move metrics and export mappings behind modality modules (complete, moderate/difficult).** Read-only metric breakdowns, pathway case-mix counts, CSV columns/values, and individual PDF detail layouts now live under `src/pathways/`. Shared domain code retains common aggregation, CSV escaping/assembly, print styling, and document assembly. Regression tests confirm existing output and metric meanings.
+5. **Separate curriculum profiles from modality behavior (complete, moderate/difficult).** Requirements now live in typed, versioned files under `src/curricula/fusic/`; a static registry identifies the default active FUSIC profile for each supported pathway, and progress calculations read through that registry. fTOE remains catalogued separately as a future profile and is not an active pathway. Before adding profile selection or recording profile IDs, decide whether changing a profile reinterprets all existing cases or whether cases/logbooks retain the profile version used when they were recorded.
+6. **Make extension contributor-friendly (complete, easy).** `CONTRIBUTING.md` now gives an end-to-end checklist for adding a curriculum profile or pathway, including source checks, backup validation, migrations, privacy, sample cases, exports, and tests.
+
+Adding only a new curriculum profile for an existing modality should not require a new case schema. A new modality can still require coordinated updates to the discriminated case type, draft factory, backup validator, IndexedDB data compatibility, metrics, and exports. Keep those integrations explicit rather than hiding them behind a highly dynamic plugin system.
+
+The main improvement is not a wholesale rewrite. Preserve the existing boundaries and extract large modules when a concrete change can be isolated and covered by a regression test.
