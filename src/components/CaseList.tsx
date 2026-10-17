@@ -2,10 +2,10 @@ import { formatCaseDate } from "../domain/case-display";
 import {
   isSampleCase,
   PATHWAYS,
-  HD_QUESTIONS,
   type LogbookCase,
   type Pathway,
 } from "../domain/logbook";
+import { pathwayCaseSummary } from "../pathways/caseSummary";
 
 type CaseFilter = "all" | "supervised" | "unsupervised";
 
@@ -28,34 +28,7 @@ interface CaseListProps {
 }
 
 function caseSummary(entry: LogbookCase) {
-  const hasStructuredDetails = entry.pathway === "lung"
-    ? entry.regions.length > 0
-    : entry.pathway === "heart"
-      ? entry.views.length > 0
-      : entry.pathway === "abdomen"
-        ? entry.examinationPoints.length > 0 || Boolean(
-          entry.rightUpperQuadrant || entry.leftUpperQuadrant || entry.rightKidney ||
-          entry.leftKidney || entry.bladderDescription || entry.freeFluid || entry.otherComments,
-        )
-        : entry.pathway === "dvt" ? Boolean(entry.otherComments) || Object.values(entry.findings).some((site) =>
-            Object.values(site).some((finding) => finding !== "not_assessed"),
-          ) : entry.pathway === "hd"
-            ? Object.values(entry.questionFindings).some((finding) => finding !== "not_assessed") || Object.values(entry.measurements).some(Boolean) || Boolean(entry.otherComments)
-            : Boolean(entry.procedure || entry.insertionSite || entry.lineType || entry.piccMidlineSubstitution || entry.otherComments) || Object.values(entry.assessments).some((finding) => finding !== "not_assessed");
-  const scanDetails = hasStructuredDetails
-    ? entry.pathway === "lung"
-      ? `${entry.regions.length} of 6 regions recorded`
-      : entry.pathway === "heart"
-        ? `${entry.views.length} views recorded`
-        : entry.pathway === "abdomen"
-          ? `${entry.examinationPoints.length} examination points recorded`
-          : entry.pathway === "dvt"
-            ? `${Object.values(entry.findings).filter((site) => Object.values(site).some((finding) => finding !== "not_assessed")).length} venous sites reviewed`
-            : entry.pathway === "hd"
-              ? `${HD_QUESTIONS.filter(([key]) => entry.questionFindings[key] !== "not_assessed").length} clinical questions reviewed`
-              : `${entry.procedureCategory.replaceAll("_", " ")} · ${Object.values(entry.assessments).filter((finding) => finding !== "not_assessed").length} checks recorded`
-    : "Structured details not added";
-  return [entry.indication, scanDetails].filter(Boolean).join(" · ");
+  return [entry.indication, pathwayCaseSummary(entry)].filter(Boolean).join(" · ");
 }
 
 function CaseList({

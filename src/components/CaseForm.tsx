@@ -1,18 +1,10 @@
 import { useState, type FormEvent } from "react";
 import {
-  DVT_SITES,
-  DVT_SITE_FINDINGS,
-  VASCULAR_ASSESSMENTS,
-  VASCULAR_PROCEDURES,
   PATHWAYS,
-  type Assessment,
   type AbdomenCaseFields,
   type DvtCaseFields,
-  type DvtSite,
-  type DvtSiteFinding,
   type HdCaseFields,
   type VascularCaseFields,
-  type VascularAssessment,
   type CaseDraft,
   type CaseType,
   type HeartCaseFields,
@@ -26,6 +18,8 @@ import { AbdomenFormFields } from "../pathways/abdomen/AbdomenFormFields";
 import { HeartFormFields } from "../pathways/heart/HeartFormFields";
 import { LungFormFields } from "../pathways/lung/LungFormFields";
 import { HdFormFields } from "../pathways/hd/HdFormFields";
+import { DvtFormFields } from "../pathways/dvt/DvtFormFields";
+import { VascularFormFields } from "../pathways/vascular/VascularFormFields";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -34,15 +28,6 @@ interface CaseFormProps {
   onCancel: () => void;
   supervisors: string[];
 }
-
-const VENTILATORY_SUPPORT = [
-  "Not recorded",
-  "None",
-  "IPPV",
-  "PSV / spontaneous",
-  "BiPAP",
-  "CPAP / NHF",
-];
 
 function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -62,22 +47,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
       | VascularCaseFields[K & keyof VascularCaseFields],
   ) {
     onChange({ ...draft, [key]: value } as CaseDraft);
-  }
-
-  function updateVascularAssessment(key: VascularAssessment, value: Assessment) {
-    if (draft.pathway !== "vascular") return;
-    onChange({ ...draft, assessments: { ...draft.assessments, [key]: value } });
-  }
-
-  function updateDvtFinding(site: DvtSite, finding: DvtSiteFinding, value: Assessment) {
-    if (draft.pathway !== "dvt") return;
-    onChange({
-      ...draft,
-      findings: {
-        ...draft.findings,
-        [site]: { ...draft.findings[site], [finding]: value },
-      },
-    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -263,84 +232,11 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           ) : draft.pathway === "abdomen" ? (
             <AbdomenFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "dvt" ? (
-            <div className="dvt-details">
-              <p className="case-mix-protocol">Required points include the saphenofemoral junction, common femoral vein, and popliteal vein. Attempt all views; distal views beyond the popliteal trifurcation are optional.</p>
-              {DVT_SITES.map((site) => (
-                <fieldset className="checklist-fieldset dvt-site" key={site}>
-                  <legend>{site}</legend>
-                  <div className="dvt-site-findings">
-                    {DVT_SITE_FINDINGS.map(([key, label]) => (
-                      <label className="form-field" key={key}>
-                        <span>{label}</span>
-                        <select
-                          value={draft.findings[site][key]}
-                          onChange={(event) => updateDvtFinding(site, key, event.currentTarget.value as Assessment)}
-                        >
-                          <option value="not_assessed">Not assessed</option>
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                          <option value="unable">Unable to assess</option>
-                        </select>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ))}
-              <label className="form-field">
-                <span>Other comments <span className="optional-mark">Optional</span></span>
-                <textarea value={draft.otherComments} maxLength={500} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
-              </label>
-            </div>
+            <DvtFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "hd" ? (
             <HdFormFields draft={draft} onChange={onChange} />
           ) : (
-            <div className="vascular-details">
-              <p className="case-mix-protocol">Use the official FUSIC Vascular reporting form for full documentation. Attempt all required views; document training scans without patient-identifying details and have unverified training findings reviewed by an appropriate trainer.</p>
-              <div className="form-grid">
-                <label className="form-field">
-                  <span>Procedure category <span className="required-mark">*</span></span>
-                  <select value={draft.procedureCategory} required onChange={(event) => updateField("procedureCategory", event.currentTarget.value as VascularCaseFields["procedureCategory"])}>
-                    {VASCULAR_PROCEDURES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-                  </select>
-                </label>
-                <label className="form-field">
-                  <span>Procedure <span className="optional-mark">Optional</span></span>
-                  <input type="text" maxLength={500} value={draft.procedure} onChange={(event) => updateField("procedure", event.currentTarget.value)} placeholder="e.g. ultrasound-guided cannulation" />
-                </label>
-                <label className="form-field">
-                  <span>Site of insertion <span className="optional-mark">Optional</span></span>
-                  <input type="text" maxLength={160} value={draft.insertionSite} onChange={(event) => updateField("insertionSite", event.currentTarget.value)} placeholder="e.g. right internal jugular vein" />
-                </label>
-                <label className="form-field">
-                  <span>Type of line <span className="optional-mark">Optional</span></span>
-                  <input type="text" maxLength={160} value={draft.lineType} onChange={(event) => updateField("lineType", event.currentTarget.value)} />
-                </label>
-                {draft.procedureCategory === "peripheral_access" && <label className="check-option vascular-substitution">
-                  <input type="checkbox" checked={draft.piccMidlineSubstitution} onChange={(event) => updateField("piccMidlineSubstitution", event.currentTarget.checked)} />
-                  <span>Count toward the PICC/midline quota as an allowed substitute when PICC/midline scans are unavailable</span>
-                </label>}
-              </div>
-              <fieldset className="checklist-fieldset vascular-assessments">
-                <legend>Scan and procedure checks</legend>
-                <div className="form-grid">
-                  {VASCULAR_ASSESSMENTS.map(([key, label]) => (
-                    <label className="form-field" key={key}>
-                      <span>{label}</span>
-                      <select value={draft.assessments[key]} onChange={(event) => updateVascularAssessment(key, event.currentTarget.value as Assessment)}>
-                        <option value="not_assessed">Not assessed</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        <option value="unable">Unable to assess</option>
-                      </select>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="form-field">
-                <span>Comments <span className="optional-mark">Optional</span></span>
-                <textarea maxLength={2000} value={draft.otherComments} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
-              </label>
-            </div>
+            <VascularFormFields draft={draft} onChange={onChange} />
           )}
         </details>
 
@@ -349,27 +245,11 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           <div className="form-notes-grid">
             <label className="form-field">
               <span>{draft.pathway === "dvt" ? "Conclusion, clinical significance and suggested actions" : "Summary of findings"} <span className="optional-mark">Optional</span></span>
-              <textarea
-                rows={3}
-                maxLength={2000}
-                placeholder="Findings, conclusion and any suggested follow-up"
-                value={draft.summary}
-                onChange={(event) =>
-                  updateField("summary", event.currentTarget.value)
-                }
-              />
+              <textarea rows={3} maxLength={2000} placeholder="Findings, conclusion and any suggested follow-up" value={draft.summary} onChange={(event) => updateField("summary", event.currentTarget.value)} />
             </label>
             <label className="form-field">
               <span>Reflection <span className="optional-mark">Optional</span></span>
-              <textarea
-                rows={3}
-                maxLength={2000}
-                placeholder="What went well? What would you review or practise?"
-                value={draft.reflection}
-                onChange={(event) =>
-                  updateField("reflection", event.currentTarget.value)
-                }
-              />
+              <textarea rows={3} maxLength={2000} placeholder="What went well? What would you review or practise?" value={draft.reflection} onChange={(event) => updateField("reflection", event.currentTarget.value)} />
             </label>
           </div>
         </details>
@@ -387,17 +267,8 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </p>
         )}
         <div className="form-actions">
-          <button
-            className="button button-secondary"
-            type="button"
-            onClick={onCancel}
-            disabled={isSaving}
-          >
-            Cancel
-          </button>
-          <button className="button button-primary" type="submit" disabled={isSaving}>
-            {isSaving ? "Saving…" : "Save case"}
-          </button>
+          <button className="button button-secondary" type="button" onClick={onCancel} disabled={isSaving}>Cancel</button>
+          <button className="button button-primary" type="submit" disabled={isSaving}>{isSaving ? "Saving…" : "Save case"}</button>
         </div>
       </form>
     </section>

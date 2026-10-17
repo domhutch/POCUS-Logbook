@@ -34,7 +34,7 @@ The app links to and summarizes selected ICS curriculum requirements, while offi
 - `src/hooks/`: app workflows that coordinate domain operations and UI state.
 - `src/components/`: screens and form controls.
 
-The current form/report modules for Heart and Lung show the start of modality-owned code, but most case behavior is still spread across pathway branches in the form, review, case list, metrics, backup validation, CSV, and PDF modules.
+All six pathways now own their structured form fields, review details, case-card summaries, metric breakdowns, CSV columns and values, and individual PDF detail layouts under `src/pathways/`. Shared components and domain export builders retain common fields, formatting, and output assembly, then dispatch to pathway modules. Curriculum profiles, backup validation, sample-case generation, and some app-level actions remain coordinated in shared files by design or are still candidates for extraction.
 
 ## Proposed extension model
 
@@ -75,9 +75,9 @@ Do not create empty folders or move files solely to match this sketch. Extract a
 ## Suggested modularization order
 
 1. **Define the boundaries before moving code (mapped).** This document separates modality modules from curriculum profiles and records the proposed extension points. Keep the existing discriminated case union; it gives TypeScript useful checks.
-2. **Extract form sections (in progress, moderate).** `CaseForm` remains the shared shell for date, supervision, demographics, and notes. Abdomen, Heart, Lung, and HD structured fields are extracted to pathway-owned `...FormFields.tsx` components. Each receives a pathway-specific draft and reports changes through the shared `CaseDraft` callback. Continue with the remaining pathways and preserve serialized case data while moving one section at a time.
-3. **Extract case review and list summaries (moderate).** Keep common metadata and action controls shared; delegate structured details and pathway-specific summary text to each modality.
-4. **Move metrics and export mappings behind modality modules (moderate/difficult).** Start with read-only functions. Preserve the current CSV columns, print output, and metric meanings with regression tests.
+2. **Extract form sections (complete, moderate).** `CaseForm` remains the shared shell for date, supervision, demographics, and notes. All six current pathways have structured fields in pathway-owned `...FormFields.tsx` components under `src/pathways/`. Each receives a pathway-specific draft and reports changes through the shared `CaseDraft` callback. The case data shape remains unchanged.
+3. **Extract case review and list summaries (complete, moderate).** Common metadata and actions remain in `CaseReview` and `CaseList`; pathway-owned review details are in `...ReviewDetails.tsx`, and pathway-owned case-card summaries are in each module's `caseSummary.ts`. Shared UI dispatches through explicit discriminated-union cases.
+4. **Move metrics and export mappings behind modality modules (complete, moderate/difficult).** Read-only metric breakdowns, pathway case-mix counts, CSV columns/values, and individual PDF detail layouts now live under `src/pathways/`. Shared domain code retains common aggregation, CSV escaping/assembly, print styling, and document assembly. Regression tests confirm existing output and metric meanings.
 5. **Separate curriculum profiles from modality behavior (moderate/difficult).** Convert the existing requirements catalogue into typed versioned profiles and have progress calculations consume the selected profile. Before storing profile selection, decide whether switching profile reinterprets all existing cases or whether cases/logbooks retain the profile version they were recorded under.
 6. **Make extension contributor-friendly (easy).** Add an end-to-end guide showing how to add a profile and, when required, a new modality, including source checks, backup validation, migrations, privacy checks, sample cases, exports, and tests.
 
