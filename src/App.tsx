@@ -68,6 +68,7 @@ function App() {
   const [testDataStatus, setTestDataStatus] = useState<string | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
+  const [isPreviewingWelcome, setIsPreviewingWelcome] = useState(false);
   const pathwayMenuRef = usePathwayMenu();
   const caseNumbers = useMemo(() => getCaseSequenceNumbers(entries), [entries]);
   const {
@@ -319,13 +320,18 @@ function App() {
     }
   }
 
-  if (isReady && !appSettings.onboardingComplete) {
+  if (isReady && (isPreviewingWelcome || !appSettings.onboardingComplete)) {
     return (
       <WelcomeScreen
         settings={appSettings}
         isSaving={isSavingSettings}
         error={error}
         onComplete={(nextSettings) => void handleOnboardingComplete(nextSettings)}
+        isPreview={isPreviewingWelcome}
+        onExitPreview={() => {
+          document.documentElement.dataset.textSize = appSettings.textSize;
+          setIsPreviewingWelcome(false);
+        }}
       />
     );
   }
@@ -525,6 +531,7 @@ function App() {
               void handlePopulateTestCases(pathwayToPopulate)
             }
             onClearTestCases={() => void handleClearTestCases()}
+            onPreviewWelcome={() => setIsPreviewingWelcome(true)}
           />
         )}
 

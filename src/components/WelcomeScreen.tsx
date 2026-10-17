@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
 import type { AppSettings, TextSize } from "../storage/logbook-store";
+import BrowserStorageGuidance from "./BrowserStorageGuidance";
 
 interface WelcomeScreenProps {
   settings: AppSettings;
   isSaving: boolean;
   error: string | null;
   onComplete: (settings: AppSettings) => void;
+  isPreview?: boolean;
+  onExitPreview?: () => void;
 }
 
 const TEXT_SIZES: { value: TextSize; label: string; description: string }[] = [
@@ -15,7 +18,7 @@ const TEXT_SIZES: { value: TextSize; label: string; description: string }[] = [
   { value: "large", label: "Large", description: "Largest text and controls" },
 ];
 
-function WelcomeScreen({ settings, isSaving, error, onComplete }: WelcomeScreenProps) {
+function WelcomeScreen({ settings, isSaving, error, onComplete, isPreview = false, onExitPreview }: WelcomeScreenProps) {
   const [textSize, setTextSize] = useState(settings.textSize);
   const [enabledModules, setEnabledModules] = useState(settings.enabledModules);
   const pathways = Object.keys(PATHWAYS) as Pathway[];
@@ -40,6 +43,7 @@ function WelcomeScreen({ settings, isSaving, error, onComplete }: WelcomeScreenP
         <p className="welcome-intro">
           Set up your logbook to match the pathways you’re working on. You can change these choices any time in Settings.
         </p>
+        {isPreview && <p className="welcome-preview-notice" role="status">Preview only · changes on this screen won’t be saved.</p>}
 
         <fieldset className="welcome-section">
           <legend>Choose your modules</legend>
@@ -86,14 +90,19 @@ function WelcomeScreen({ settings, isSaving, error, onComplete }: WelcomeScreenP
           </p>
         </aside>
 
+        <details className="welcome-storage-details">
+          <summary>How to keep your logbook data in this browser</summary>
+          <BrowserStorageGuidance />
+        </details>
+
         {error && <p className="welcome-error" role="alert">{error}</p>}
         <button
           className="button button-primary welcome-continue"
           type="button"
-          disabled={isSaving || enabledCount === 0}
-          onClick={() => onComplete({ ...settings, textSize, enabledModules, onboardingComplete: true })}
+          disabled={!isPreview && (isSaving || enabledCount === 0)}
+          onClick={() => isPreview ? onExitPreview?.() : onComplete({ ...settings, textSize, enabledModules, onboardingComplete: true })}
         >
-          {isSaving ? "Saving your setup…" : "Continue to your logbook"}
+          {isPreview ? "Return to admin view" : isSaving ? "Saving your setup…" : "Continue to your logbook"}
         </button>
         <p className="welcome-local-note">Your cases and preferences stay on this device unless you choose to export or back them up.</p>
       </div>

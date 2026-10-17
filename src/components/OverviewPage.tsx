@@ -18,6 +18,7 @@ interface OverviewPageProps {
   onShowCases: () => void;
   onPopulateTestCases: (pathway: Pathway) => void;
   onClearTestCases: () => void;
+  onPreviewWelcome: () => void;
 }
 
 function OverviewPage({
@@ -37,6 +38,7 @@ function OverviewPage({
   onShowCases,
   onPopulateTestCases,
   onClearTestCases,
+  onPreviewWelcome,
 }: OverviewPageProps) {
   const details = PATHWAYS[pathway];
 
@@ -168,6 +170,9 @@ function OverviewPage({
             existing sample cases.
           </p>
           <div className="test-data-actions">
+            <button className="button button-secondary" type="button" onClick={onPreviewWelcome}>
+              Preview welcome screen
+            </button>
             {enabledPathways.map((key) => (
               <button
                 className="button button-secondary"

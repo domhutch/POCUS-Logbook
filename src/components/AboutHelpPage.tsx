@@ -1,3 +1,5 @@
+import BrowserStorageGuidance from "./BrowserStorageGuidance";
+
 interface AboutHelpPageProps {
   onBack: () => void;
 }
@@ -58,6 +60,8 @@ function AboutHelpPage({ onBack }: AboutHelpPageProps) {
           <li>Open <strong>Settings</strong> for pathway exports, backup and restore, and display preferences.</li>
         </ol>
       </section>
+
+      <BrowserStorageGuidance />
 
       <section className="settings-panel" aria-labelledby="faq-heading">
         <h3 id="faq-heading">Frequently asked questions</h3>

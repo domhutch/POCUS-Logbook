@@ -99,12 +99,21 @@ button:disabled {
 }
 
 .welcome-intro,
+.welcome-preview-notice,
 .welcome-section > p,
 .welcome-backup-note p,
 .welcome-local-note {
   color: var(--muted);
   font-size: 0.86rem;
   line-height: 1.55;
+}
+
+.welcome-preview-notice {
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  background: #f1f4f2;
+  color: #46564d;
+  font-size: 0.76rem;
 }
 
 .welcome-section {
@@ -205,6 +214,56 @@ button:disabled {
 
 .welcome-local-note {
   font-size: 0.72rem;
+}
+
+.browser-storage-guidance {
+  padding: 1rem 1.1rem;
+  border: 1px solid #ead9b5;
+  border-radius: 9px;
+  background: #fffaf0;
+}
+
+.browser-storage-guidance h3 {
+  margin: 0;
+  color: #4b4536;
+  font-size: 0.92rem;
+}
+
+.browser-storage-guidance p {
+  margin: 0.4rem 0 0;
+  color: #625a48;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.browser-storage-guidance .browser-storage-links-heading {
+  margin-top: 0.65rem;
+  font-weight: 600;
+}
+
+.browser-storage-guidance ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+}
+
+.browser-storage-guidance a {
+  color: var(--teal-dark);
+  text-underline-offset: 2px;
+}
+
+.welcome-storage-details > summary {
+  color: var(--teal-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.welcome-storage-details .browser-storage-guidance {
+  margin-top: 0.75rem;
 }
 
 .topbar {
