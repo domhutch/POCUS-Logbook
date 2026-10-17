@@ -3,6 +3,8 @@ import {
   HEART_FINDINGS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
+  DVT_SITES,
+  DVT_SITE_FINDINGS,
   PATHWAYS,
   isSampleCase,
   type LogbookCase,
@@ -41,7 +43,7 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
   const sequenceNumbers = getCaseSequenceNumbers(pathwayCases);
   const detailColumns = pathway === "lung"
     ? ["Ventilatory support", "Regions scanned", ...LUNG_REGIONS.flatMap((region) => LUNG_FINDINGS.map(([, label]) => `${region} · ${label}`))]
-    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"];
+    : pathway === "heart" ? ["Ventilatory support", "Views obtained", "Cardiovascular support", "Heart rate", "Blood pressure", "Central venous pressure", ...HEART_FINDINGS.map(([, label]) => label)] : pathway === "abdomen" ? ["Examination points attempted", "RUQ · diaphragm and liver", "LUQ · diaphragm and spleen", "Right kidney", "Right hydronephrosis", "Left kidney", "Left hydronephrosis", "Bladder size", "Bladder description", "Free fluid", "Other comments"] : DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([, label]) => `${site} · ${label}`)).concat("Other comments");
   const headers = [...commonColumns(), ...detailColumns, "Summary of main findings", "Reflection"];
 
   const rows = pathwayCases
@@ -75,7 +77,10 @@ export function createCasesCsv(cases: LogbookCase[], pathway: Pathway) {
             entry.bloodPressure.trim(),
             entry.centralVenousPressure.trim(),
             ...HEART_FINDINGS.map(([key]) => assessment(entry.findings[key])),
-          ] : [entry.examinationPoints.join("; "), entry.rightUpperQuadrant, entry.leftUpperQuadrant, entry.rightKidney, entry.rightHydronephrosis, entry.leftKidney, entry.leftHydronephrosis, entry.bladderSize, entry.bladderDescription, entry.freeFluid, entry.otherComments];
+          ] : entry.pathway === "abdomen" ? [entry.examinationPoints.join("; "), entry.rightUpperQuadrant, entry.leftUpperQuadrant, entry.rightKidney, entry.rightHydronephrosis, entry.leftKidney, entry.leftHydronephrosis, entry.bladderSize, entry.bladderDescription, entry.freeFluid, entry.otherComments] : [
+            ...DVT_SITES.flatMap((site) => DVT_SITE_FINDINGS.map(([key]) => assessment(entry.findings[site][key]))),
+            entry.otherComments.trim(),
+          ];
       return [...common, ...details, entry.summary.trim(), entry.reflection.trim()];
     });
 

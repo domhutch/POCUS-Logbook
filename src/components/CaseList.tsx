@@ -29,16 +29,22 @@ function caseSummary(entry: LogbookCase) {
     ? entry.regions.length > 0
     : entry.pathway === "heart"
       ? entry.views.length > 0
-      : entry.examinationPoints.length > 0 || Boolean(
+      : entry.pathway === "abdomen"
+        ? entry.examinationPoints.length > 0 || Boolean(
           entry.rightUpperQuadrant || entry.leftUpperQuadrant || entry.rightKidney ||
           entry.leftKidney || entry.bladderDescription || entry.freeFluid || entry.otherComments,
-        );
+        )
+        : Boolean(entry.otherComments) || Object.values(entry.findings).some((site) =>
+            Object.values(site).some((finding) => finding !== "not_assessed"),
+          );
   const scanDetails = hasStructuredDetails
     ? entry.pathway === "lung"
       ? `${entry.regions.length} of 6 regions recorded`
       : entry.pathway === "heart"
         ? `${entry.views.length} views recorded`
-        : `${entry.examinationPoints.length} examination points recorded`
+        : entry.pathway === "abdomen"
+          ? `${entry.examinationPoints.length} examination points recorded`
+          : `${Object.values(entry.findings).filter((site) => Object.values(site).some((finding) => finding !== "not_assessed")).length} venous sites reviewed`
     : "Structured details not added";
   return [entry.indication, scanDetails].filter(Boolean).join(" · ");
 }

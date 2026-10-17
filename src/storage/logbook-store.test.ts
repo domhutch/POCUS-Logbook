@@ -29,7 +29,7 @@ describe("restoreBackup", () => {
       diagnosis: "A conflicting backup must not replace this case",
     };
     const importedCase = addTimestamps(createDraft("heart"));
-    const modes: Record<Pathway, boolean> = { lung: false, heart: false, abdomen: true };
+    const modes: Record<Pathway, boolean> = { lung: false, heart: false, abdomen: true, dvt: true };
     const backup = parseBackup(
       JSON.stringify(createBackup([conflictingCase, importedCase], modes)),
     );
@@ -37,7 +37,7 @@ describe("restoreBackup", () => {
     await expect(restoreBackup(backup)).resolves.toEqual({
       addedCases: 1,
       skippedCases: 1,
-      importedPathwayModes: 2,
+      importedPathwayModes: 3,
     });
 
     const restoredCases = await getCases();
@@ -48,7 +48,7 @@ describe("restoreBackup", () => {
     expect(
       restoredCases.find((entry) => entry.id === importedCase.id)?.pathway,
     ).toBe("heart");
-    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true });
+    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true, dvt: true });
 
     await expect(restoreBackup(backup)).resolves.toEqual({
       addedCases: 0,
@@ -56,7 +56,7 @@ describe("restoreBackup", () => {
       importedPathwayModes: 0,
     });
     expect(await getCases()).toHaveLength(2);
-    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true });
+    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true, dvt: true });
   });
 });
 
@@ -66,7 +66,7 @@ describe("pathway training modes", () => {
     await savePathwayMode("heart", false);
     await savePathwayMode("lung", true);
 
-    expect(await getPathwayModes()).toEqual({ heart: false, lung: true, abdomen: true });
+    expect(await getPathwayModes()).toEqual({ heart: false, lung: true, abdomen: true, dvt: true });
     expect(await getCases()).toEqual(casesBefore);
   });
 });

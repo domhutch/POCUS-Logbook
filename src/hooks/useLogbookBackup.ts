@@ -102,6 +102,7 @@ export function useLogbookBackup({
         lung: storedModes.lung ?? trainingModes.lung,
         heart: storedModes.heart ?? trainingModes.heart,
         abdomen: storedModes.abdomen ?? trainingModes.abdomen,
+        dvt: storedModes.dvt ?? trainingModes.dvt,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
@@ -192,6 +193,7 @@ export function useLogbookBackup({
         lung: storedModes.lung ?? trainingModes.lung,
         heart: storedModes.heart ?? trainingModes.heart,
         abdomen: storedModes.abdomen ?? trainingModes.abdomen,
+        dvt: storedModes.dvt ?? trainingModes.dvt,
       });
       const serialized = JSON.stringify(backup);
       if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {

@@ -20,6 +20,7 @@ export const DEFAULT_ENABLED_MODULES: Record<Pathway, boolean> = {
   heart: true,
   lung: true,
   abdomen: true,
+  dvt: true,
 };
 
 export interface AppSettings {
@@ -160,7 +161,8 @@ export async function getAppSettings(): Promise<AppSettings> {
     settings.textScaleVersion !== 2 ||
     !settings.curriculum ||
     !settings.enabledModules ||
-    typeof settings.enabledModules.abdomen !== "boolean"
+    typeof settings.enabledModules.abdomen !== "boolean" ||
+    typeof settings.enabledModules.dvt !== "boolean"
   ) {
     const migrated: AppSettings = {
       supervisors: settings.supervisors,
@@ -174,6 +176,7 @@ export async function getAppSettings(): Promise<AppSettings> {
         heart: settings.enabledModules?.heart ?? true,
         lung: settings.enabledModules?.lung ?? true,
         abdomen: settings.enabledModules?.abdomen ?? true,
+        dvt: settings.enabledModules?.dvt ?? true,
       },
     };
     await db.put("preferences", { id: "app", ...migrated });
@@ -226,7 +229,7 @@ export async function restoreBackup(
     addedCases += 1;
   }
 
-  for (const pathway of ["lung", "heart", "abdomen"] as const) {
+  for (const pathway of ["lung", "heart", "abdomen", "dvt"] as const) {
     if (existingPathways.has(pathway)) continue;
     writes.push(
       transaction.objectStore("settings").add({

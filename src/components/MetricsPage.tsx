@@ -133,7 +133,7 @@ function MetricsPage({
           <p className="eyebrow">Personal review</p>
           <h2 id="metrics-heading">Metrics</h2>
           <p className="metrics-intro">
-            Explore patterns in your recorded {pathway === "lung" ? "lung" : pathway === "heart" ? "heart" : "abdomen"} cases.
+            Explore patterns in your recorded {pathway} cases.
             These summaries describe your logbook; they do not assess competence.
           </p>
         </div>
@@ -159,7 +159,7 @@ function MetricsPage({
           <h3>No cases to summarize yet</h3>
           <p>Once you have recorded cases, this page will show activity and case-detail patterns.</p>
           <button className="button button-primary" type="button" onClick={onAddCase}>
-            Add an {pathway === "abdomen" ? "abdomen" : pathway === "lung" ? "lung" : "heart"} case
+            Add {pathway === "abdomen" ? "an abdomen" : pathway === "dvt" ? "a DVT" : `a ${pathway}`} case
           </button>
         </div>
       ) : (
@@ -183,17 +183,19 @@ function MetricsPage({
           <div className="metrics-grid">
             <Activity metrics={metrics} period={period} onPeriodChange={setPeriod} />
             <Breakdown
-              title={pathway === "lung" ? "Regions attempted" : pathway === "heart" ? "Views obtained" : "Examination points attempted"}
-              description={pathway === "abdomen" ? "Number of cases with each required examination point recorded" : "Number of cases with each region or view recorded"}
+              title={pathway === "lung" ? "Regions attempted" : pathway === "heart" ? "Views obtained" : pathway === "abdomen" ? "Examination points attempted" : "Venous sites assessed"}
+              description={pathway === "abdomen" ? "Number of cases with each required examination point recorded" : pathway === "dvt" ? "Number of cases with any assessment recorded at each venous site" : "Number of cases with each region or view recorded"}
               items={metrics.scanDetails}
             />
             <Breakdown
-              title={pathway === "abdomen" ? "Structured details recorded" : "Findings marked Yes"}
+              title={pathway === "abdomen" ? "Structured details recorded" : pathway === "dvt" ? "Venous findings marked Yes" : "Findings marked Yes"}
               description={
                 pathway === "abdomen"
                   ? "Cases with structured renal and free-fluid details recorded"
                   : pathway === "lung"
                   ? "Cases with each finding marked Yes in at least one region"
+                  : pathway === "dvt"
+                  ? "Cases with each venous finding marked Yes at any site"
                   : "Cases with each finding marked Yes"
               }
               items={metrics.findings}

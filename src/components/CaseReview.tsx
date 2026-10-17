@@ -1,5 +1,7 @@
 import {
   HEART_FINDINGS,
+  DVT_SITES,
+  DVT_SITE_FINDINGS,
   isSampleCase,
   LUNG_FINDINGS,
   LUNG_REGIONS,
@@ -79,7 +81,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
           <ReviewField label="Impression category" value={impression} />
           <ReviewField label="Management impact" value={management} />
           <ReviewField label="Image quality" value={imageQuality} />
-          {entry.pathway !== "abdomen" && <ReviewField label="Ventilatory support" value={entry.ventilatorySupport} />}
+          {(entry.pathway === "lung" || entry.pathway === "heart") && <ReviewField label="Ventilatory support" value={entry.ventilatorySupport} />}
           {entry.pathway === "heart" && (
             <>
               <ReviewField
@@ -147,7 +149,7 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             </dl>
           </section>
         </>
-      ) : (
+      ) : entry.pathway === "abdomen" ? (
         <section className="review-section" aria-labelledby="review-abdomen-title">
           <h3 id="review-abdomen-title">Abdominal findings</h3>
           <div className="review-chip-list">{entry.examinationPoints.map((point) => <span key={point}>{point}</span>)}</div>
@@ -161,6 +163,25 @@ function CaseReview({ entry, caseNumber, onEdit, onClose }: CaseReviewProps) {
             <ReviewField label="Bladder size" value={entry.bladderSize.replaceAll("_", " ")} />
             <ReviewField label="Bladder location and description" value={entry.bladderDescription} />
             <ReviewField label="Free fluid" value={entry.freeFluid} />
+            <ReviewField label="Other comments" value={entry.otherComments} />
+          </dl>
+        </section>
+      ) : (
+        <section className="review-section" aria-labelledby="review-dvt-title">
+          <h3 id="review-dvt-title">Venous findings</h3>
+          <div className="review-region-list">
+            {DVT_SITES.map((site) => (
+              <section className="review-region" key={site}>
+                <h4>{site}</h4>
+                <dl className="review-finding-list">
+                  {DVT_SITE_FINDINGS.map(([key, label]) => (
+                    <ReviewField key={key} label={label} value={ASSESSMENT_LABELS[entry.findings[site][key]]} />
+                  ))}
+                </dl>
+              </section>
+            ))}
+          </div>
+          <dl className="review-fields">
             <ReviewField label="Other comments" value={entry.otherComments} />
           </dl>
         </section>

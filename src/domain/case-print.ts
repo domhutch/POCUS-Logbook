@@ -1,5 +1,7 @@
 import {
   HEART_FINDINGS,
+  DVT_SITES,
+  DVT_SITE_FINDINGS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
   PATHWAYS,
@@ -98,6 +100,11 @@ function abdomenDetails(entry: Extract<LogbookCase, { pathway: "abdomen" }>) {
   return `<section class="section"><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Examination points attempted</h2><div class="view-list">${entry.examinationPoints.map((point) => `<span class="view-item"><span class="checkbox checked"></span>${escapeHtml(point)}</span>`).join("") || '<span class="not-recorded">None recorded</span>'}</div><h2>Findings</h2><div class="field-grid">${field("RUQ · diaphragm and liver", entry.rightUpperQuadrant)}${field("LUQ · diaphragm and spleen", entry.leftUpperQuadrant)}${field("Right kidney · size and appearance", entry.rightKidney)}${field("Right hydronephrosis", entry.rightHydronephrosis.replaceAll("_", " "))}${field("Left kidney · size and appearance", entry.leftKidney)}${field("Left hydronephrosis", entry.leftHydronephrosis.replaceAll("_", " "))}${field("Bladder size", entry.bladderSize.replaceAll("_", " "))}${field("Bladder location and description", entry.bladderDescription)}${field("Free fluid · location and description", entry.freeFluid)}${field("Other comments", entry.otherComments)}</div></section>`;
 }
 
+function dvtDetails(entry: Extract<LogbookCase, { pathway: "dvt" }>) {
+  const rows = DVT_SITES.map((site) => `<tr><th scope="row">${escapeHtml(site)}</th>${DVT_SITE_FINDINGS.map(([key]) => `<td>${assessmentChoices(entry.findings[site][key])}</td>`).join("")}</tr>`).join("");
+  return `<section class="section"><h2>Image quality</h2><div class="field-grid">${field("Image quality", formatImageQuality(entry.imageQuality))}</div><h2>Venous findings</h2><table class="report-table dvt-table"><thead><tr><th scope="col">Examination site</th>${DVT_SITE_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table><p class="table-legend">Not assessed fields are left blank. U/A = unable to assess.</p>${field("Other comments", entry.otherComments)}</section>`;
+}
+
 export function createCasePrintDocument(entry: LogbookCase) {
   const supervision = formatSupervision(entry);
   const caseType =
@@ -108,7 +115,7 @@ export function createCasePrintDocument(entry: LogbookCase) {
   const management = entry.managementImpact === "not_recorded"
     ? ""
     : formatManagementImpact(entry.managementImpact);
-  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : abdomenDetails(entry);
+  const details = entry.pathway === "lung" ? lungDetails(entry) : entry.pathway === "heart" ? heartDetails(entry) : entry.pathway === "abdomen" ? abdomenDetails(entry) : dvtDetails(entry);
 
   return `<!doctype html>
 <html lang="en">
@@ -152,6 +159,10 @@ export function createCasePrintDocument(entry: LogbookCase) {
     .heart-table th:first-child { width: 61%; }
     .heart-table td { width: 13%; height: 6mm; text-align: center; }
     .heart-table .selected { padding: .4mm 1mm; }
+    .dvt-table { font-size: 5.8pt; }
+    .dvt-table th:first-child { width: 25%; }
+    .dvt-table th, .dvt-table td { padding: .7mm .4mm; text-align: center; overflow-wrap: anywhere; }
+    .dvt-table tbody th { text-align: left; }
     .table-legend { margin-top: 1mm; color: #435148; font-size: 6pt; }
     .notes-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .notes { min-height: 13mm; padding: 1.5mm; border: .25mm solid #66746b; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 7pt; line-height: 1.25; }

@@ -3,10 +3,16 @@ import {
   HEART_FINDINGS,
   HEART_VIEWS,
   ABDOMEN_EXAMINATION_POINTS,
+  DVT_SITES,
+  DVT_SITE_FINDINGS,
+  PATHWAYS,
   LUNG_FINDINGS,
   LUNG_REGIONS,
   type Assessment,
   type AbdomenCaseFields,
+  type DvtCaseFields,
+  type DvtSite,
+  type DvtSiteFinding,
   type CaseDraft,
   type CaseType,
   type HeartCaseFields,
@@ -51,27 +57,13 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
   );
   const isNewCase = !("createdAt" in draft);
   const privacyWarnings = findPrivacyWarnings(draft);
-  const hasStructuredDetails =
-    draft.pathway === "lung"
-      ? draft.regions.length > 0 ||
-        draft.ventilatorySupport !== "Not recorded" ||
-        draft.imageQuality !== "not_recorded"
-      : draft.pathway === "heart" ? draft.views.length > 0 ||
-        Object.values(draft.findings).some((finding) => finding !== "not_assessed") ||
-        draft.ventilatorySupport !== "Not recorded" ||
-        Boolean(
-          draft.cardiovascularSupport ||
-            draft.heartRate ||
-            draft.bloodPressure ||
-            draft.centralVenousPressure,
-        ) : draft.examinationPoints.length > 0 || draft.imageQuality !== "not_recorded" || draft.rightHydronephrosis !== "not_assessed" || draft.leftHydronephrosis !== "not_assessed" || draft.bladderSize !== "not_assessed" || Boolean(draft.rightUpperQuadrant || draft.leftUpperQuadrant || draft.rightKidney || draft.leftKidney || draft.bladderDescription || draft.freeFluid || draft.otherComments);
-
-  function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields | keyof AbdomenCaseFields>(
+  function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields | keyof AbdomenCaseFields | keyof DvtCaseFields>(
     key: K,
     value:
       | LungCaseFields[K & keyof LungCaseFields]
       | HeartCaseFields[K & keyof HeartCaseFields]
-      | AbdomenCaseFields[K & keyof AbdomenCaseFields],
+      | AbdomenCaseFields[K & keyof AbdomenCaseFields]
+      | DvtCaseFields[K & keyof DvtCaseFields],
   ) {
     onChange({ ...draft, [key]: value } as CaseDraft);
   }
@@ -105,6 +97,17 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
     });
   }
 
+  function updateDvtFinding(site: DvtSite, finding: DvtSiteFinding, value: Assessment) {
+    if (draft.pathway !== "dvt") return;
+    onChange({
+      ...draft,
+      findings: {
+        ...draft.findings,
+        [site]: { ...draft.findings[site], [finding]: value },
+      },
+    });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
@@ -133,7 +136,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
     <section className="entry-form-panel" aria-labelledby="form-title">
       <div className="form-heading">
         <div>
-          <p className="eyebrow">{draft.pathway === "lung" ? "Lung" : draft.pathway === "heart" ? "Heart" : "Abdomen"} scan</p>
+          <p className="eyebrow">{PATHWAYS[draft.pathway].label.replace(/^FUSIC\s+/, "")} scan</p>
           <h2 id="form-title">
             {isNewCase ? "Record a case" : "Edit case"}
           </h2>
@@ -293,7 +296,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </div>
         )}
 
-        <details className="structured-details" open={hasStructuredDetails}>
+        <details className="structured-details" open>
           <summary>Structured scan details <span>Optional</span></summary>
           {draft.pathway === "lung" ? (
             <LungDetails
@@ -311,7 +314,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               onUpdateViews={(views) => updateField("views", views)}
               onUpdateField={(key, value) => updateField(key, value)}
             />
-          ) : (
+          ) : draft.pathway === "abdomen" ? (
             <div className="form-grid">
               <fieldset className="checklist-fieldset abdomen-points">
                 <legend>Examination points attempted</legend>
@@ -389,6 +392,44 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
                 </select>
               </label>
             </div>
+          ) : (
+            <div className="dvt-details">
+              <p className="case-mix-protocol">Required points include the saphenofemoral junction, common femoral vein, and popliteal vein. Attempt all views; distal views beyond the popliteal trifurcation are optional.</p>
+              <label className="form-field dvt-image-quality">
+                <span>Image quality</span>
+                <select value={draft.imageQuality} onChange={(event) => updateField("imageQuality", event.currentTarget.value as ImageQuality)}>
+                  <option value="not_recorded">Not recorded</option>
+                  <option value="good">Good</option>
+                  <option value="acceptable">Acceptable</option>
+                  <option value="poor">Poor</option>
+                </select>
+              </label>
+              {DVT_SITES.map((site) => (
+                <fieldset className="checklist-fieldset dvt-site" key={site}>
+                  <legend>{site}</legend>
+                  <div className="dvt-site-findings">
+                    {DVT_SITE_FINDINGS.map(([key, label]) => (
+                      <label className="form-field" key={key}>
+                        <span>{label}</span>
+                        <select
+                          value={draft.findings[site][key]}
+                          onChange={(event) => updateDvtFinding(site, key, event.currentTarget.value as Assessment)}
+                        >
+                          <option value="not_assessed">Not assessed</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                          <option value="unable">Unable to assess</option>
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+              <label className="form-field">
+                <span>Other comments <span className="optional-mark">Optional</span></span>
+                <textarea value={draft.otherComments} maxLength={500} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
+              </label>
+            </div>
           )}
         </details>
 
@@ -399,7 +440,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           <summary>Notes and reflection <span>Optional</span></summary>
           <div className="form-notes-grid">
             <label className="form-field">
-              <span>Summary of findings <span className="optional-mark">Optional</span></span>
+              <span>{draft.pathway === "dvt" ? "Conclusion, clinical significance and suggested actions" : "Summary of findings"} <span className="optional-mark">Optional</span></span>
               <textarea
                 rows={3}
                 maxLength={2000}

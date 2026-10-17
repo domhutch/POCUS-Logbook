@@ -17,6 +17,13 @@ function searchableClinicalDetails(entry: LogbookCase) {
     ...entry.examinationPoints, entry.rightUpperQuadrant, entry.leftUpperQuadrant,
     entry.rightKidney, entry.leftKidney, entry.freeFluid, entry.otherComments,
   ];
+  if (entry.pathway === "dvt") return [
+    entry.otherComments,
+    ...Object.entries(entry.findings).flatMap(([site, findings]) => [
+      site,
+      ...Object.entries(findings).flatMap(([finding, value]) => [finding, value]),
+    ]),
+  ];
   return [
     ...entry.views,
     entry.ventilatorySupport,

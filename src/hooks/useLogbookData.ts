@@ -11,6 +11,7 @@ const INITIAL_TRAINING_MODES: Record<Pathway, boolean> = {
   lung: true,
   heart: true,
   abdomen: true,
+  dvt: true,
 };
 
 function errorMessage(cause: unknown, fallback: string) {
@@ -26,7 +27,7 @@ export function useLogbookData() {
     textSize: "default",
     textScaleVersion: 2,
     curriculum: "fusic",
-    enabledModules: { heart: true, lung: true, abdomen: true },
+    enabledModules: { heart: true, lung: true, abdomen: true, dvt: true },
   });
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -129,6 +129,11 @@ function OverviewPage({
                 verify pathology variety from free-text diagnoses.
               </p>
             )}
+            {caseMix.minimumPositiveScans !== null && (
+              <p className="case-mix-note">
+                DVT-positive scans: {caseMix.positiveScans ?? 0} / {caseMix.minimumPositiveScans} required
+              </p>
+            )}
             {caseMix.scanTypeQuotas.length > 0 ? (
               <ul className="case-mix-quotas">
                 {caseMix.scanTypeQuotas.map((quota) => (

@@ -1,6 +1,6 @@
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
-export type Pathway = "lung" | "heart" | "abdomen";
+export type Pathway = "lung" | "heart" | "abdomen" | "dvt";
 
 export type CaseType = "clinical" | "healthy_volunteer";
 export type ImageQuality = "not_recorded" | "good" | "acceptable" | "poor";
@@ -39,6 +39,14 @@ export const PATHWAYS = {
     supervisedTarget: PATHWAY_REQUIREMENTS.abdomen.directlySupervisedScans,
     source: `${PATHWAY_REQUIREMENTS.abdomen.source.title} ${PATHWAY_REQUIREMENTS.abdomen.source.version}`,
   },
+  dvt: {
+    label: "FUSIC DVT",
+    description: "Record a focused DVT ultrasound scan and review your cases.",
+    icon: "D",
+    totalTarget: PATHWAY_REQUIREMENTS.dvt.totalScans,
+    supervisedTarget: PATHWAY_REQUIREMENTS.dvt.directlySupervisedScans,
+    source: `${PATHWAY_REQUIREMENTS.dvt.source.title} ${PATHWAY_REQUIREMENTS.dvt.source.version}`,
+  },
 } as const;
 
 export const ABDOMEN_EXAMINATION_POINTS = [
@@ -51,6 +59,27 @@ export const ABDOMEN_EXAMINATION_POINTS = [
 ] as const;
 export type AbdomenExaminationPoint = (typeof ABDOMEN_EXAMINATION_POINTS)[number];
 export type Hydronephrosis = "not_assessed" | "none" | "mild" | "moderate" | "severe";
+
+export const DVT_SITES = [
+  "External iliac",
+  "Saphenofemoral junction",
+  "Common femoral vein",
+  "Common / deep femoral junction",
+  "Femoral vein · mid-thigh",
+  "Popliteal vein",
+  "Popliteal trifurcation",
+] as const;
+export type DvtSite = (typeof DVT_SITES)[number];
+export const DVT_SITE_FINDINGS = [
+  ["fullyCompressible", "Veins fully compressible"],
+  ["occlusiveThrombus", "Occlusive thrombus"],
+  ["nonOcclusiveThrombus", "Non-occlusive thrombus"],
+  ["notVisualised", "Not visualised"],
+  ["flowAugmentation", "Flow augmentation"],
+  ["respiratoryVariation", "Respiratory variation Doppler"],
+] as const;
+export type DvtSiteFinding = (typeof DVT_SITE_FINDINGS)[number][0];
+export type DvtSiteFindings = Record<DvtSiteFinding, Assessment>;
 
 export const LUNG_REGIONS = [
   "Right upper anterior",
@@ -146,7 +175,13 @@ export interface AbdomenCaseFields extends CaseFields {
   otherComments: string;
 }
 
-export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields;
+export interface DvtCaseFields extends CaseFields {
+  pathway: "dvt";
+  findings: Record<DvtSite, DvtSiteFindings>;
+  otherComments: string;
+}
+
+export type LogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields | DvtCaseFields;
 export const SAMPLE_CASE_ID_PREFIX = "pocus-sample:";
 
 export function isSampleCase(entry: Pick<LogbookCase, "id">) {
@@ -180,6 +215,12 @@ function emptyHeartFindings(): Record<HeartFinding, Assessment> {
   return Object.fromEntries(
     HEART_FINDINGS.map(([key]) => [key, "not_assessed"]),
   ) as Record<HeartFinding, Assessment>;
+}
+
+function emptyDvtFindings(): Record<DvtSite, DvtSiteFindings> {
+  return Object.fromEntries(
+    DVT_SITES.map((site) => [site, Object.fromEntries(DVT_SITE_FINDINGS.map(([key]) => [key, "not_assessed"]))]),
+  ) as Record<DvtSite, DvtSiteFindings>;
 }
 
 function newCaseFields() {
@@ -218,6 +259,10 @@ export function createDraft(pathway: Pathway): CaseDraft {
       leftHydronephrosis: "not_assessed", bladderSize: "not_assessed",
       bladderDescription: "", freeFluid: "", otherComments: "",
     };
+  }
+
+  if (pathway === "dvt") {
+    return { ...newCaseFields(), pathway, findings: emptyDvtFindings(), otherComments: "" };
   }
 
   return {

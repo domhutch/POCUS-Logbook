@@ -2801,6 +2801,37 @@ html[data-text-size="default"] .button {
   padding: calc(0.65rem / 1.125) calc(1rem / 1.125);
 }
 
+.dvt-details {
+  display: grid;
+  gap: 1rem;
+}
+
+.dvt-image-quality {
+  max-width: 24rem;
+}
+
+.dvt-site {
+  min-width: 0;
+}
+
+.dvt-site-findings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .dvt-site-findings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .dvt-site-findings {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

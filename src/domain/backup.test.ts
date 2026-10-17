@@ -16,25 +16,28 @@ const pathwayModes: Record<Pathway, boolean> = {
   lung: false,
   heart: true,
   abdomen: true,
+  dvt: true,
 };
 
 function makeBackup(cases: LogbookCase[] = []) {
   return JSON.stringify(createBackup(cases, pathwayModes, exportedAt));
 }
 
-function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3) {
+function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3 | 4) {
   const backup = JSON.parse(makeBackup(cases));
   backup.schemaVersion = schemaVersion;
   delete backup.pathwayModes.abdomen;
+  delete backup.pathwayModes.dvt;
   return backup;
 }
 
 describe("POCUS Logbook backups", () => {
-  it("round-trips Lung, Heart, and Abdomen cases with pathway preferences", () => {
+  it("round-trips all pathway cases with pathway preferences", () => {
     const cases = [
       addTimestamps(createDraft("lung")),
       addTimestamps(createDraft("heart")),
       addTimestamps(createDraft("abdomen")),
+      addTimestamps(createDraft("dvt")),
     ];
 
     expect(parseBackup(makeBackup(cases))).toEqual({
@@ -44,6 +47,12 @@ describe("POCUS Logbook backups", () => {
       cases,
       pathwayModes,
     });
+  });
+
+  it("upgrades version 4 backups by enabling the DVT pathway", () => {
+    const backup = makeLegacyBackup([addTimestamps(createDraft("abdomen"))], 4);
+    backup.pathwayModes = { lung: false, heart: true, abdomen: true };
+    expect(parseBackup(JSON.stringify(backup)).pathwayModes).toEqual(pathwayModes);
   });
 
   it("rejects malformed JSON", () => {
@@ -142,7 +151,7 @@ describe("POCUS Logbook backups", () => {
     const restored = parseBackup(JSON.stringify(backup));
 
     expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
-    expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true });
+    expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true, dvt: true });
     expect(restored.cases).toEqual(backup.cases);
   });
 });
