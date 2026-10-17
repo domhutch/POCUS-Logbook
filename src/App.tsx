@@ -40,7 +40,6 @@ import { useCasePrinting } from "./hooks/useCasePrinting";
 import { useLogbookBackup } from "./hooks/useLogbookBackup";
 import { useLogbookData } from "./hooks/useLogbookData";
 import { usePathwayMenu } from "./hooks/usePathwayMenu";
-import "./styles.css";
 
 type Page = "overview" | "cases" | "metrics" | "settings" | "form" | "review";
 

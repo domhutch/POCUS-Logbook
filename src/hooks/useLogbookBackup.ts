@@ -3,21 +3,19 @@ import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { createBackup, parseBackup } from "../domain/backup";
-import { decryptBackup, encryptBackup, isEncryptedBackupFile } from "../domain/encrypted-backup";
 import {
-  downloadLatestBackupFromDrive,
+  googleDriveBackupProvider,
   requestGoogleDriveAccess,
-  uploadEncryptedBackupToDrive,
 } from "../cloud/google-drive";
 import { csvFilename, createCasesCsv } from "../domain/case-csv";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 import {
-  getCases,
-  getPathwayModes,
-  restoreBackup,
-} from "../storage/logbook-store";
-
-const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
+  createEncryptedLogbookBackup,
+  MAX_BACKUP_FILE_SIZE,
+  MAX_BACKUP_SIZE,
+  restoreBackupFile,
+  restoreEncryptedLogbookBackup,
+} from "../services/logbook-backup";
 
 function messageFrom(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback;
@@ -124,31 +122,15 @@ export function useLogbookBackup({
     setError(null);
     setStatus(null);
     try {
-      const [storedCases, storedModes] = await Promise.all([
-        getCases(),
-        getPathwayModes(),
-      ]);
-      const backup = createBackup(storedCases, {
-        lung: storedModes.lung ?? trainingModes.lung,
-        heart: storedModes.heart ?? trainingModes.heart,
-        abdomen: storedModes.abdomen ?? trainingModes.abdomen,
-        dvt: storedModes.dvt ?? trainingModes.dvt,
-        hd: storedModes.hd ?? trainingModes.hd,
-        vascular: storedModes.vascular ?? trainingModes.vascular,
-      });
-      const serialized = JSON.stringify(backup);
-      if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
-        throw new Error("Backup data is larger than the supported 10 MB limit.");
-      }
-      const encrypted = await encryptBackup(serialized, passphrase);
-      const file = new Blob([encrypted], {
+      const backup = await createEncryptedLogbookBackup(trainingModes, passphrase);
+      const file = new Blob([backup.payload], {
         type: "application/json",
       });
       const filename = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.pocusbackup`;
       const delivery = await deliverExport(file, filename, "Encrypted CritSono: POCUS Logbook backup");
       setStatus(delivery === "shared"
-        ? `Encrypted backup prepared for sharing with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Choose a destination; the app cannot confirm that it was saved.`
-        : `Encrypted backup download started with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Keep your passphrase safe; it cannot be recovered.`);
+        ? `Encrypted backup prepared for sharing with ${backup.caseCount} ${backup.caseCount === 1 ? "case" : "cases"}. Choose a destination; the app cannot confirm that it was saved.`
+        : `Encrypted backup download started with ${backup.caseCount} ${backup.caseCount === 1 ? "case" : "cases"}. Keep your passphrase safe; it cannot be recovered.`);
     } catch (cause) {
       if (isShareCancelled(cause)) {
         setStatus("Backup sharing was cancelled. No save was confirmed.");
@@ -189,18 +171,11 @@ export function useLogbookBackup({
     setError(null);
     setStatus(null);
     try {
-      if (file.size > 15 * 1024 * 1024) {
+      if (file.size > MAX_BACKUP_FILE_SIZE) {
         throw new Error("Backup files must be 15 MB or smaller.");
       }
       const serialized = await file.text();
-      const decrypted = isEncryptedBackupFile(serialized)
-        ? await decryptBackup(serialized, passphrase)
-        : serialized;
-      if (new TextEncoder().encode(decrypted).byteLength > MAX_BACKUP_SIZE) {
-        throw new Error("Decrypted backup files must be 10 MB or smaller.");
-      }
-      const backup = parseBackup(decrypted);
-      const result = await restoreBackup(backup);
+      const result = await restoreBackupFile(serialized, passphrase);
       await refreshEntries();
       setStatus(
         `Restore complete: ${result.addedCases} ${result.addedCases === 1 ? "case" : "cases"} added, ${result.skippedCases} existing ${result.skippedCases === 1 ? "case" : "cases"} kept. Current cases and preferences were not replaced.`,
@@ -220,22 +195,10 @@ export function useLogbookBackup({
     setStatus(null);
     try {
       const token = await accessToken;
-      const [storedCases, storedModes] = await Promise.all([getCases(), getPathwayModes()]);
-      const backup = createBackup(storedCases, {
-        lung: storedModes.lung ?? trainingModes.lung,
-        heart: storedModes.heart ?? trainingModes.heart,
-        abdomen: storedModes.abdomen ?? trainingModes.abdomen,
-        dvt: storedModes.dvt ?? trainingModes.dvt,
-        hd: storedModes.hd ?? trainingModes.hd,
-        vascular: storedModes.vascular ?? trainingModes.vascular,
-      });
-      const serialized = JSON.stringify(backup);
-      if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
-        throw new Error("Backup data is larger than the supported 10 MB limit.");
-      }
-      const encrypted = await encryptBackup(serialized, passphrase);
-      const uploaded = await uploadEncryptedBackupToDrive(token, encrypted);
-      setStatus(`Encrypted backup uploaded to Google Drive (${new Date(uploaded.modifiedTime).toLocaleString()}). Keep your passphrase safe; it is not stored by the app.`);
+      const backup = await createEncryptedLogbookBackup(trainingModes, passphrase);
+      const uploaded = await googleDriveBackupProvider.upload(token, backup.payload);
+      const uploadedAt = uploaded.modifiedAt ? new Date(uploaded.modifiedAt).toLocaleString() : "just now";
+      setStatus(`Encrypted backup uploaded to Google Drive (${uploadedAt}). Keep your passphrase safe; it is not stored by the app.`);
     } catch (cause) {
       setError(messageFrom(cause, "The encrypted backup could not be uploaded to Google Drive."));
     } finally {
@@ -251,18 +214,10 @@ export function useLogbookBackup({
     setStatus(null);
     try {
       const token = await accessToken;
-      const { encrypted, file } = await downloadLatestBackupFromDrive(token);
-      if (!isEncryptedBackupFile(encrypted)) {
-        throw new Error("The latest Google Drive file is not an encrypted CritSono: POCUS Logbook backup.");
-      }
-      const decrypted = await decryptBackup(encrypted, passphrase);
-      if (new TextEncoder().encode(decrypted).byteLength > MAX_BACKUP_SIZE) {
-        throw new Error("Decrypted backup files must be 10 MB or smaller.");
-      }
-      const backup = parseBackup(decrypted);
-      const result = await restoreBackup(backup);
+      const downloaded = await googleDriveBackupProvider.downloadLatest(token);
+      const result = await restoreEncryptedLogbookBackup(downloaded.payload, passphrase);
       await refreshEntries();
-      setStatus(`Restored ${file.name}: ${result.addedCases} ${result.addedCases === 1 ? "case" : "cases"} added, ${result.skippedCases} existing ${result.skippedCases === 1 ? "case" : "cases"} kept. Current cases and preferences were not replaced.`);
+      setStatus(`Restored ${downloaded.name}: ${result.addedCases} ${result.addedCases === 1 ? "case" : "cases"} added, ${result.skippedCases} existing ${result.skippedCases === 1 ? "case" : "cases"} kept. Current cases and preferences were not replaced.`);
     } catch (cause) {
       setError(messageFrom(cause, "The Google Drive backup could not be downloaded or restored."));
     } finally {

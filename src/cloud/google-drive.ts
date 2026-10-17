@@ -1,3 +1,6 @@
+import { isEncryptedBackupFile, type EncryptedBackupPayload } from "../domain/encrypted-backup";
+import type { EncryptedBackupProvider } from "./backup-provider";
+
 const GOOGLE_IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
 const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 const BACKUP_MIME_TYPE = "application/vnd.pocus-logbook.encrypted-backup+json";
@@ -148,7 +151,7 @@ async function listBackups(token: string) {
   return result.files ?? [];
 }
 
-export async function uploadEncryptedBackupToDrive(token: string, encrypted: string) {
+export async function uploadEncryptedBackupToDrive(token: string, encrypted: EncryptedBackupPayload) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const metadata = {
     name: `${BACKUP_NAME_PREFIX}${timestamp}.pocusbackup`,
@@ -196,3 +199,21 @@ export async function downloadLatestBackupFromDrive(token: string) {
   }
   return { encrypted, file: latest };
 }
+
+export const googleDriveBackupProvider: EncryptedBackupProvider<string> = {
+  async upload(token, payload) {
+    const uploaded = await uploadEncryptedBackupToDrive(token, payload);
+    return { modifiedAt: uploaded.modifiedTime };
+  },
+  async downloadLatest(token) {
+    const downloaded = await downloadLatestBackupFromDrive(token);
+    if (!isEncryptedBackupFile(downloaded.encrypted)) {
+      throw new Error("The latest Google Drive file is not an encrypted CritSono: POCUS Logbook backup.");
+    }
+    return {
+      payload: downloaded.encrypted,
+      name: downloaded.file.name,
+      modifiedAt: downloaded.file.modifiedTime,
+    };
+  },
+};
