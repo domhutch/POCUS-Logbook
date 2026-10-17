@@ -592,11 +592,16 @@ function App() {
             isSaving={isSavingSettings}
             status={settingsStatus}
             cases={pathwayEntries}
+            heartCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart")}
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
             onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
             onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway, appSettings.operatorName)}
             onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway, appSettings.operatorName)}
+            onDownloadHeartIcsForms={() => printing.printHeartIcsForms(
+              entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart"),
+              appSettings.operatorName,
+            )}
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
             onExportBackup={(passphrase) => backup.exportBackup(passphrase)}
             onRestoreBackup={(event, passphrase) => backup.restoreBackupFromFile(event, passphrase)}

@@ -9,11 +9,13 @@ interface SettingsPageProps {
   isSaving: boolean;
   status: string | null;
   cases: LogbookCase[];
+  heartCases: Extract<LogbookCase, { pathway: "heart" }>[];
   isHandlingBackup: boolean;
   backupStatus: string | null;
   onSave: (settings: AppSettings) => void;
   onPrintLogbook: () => void;
   onDownloadCaseReports: () => void;
+  onDownloadHeartIcsForms: () => void;
   onExportCsv: () => void;
   onExportBackup: (passphrase: string) => Promise<void>;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>, passphrase: string) => Promise<void>;
@@ -30,11 +32,13 @@ function SettingsPage({
   isSaving,
   status,
   cases,
+  heartCases,
   isHandlingBackup,
   backupStatus,
   onSave,
   onPrintLogbook,
   onDownloadCaseReports,
+  onDownloadHeartIcsForms,
   onExportCsv,
   onExportBackup,
   onRestoreBackup,
@@ -252,6 +256,7 @@ function SettingsPage({
         <div className="backup-actions">
           <button className="button button-secondary" type="button" onClick={onPrintLogbook}>Print logbook / PDF</button>
           <button className="button button-secondary" type="button" onClick={onDownloadCaseReports} disabled={!cases.length}>Download all case reports PDF</button>
+          <button className="button button-secondary" type="button" onClick={onDownloadHeartIcsForms} disabled={!heartCases.length}>Download all ICS Heart forms PDF</button>
           <button className="button button-secondary" type="button" onClick={onExportCsv} disabled={isHandlingBackup}>Export CSV</button>
           <button
             className="button button-secondary"

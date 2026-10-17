@@ -137,3 +137,39 @@ export function createHeartIcsFormPrintDocument(entry: HeartCaseFields) {
 </body>
 </html>`;
 }
+
+export function createHeartIcsFormsPrintDocument(
+  entries: HeartCaseFields[],
+  defaultOperatorName = "",
+) {
+  if (entries.length === 0) {
+    throw new Error("There are no Heart cases to include in this ICS PDF.");
+  }
+
+  const documents = entries.map((entry) => createHeartIcsFormPrintDocument({
+    ...entry,
+    operatorName: defaultOperatorName.trim() || entry.operatorName,
+  }));
+  const styles = documents[0].match(/<style>([\s\S]*?)<\/style>/)?.[1];
+  const sheets = documents.map((document) =>
+    document.match(/<main class="ics-form-sheet">[\s\S]*?<\/main>/)?.[0],
+  );
+  if (!styles || sheets.some((sheet) => !sheet)) {
+    throw new Error("The ICS Heart report forms could not be prepared for printing.");
+  }
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ICS Heart logbook report forms</title>
+  <style>${styles}</style>
+</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">Print / save PDF</button></div>
+  <p class="preview-note">One ICS Heart logbook report form per saved Heart case (${entries.length} cases). Demographics appear when recorded; signatures and mentor feedback remain blank for completion by hand.</p>
+  <main class="ics-form-collection">${sheets.join("")}</main>
+</body>
+</html>`;
+}

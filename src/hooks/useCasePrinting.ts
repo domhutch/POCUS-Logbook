@@ -3,7 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { createCasePrintDocument, createCaseReportsPrintDocument } from "../domain/case-print";
-import { createHeartIcsFormPrintDocument } from "../domain/heart-ics-form";
+import { createHeartIcsFormPrintDocument, createHeartIcsFormsPrintDocument } from "../domain/heart-ics-form";
 import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -122,6 +122,19 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     }
   }
 
+  function printHeartIcsForms(entries: Extract<LogbookCase, { pathway: "heart" }>[], operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createHeartIcsFormsPrintDocument(entries, operatorName),
+        `heart-ics-report-forms-all-${new Date().toISOString().slice(0, 10)}.pdf`,
+        ".ics-form-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The ICS Heart report forms could not be created."));
+    }
+  }
+
   function printLogbook(cases: LogbookCase[], pathway: Pathway, operatorName = "") {
     setError(null);
     try {
@@ -201,6 +214,8 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       ]);
       const pageElements = downloadInfo.contentSelector === ".report-collection"
         ? Array.from(target.querySelectorAll<HTMLElement>(".sheet"))
+        : downloadInfo.contentSelector === ".ics-form-collection"
+          ? Array.from(target.querySelectorAll<HTMLElement>(".ics-form-sheet"))
         : downloadInfo.contentSelector === "main"
           ? Array.from(target.querySelectorAll<HTMLElement>(".logbook-page"))
           : [target as HTMLElement];
@@ -209,7 +224,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       }
       const margin = downloadInfo.contentSelector === "main"
         ? 10
-        : downloadInfo.contentSelector === ".ics-form-sheet" ? 0 : 8;
+        : downloadInfo.contentSelector === ".ics-form-sheet" || downloadInfo.contentSelector === ".ics-form-collection" ? 0 : 8;
       const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -275,6 +290,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     frameRef,
     printCase,
     printHeartIcsForm,
+    printHeartIcsForms,
     printLogbook,
     printCaseReports,
     closePreview,
