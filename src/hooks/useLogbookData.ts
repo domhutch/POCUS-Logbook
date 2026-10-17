@@ -29,7 +29,7 @@ export function useLogbookData() {
     textSize: "default",
     textScaleVersion: 2,
     curriculum: "fusic",
-    enabledModules: { heart: true, lung: true, abdomen: true, dvt: true, hd: true, vascular: true },
+    enabledModules: { heart: true, lung: true, abdomen: false, dvt: false, hd: false, vascular: false },
     onboardingComplete: false,
   });
   const [isReady, setIsReady] = useState(false);

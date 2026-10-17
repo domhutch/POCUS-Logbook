@@ -108,8 +108,8 @@ function App() {
   ).length;
   useEffect(() => {
     document.title = appSettings.onboardingComplete
-      ? pathwayLogbookName
-      : "Welcome · POCUS Logbook";
+      ? `${pathwayLogbookName} · FUSIC Logbook`
+      : "Welcome · FUSIC Logbook";
   }, [appSettings.onboardingComplete, pathwayLogbookName]);
 
   useEffect(() => {
@@ -357,18 +357,24 @@ function App() {
   }
 
   return (
+    <>
+    {activePage === "settings" && (
+      <div className="settings-easter-egg" aria-hidden="true">
+        <img src={`${import.meta.env.BASE_URL}images/settings-overscroll-portrait.png`} alt="" draggable={false} />
+      </div>
+    )}
     <main className="app-shell">
       <header className="topbar">
         <button
           className="brand"
           type="button"
           onClick={goToOverview}
-          aria-label={`Go to ${pathwayLogbookName} overview`}
+          aria-label="Go to FUSIC Logbook overview"
         >
           <span className="brand-mark" aria-hidden="true">
             {pathway.icon}
           </span>
-          <span className="brand-name">POCUS Logbook</span>
+          <span className="brand-name">FUSIC Logbook</span>
           <span className="brand-pathway">
             {pathway.label.replace(/^FUSIC\s+/, "")}
           </span>
@@ -684,6 +690,7 @@ function App() {
         <span>Not for clinical decision-making or patient care</span>
       </footer>
     </main>
+    </>
   );
 }
 

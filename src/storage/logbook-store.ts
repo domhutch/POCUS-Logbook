@@ -19,10 +19,10 @@ export type Curriculum = "fusic";
 export const DEFAULT_ENABLED_MODULES: Record<Pathway, boolean> = {
   heart: true,
   lung: true,
-  abdomen: true,
-  dvt: true,
-  hd: true,
-  vascular: true,
+  abdomen: false,
+  dvt: false,
+  hd: false,
+  vascular: false,
 };
 
 export interface AppSettings {

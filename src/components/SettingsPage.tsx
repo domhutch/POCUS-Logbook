@@ -52,62 +52,8 @@ function SettingsPage({
   const [googleDriveError, setGoogleDriveError] = useState<string | null>(null);
   const [showAboutHelp, setShowAboutHelp] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
-  const lastTouchY = useRef<number | null>(null);
-  const pullDistance = useRef(0);
-  const resetPullTimer = useRef<number | null>(null);
-  const [overscrollPull, setOverscrollPull] = useState(0);
   const googleClientId = googleDriveClientId();
   const isNativeBuild = Capacitor.isNativePlatform();
-
-  useEffect(() => {
-    function handleTouchStart(event: TouchEvent) {
-      lastTouchY.current = event.touches[0]?.clientY ?? null;
-      pullDistance.current = 0;
-      if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
-      resetPullTimer.current = null;
-      setOverscrollPull(0);
-    }
-
-    function handleTouchMove(event: TouchEvent) {
-      const currentY = event.touches[0]?.clientY;
-      const previousY = lastTouchY.current;
-      if (currentY === undefined || previousY === null) return;
-      lastTouchY.current = currentY;
-
-      const scrollingElement = document.scrollingElement ?? document.documentElement;
-      const distanceFromBottom = scrollingElement.scrollHeight - scrollingElement.scrollTop - window.innerHeight;
-      // Listen on window so a pull that starts in the footer or blank page area
-      // still reaches the gesture handler. Allow Safari's viewport rounding.
-      if (distanceFromBottom <= 32 && currentY < previousY) {
-        pullDistance.current += previousY - currentY;
-      } else if (currentY > previousY) {
-        pullDistance.current = Math.max(0, pullDistance.current - (currentY - previousY) * 1.35);
-      }
-      setOverscrollPull(Math.max(0, Math.min(190, pullDistance.current - 8)));
-    }
-
-    function handleTouchEnd() {
-      lastTouchY.current = null;
-      if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
-      resetPullTimer.current = window.setTimeout(() => {
-        pullDistance.current = 0;
-        setOverscrollPull(0);
-        resetPullTimer.current = null;
-      }, 650);
-    }
-
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
-    window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchcancel", handleTouchEnd);
-      if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (!googleClientId || isNativeBuild) return;
@@ -363,9 +309,6 @@ function SettingsPage({
         {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
       </section>
       <p className="settings-status" role="status">{status ?? "Settings are stored on this device and are not included in logbook backups."}</p>
-      <div className={`settings-easter-egg ${overscrollPull > 0 ? "is-pulled" : ""}`} style={{ height: `${overscrollPull}px` }} aria-hidden="true">
-        <img src={`${import.meta.env.BASE_URL}images/settings-overscroll-portrait.png`} alt="" draggable={false} />
-      </div>
     </section>
   );
 }
