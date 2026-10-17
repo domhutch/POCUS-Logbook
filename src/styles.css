@@ -216,6 +216,30 @@ button:disabled {
   font-size: 0.72rem;
 }
 
+@media (max-width: 760px) {
+  .welcome-screen {
+    min-height: 100vh;
+    min-height: 100svh;
+    align-items: start;
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) 0.75rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .welcome-card {
+    width: 100%;
+    gap: 1rem;
+    padding: 1.15rem;
+    border-radius: 14px;
+  }
+
+  .welcome-module-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .welcome-continue {
+    justify-self: stretch;
+  }
+}
+
 .browser-storage-guidance {
   padding: 1rem 1.1rem;
   border: 1px solid #ead9b5;
@@ -858,7 +882,7 @@ summary:focus-visible {
   position: fixed;
   z-index: 30;
   right: 0;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
   left: 0;
   display: flex;
   justify-content: center;

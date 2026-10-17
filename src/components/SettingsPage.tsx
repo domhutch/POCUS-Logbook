@@ -77,14 +77,17 @@ function SettingsPage({
     if (currentY === undefined || previousY === null) return;
     lastTouchY.current = currentY;
 
-    const maximumScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    const isAtPageBottom = window.scrollY >= maximumScroll - 3;
+    const scrollingElement = document.scrollingElement ?? document.documentElement;
+    const distanceFromBottom = scrollingElement.scrollHeight - window.scrollY - window.innerHeight;
+    // Safari's visual viewport and scroll position can disagree by a few pixels
+    // at the page edge, so allow a small tolerance while the user pulls up.
+    const isAtPageBottom = distanceFromBottom <= 48;
     if (isAtPageBottom && currentY < previousY) {
       pullDistance.current += previousY - currentY;
     } else if (currentY > previousY) {
       pullDistance.current = Math.max(0, pullDistance.current - (currentY - previousY) * 1.35);
     }
-    setOverscrollPull(Math.max(0, Math.min(190, pullDistance.current - 22)));
+    setOverscrollPull(Math.max(0, Math.min(190, pullDistance.current - 6)));
   }
 
   function handleTouchEnd() {
