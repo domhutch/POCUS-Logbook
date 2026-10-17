@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "cap:sync": "cap sync",
     "cap:add:ios": "cap add ios",
-    "cap:add:android": "cap add android"
+    "cap:add:android": "cap add android",
+    "licenses:notices": "node scripts/generate-third-party-notices.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.0",

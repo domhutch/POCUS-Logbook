@@ -93,7 +93,7 @@ export function createLungIcsFormPrintDocument(entry: LungCaseFields, operatorNa
   @media screen { body { padding: 1px; background: #e9ece9; } .ics-form-sheet { width: min(210mm, calc(100vw - 24px)); height: auto; aspect-ratio: 210 / 297; box-shadow: 0 2px 12px #0002; } }
 </style></head><body>
 <div class="toolbar"><button onclick="window.print()">Print / save PDF</button></div>
-<p class="preview-note">Prefilled from this CritSono Lung case using the ICS Lung report-form layout (Assessment Pack 2025 v10). Demographics and operator appear when recorded; unsupported findings and unrecorded fields remain blank for completion by hand.</p>
+<p class="preview-note">Prefilled from this CritSono Lung case using the FUSIC® Lung report-form template from the Intensive Care Society (ICS) Assessment Pack, v10 (2025). Demographics and operator appear when recorded; unsupported findings and unrecorded fields remain blank for completion by hand.</p>
 <main class="ics-form-sheet"><img class="ics-form-background" src="${templateUrl}" alt=""><svg class="ics-form-overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1192 1684" preserveAspectRatio="none" aria-hidden="true">${fields.join("")}</svg></main>
 </body></html>`;
 }
@@ -106,6 +106,6 @@ export function createLungIcsFormsPrintDocument(entries: LungCaseFields[], opera
   if (!styles || sheets.some((sheet) => !sheet)) throw new Error("The ICS Lung report forms could not be prepared for printing.");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ICS Lung logbook report forms</title><style>${styles}</style></head><body>
   <div class="toolbar"><button onclick="window.print()">Print / save PDF</button></div>
-  <p class="preview-note">One ICS Lung logbook report form per saved Lung case (${entries.length} cases). Demographics and operator appear when recorded; unsupported fields remain blank for completion by hand.</p>
+  <p class="preview-note">One FUSIC® Lung report form per saved Lung case (${entries.length} cases), based on the Intensive Care Society (ICS) Assessment Pack, v10 (2025). Demographics and operator appear when recorded; unsupported fields remain blank for completion by hand.</p>
   <main class="ics-form-collection">${sheets.join("")}</main></body></html>`;
 }

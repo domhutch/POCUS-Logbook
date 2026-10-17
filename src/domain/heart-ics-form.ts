@@ -129,7 +129,7 @@ export function createHeartIcsFormPrintDocument(entry: HeartCaseFields) {
 </head>
 <body>
   <div class="toolbar"><button onclick="window.print()">Print / save PDF</button></div>
-  <p class="preview-note">Prefilled from this CritSono case record using the ICS Heart report-form layout (Assessment Pack 2025 v13). Demographics appear when recorded; signatures, mentor feedback, and unsupported ventilation choices remain blank for completion by hand.</p>
+  <p class="preview-note">Prefilled from this CritSono case record using the FUSIC® Heart report-form template from the Intensive Care Society (ICS) Assessment Pack, v13 (2025). Demographics appear when recorded; signatures, mentor feedback, and unsupported ventilation choices remain blank for completion by hand.</p>
   <main class="ics-form-sheet">
     <img class="ics-form-background" src="${templateUrl}" alt="">
     <svg class="ics-form-overlay" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1192 1684" preserveAspectRatio="none" aria-hidden="true">${fields.join("")}</svg>
@@ -168,7 +168,7 @@ export function createHeartIcsFormsPrintDocument(
 </head>
 <body>
   <div class="toolbar"><button onclick="window.print()">Print / save PDF</button></div>
-  <p class="preview-note">One ICS Heart logbook report form per saved Heart case (${entries.length} cases). Demographics appear when recorded; signatures and mentor feedback remain blank for completion by hand.</p>
+  <p class="preview-note">One FUSIC® Heart report form per saved Heart case (${entries.length} cases), based on the Intensive Care Society (ICS) Assessment Pack, v13 (2025). Demographics appear when recorded; signatures and mentor feedback remain blank for completion by hand.</p>
   <main class="ics-form-collection">${sheets.join("")}</main>
 </body>
 </html>`;
