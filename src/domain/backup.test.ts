@@ -22,11 +22,19 @@ function makeBackup(cases: LogbookCase[] = []) {
   return JSON.stringify(createBackup(cases, pathwayModes, exportedAt));
 }
 
+function makeLegacyBackup(cases: LogbookCase[], schemaVersion: 1 | 2 | 3) {
+  const backup = JSON.parse(makeBackup(cases));
+  backup.schemaVersion = schemaVersion;
+  delete backup.pathwayModes.abdomen;
+  return backup;
+}
+
 describe("POCUS Logbook backups", () => {
-  it("round-trips Lung and Heart cases with pathway preferences", () => {
+  it("round-trips Lung, Heart, and Abdomen cases with pathway preferences", () => {
     const cases = [
       addTimestamps(createDraft("lung")),
       addTimestamps(createDraft("heart")),
+      addTimestamps(createDraft("abdomen")),
     ];
 
     expect(parseBackup(makeBackup(cases))).toEqual({
@@ -82,13 +90,10 @@ describe("POCUS Logbook backups", () => {
   });
 
   it("upgrades version 1 backups with default review markers", () => {
-    const backup = JSON.parse(
-      makeBackup([
+    const backup = makeLegacyBackup([
         addTimestamps(createDraft("lung")),
         addTimestamps(createDraft("heart")),
-      ]),
-    );
-    backup.schemaVersion = 1;
+      ], 1);
     for (const entry of backup.cases) {
       delete entry.impressionCategory;
       delete entry.managementImpact;
@@ -117,10 +122,7 @@ describe("POCUS Logbook backups", () => {
   });
 
   it("upgrades version 2 backups and removes the obsolete marker", () => {
-    const backup = JSON.parse(
-      makeBackup([addTimestamps(createDraft("lung"))]),
-    );
-    backup.schemaVersion = 2;
+    const backup = makeLegacyBackup([addTimestamps(createDraft("lung"))], 2);
     backup.cases[0].curriculumPlus = true;
     backup.cases[0].impressionCategory = "abnormal";
     backup.cases[0].managementImpact = "changed";
@@ -132,5 +134,15 @@ describe("POCUS Logbook backups", () => {
       managementImpact: "changed",
     });
     expect(restored.cases[0]).not.toHaveProperty("curriculumPlus");
+  });
+
+  it("upgrades version 3 backups and enables the newly added pathway", () => {
+    const backup = makeLegacyBackup([addTimestamps(createDraft("heart"))], 3);
+
+    const restored = parseBackup(JSON.stringify(backup));
+
+    expect(restored.schemaVersion).toBe(BACKUP_SCHEMA_VERSION);
+    expect(restored.pathwayModes).toEqual({ lung: false, heart: true, abdomen: true });
+    expect(restored.cases).toEqual(backup.cases);
   });
 });

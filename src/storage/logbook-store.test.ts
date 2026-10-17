@@ -37,7 +37,7 @@ describe("restoreBackup", () => {
     await expect(restoreBackup(backup)).resolves.toEqual({
       addedCases: 1,
       skippedCases: 1,
-      importedPathwayModes: 1,
+      importedPathwayModes: 2,
     });
 
     const restoredCases = await getCases();
@@ -48,7 +48,7 @@ describe("restoreBackup", () => {
     expect(
       restoredCases.find((entry) => entry.id === importedCase.id)?.pathway,
     ).toBe("heart");
-    expect(await getPathwayModes()).toEqual({ lung: true, heart: false });
+    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true });
 
     await expect(restoreBackup(backup)).resolves.toEqual({
       addedCases: 0,
@@ -56,7 +56,7 @@ describe("restoreBackup", () => {
       importedPathwayModes: 0,
     });
     expect(await getCases()).toHaveLength(2);
-    expect(await getPathwayModes()).toEqual({ lung: true, heart: false });
+    expect(await getPathwayModes()).toEqual({ lung: true, heart: false, abdomen: true });
   });
 });
 
@@ -66,7 +66,7 @@ describe("pathway training modes", () => {
     await savePathwayMode("heart", false);
     await savePathwayMode("lung", true);
 
-    expect(await getPathwayModes()).toEqual({ heart: false, lung: true });
+    expect(await getPathwayModes()).toEqual({ heart: false, lung: true, abdomen: true });
     expect(await getCases()).toEqual(casesBefore);
   });
 });
