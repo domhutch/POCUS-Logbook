@@ -12,6 +12,7 @@ import OverviewPage from "./components/OverviewPage";
 import SettingsPage from "./components/SettingsPage";
 import WelcomeScreen from "./components/WelcomeScreen";
 import { getCaseSequenceNumbers } from "./domain/case-display";
+import { createAdminSampleCases, createFullAdminSampleCases } from "./domain/admin-sample-data";
 import {
   createSampleCases,
   summarizeCaseMix,
@@ -218,7 +219,7 @@ function App() {
     setIsHandlingTestData(true);
     setTestDataStatus(null);
     try {
-      const addedCount = await addSampleCases(createSampleCases(pathwayToPopulate));
+      const addedCount = await addSampleCases(createAdminSampleCases(pathwayToPopulate));
       await refreshEntries();
       const pathwayName = PATHWAYS[pathwayToPopulate].label.replace(/^FUSIC\s+/, "");
       setTestDataStatus(
@@ -232,6 +233,25 @@ function App() {
           ? cause.message
           : "Sample cases could not be added to this device.",
       );
+    } finally {
+      setIsHandlingTestData(false);
+    }
+  }
+
+  async function handleExportFullTestData() {
+    setIsHandlingTestData(true);
+    setTestDataStatus(null);
+    setError(null);
+    try {
+      const cases = createFullAdminSampleCases();
+      const delivery = await backup.exportAdminSampleBackup(cases);
+      setTestDataStatus(
+        delivery === "shared"
+          ? `Prepared a full ${cases.length}-case sample backup to share. Restore / merge it from Settings.`
+          : `Downloaded a full ${cases.length}-case sample backup. Restore / merge it from Settings.`,
+      );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The full sample backup could not be exported.");
     } finally {
       setIsHandlingTestData(false);
     }
@@ -530,6 +550,7 @@ function App() {
             onPopulateTestCases={(pathwayToPopulate) =>
               void handlePopulateTestCases(pathwayToPopulate)
             }
+            onExportFullTestData={() => void handleExportFullTestData()}
             onClearTestCases={() => void handleClearTestCases()}
             onPreviewWelcome={() => setIsPreviewingWelcome(true)}
           />

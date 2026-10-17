@@ -89,6 +89,36 @@ export function useLogbookBackup({
   const [status, setStatus] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
+  async function exportAdminSampleBackup(cases: LogbookCase[]) {
+    setIsBusy(true);
+    setError(null);
+    setStatus(null);
+    try {
+      const backup = createBackup(cases, {
+        lung: true,
+        heart: true,
+        abdomen: true,
+        dvt: true,
+        hd: true,
+        vascular: true,
+      });
+      const serialized = JSON.stringify(backup);
+      parseBackup(serialized);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
+        throw new Error("Sample backup data is larger than the supported 10 MB limit.");
+      }
+      const file = new Blob([serialized], { type: "application/json" });
+      const delivery = await deliverExport(
+        file,
+        "pocus-logbook-backup-full-admin-sample.json",
+        "Full POCUS Logbook sample backup",
+      );
+      return delivery;
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   async function exportBackup(passphrase: string) {
     setIsBusy(true);
     setError(null);
@@ -243,6 +273,7 @@ export function useLogbookBackup({
   return {
     status,
     isBusy,
+    exportAdminSampleBackup,
     exportBackup,
     exportCsv,
     restoreBackupFromFile,

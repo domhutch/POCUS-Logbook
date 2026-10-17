@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type TouchEvent } from "react";
 import type { LogbookCase } from "../domain/logbook";
 import type { AppSettings, TextSize } from "../storage/logbook-store";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
@@ -52,8 +52,50 @@ function SettingsPage({
   const [googleDriveError, setGoogleDriveError] = useState<string | null>(null);
   const [showAboutHelp, setShowAboutHelp] = useState(false);
   const backupInputRef = useRef<HTMLInputElement>(null);
+  const lastTouchY = useRef<number | null>(null);
+  const pullDistance = useRef(0);
+  const resetPullTimer = useRef<number | null>(null);
+  const [overscrollPull, setOverscrollPull] = useState(0);
   const googleClientId = googleDriveClientId();
   const isNativeBuild = Capacitor.isNativePlatform();
+
+  useEffect(() => () => {
+    if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
+  }, []);
+
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    lastTouchY.current = event.touches[0]?.clientY ?? null;
+    pullDistance.current = 0;
+    if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
+    resetPullTimer.current = null;
+    setOverscrollPull(0);
+  }
+
+  function handleTouchMove(event: TouchEvent<HTMLElement>) {
+    const currentY = event.touches[0]?.clientY;
+    const previousY = lastTouchY.current;
+    if (currentY === undefined || previousY === null) return;
+    lastTouchY.current = currentY;
+
+    const maximumScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const isAtPageBottom = window.scrollY >= maximumScroll - 3;
+    if (isAtPageBottom && currentY < previousY) {
+      pullDistance.current += previousY - currentY;
+    } else if (currentY > previousY) {
+      pullDistance.current = Math.max(0, pullDistance.current - (currentY - previousY) * 1.35);
+    }
+    setOverscrollPull(Math.max(0, Math.min(190, pullDistance.current - 22)));
+  }
+
+  function handleTouchEnd() {
+    lastTouchY.current = null;
+    if (resetPullTimer.current !== null) window.clearTimeout(resetPullTimer.current);
+    resetPullTimer.current = window.setTimeout(() => {
+      pullDistance.current = 0;
+      setOverscrollPull(0);
+      resetPullTimer.current = null;
+    }, 650);
+  }
 
   useEffect(() => {
     if (!googleClientId || isNativeBuild) return;
@@ -83,7 +125,14 @@ function SettingsPage({
   }
 
   return (
-    <section className="settings-page" aria-labelledby="settings-heading">
+    <section
+      className="settings-page"
+      aria-labelledby="settings-heading"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+    >
       <div className="settings-heading">
         <div>
           <p className="eyebrow">Personalise your logbook</p>
@@ -306,6 +355,9 @@ function SettingsPage({
         {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
       </section>
       <p className="settings-status" role="status">{status ?? "Settings are stored on this device and are not included in logbook backups."}</p>
+      <div className="settings-easter-egg" style={{ height: `${overscrollPull}px` }} aria-hidden="true">
+        <img src={`${import.meta.env.BASE_URL}images/settings-overscroll-portrait.png`} alt="" draggable={false} />
+      </div>
     </section>
   );
 }

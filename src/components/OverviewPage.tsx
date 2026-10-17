@@ -17,6 +17,7 @@ interface OverviewPageProps {
   onTrainingModeChange: (enabled: boolean) => void;
   onShowCases: () => void;
   onPopulateTestCases: (pathway: Pathway) => void;
+  onExportFullTestData: () => void;
   onClearTestCases: () => void;
   onPreviewWelcome: () => void;
 }
@@ -37,6 +38,7 @@ function OverviewPage({
   onTrainingModeChange,
   onShowCases,
   onPopulateTestCases,
+  onExportFullTestData,
   onClearTestCases,
   onPreviewWelcome,
 }: OverviewPageProps) {
@@ -176,6 +178,9 @@ function OverviewPage({
             existing sample cases.
           </p>
           <div className="test-data-actions">
+            <button className="button button-primary" type="button" onClick={onExportFullTestData} disabled={isHandlingTestData || !isReady}>
+              Download full sample backup (all pathways)
+            </button>
             <button className="button button-secondary" type="button" onClick={onPreviewWelcome}>
               Preview welcome screen
             </button>
@@ -187,7 +192,7 @@ function OverviewPage({
                 onClick={() => onPopulateTestCases(key)}
                 disabled={isHandlingTestData || !isReady}
               >
-                Add {PATHWAYS[key].label.replace(/^FUSIC\s+/, "")} sample cases
+                Add full {PATHWAYS[key].label.replace(/^FUSIC\s+/, "")} sample set
               </button>
             ))}
             <button
@@ -200,7 +205,7 @@ function OverviewPage({
             </button>
           </div>
           {testDataStatus && <p className="test-data-status" role="status">{testDataStatus}</p>}
-          <small>Sample cases are marked in the Cases list and case review.</small>
+          <small>Full sample sets contain one complete structured case per target scan and are clearly marked in the Cases list. The downloaded JSON is synthetic and can be restored from Settings → Restore / merge backup.</small>
         </details>
       )}
     </>
