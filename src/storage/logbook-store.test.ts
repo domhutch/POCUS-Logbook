@@ -37,7 +37,7 @@ describe("restoreBackup", () => {
     await expect(restoreBackup(backup)).resolves.toEqual({
       addedCases: 1,
       skippedCases: 1,
-      importedPathwayModes: 4,
+      importedPathwayModes: 5,
     });
 
     const restoredCases = await getCases();
