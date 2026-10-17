@@ -7,8 +7,6 @@ import {
   VASCULAR_ASSESSMENTS,
   VASCULAR_PROCEDURES,
   PATHWAYS,
-  LUNG_FINDINGS,
-  LUNG_REGIONS,
   type Assessment,
   type AbdomenCaseFields,
   type DvtCaseFields,
@@ -24,13 +22,12 @@ import {
   type ImageQuality,
   type ImpressionCategory,
   type LungCaseFields,
-  type LungFinding,
-  type LungRegion,
   type ManagementImpact,
 } from "../domain/logbook";
 import { findPrivacyWarnings } from "../domain/privacy-check";
 import { AbdomenFormFields } from "../pathways/abdomen/AbdomenFormFields";
 import { HeartFormFields } from "../pathways/heart/HeartFormFields";
+import { LungFormFields } from "../pathways/lung/LungFormFields";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -72,27 +69,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
   function updateVascularAssessment(key: VascularAssessment, value: Assessment) {
     if (draft.pathway !== "vascular") return;
     onChange({ ...draft, assessments: { ...draft.assessments, [key]: value } });
-  }
-
-  function updateRegion(
-    region: LungRegion,
-    key: LungFinding,
-    value: Assessment,
-  ) {
-    if (draft.pathway !== "lung") return;
-    const nextFindings = {
-      ...draft.findings,
-      [region]: { ...draft.findings[region], [key]: value },
-    };
-    const hasRecordedFinding = Object.values(nextFindings[region]).some(
-      (assessment) => assessment !== "not_assessed",
-    );
-    const nextRegions = hasRecordedFinding
-      ? draft.regions.includes(region)
-        ? draft.regions
-        : [...draft.regions, region]
-      : draft.regions.filter((recordedRegion) => recordedRegion !== region);
-    onChange({ ...draft, findings: nextFindings, regions: nextRegions });
   }
 
   function updateDvtFinding(site: DvtSite, finding: DvtSiteFinding, value: Assessment) {
@@ -293,13 +269,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         <details className="structured-details" open>
           <summary>Structured scan details <span>Optional</span></summary>
           {draft.pathway === "lung" ? (
-            <LungDetails
-              draft={draft}
-              onUpdateRegion={updateRegion}
-              onUpdateVentilation={(value) =>
-                updateField("ventilatorySupport", value)
-              }
-            />
+            <LungFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "heart" ? (
             <HeartFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "abdomen" ? (
@@ -481,108 +451,6 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         </div>
       </form>
     </section>
-  );
-}
-
-interface LungDetailsProps {
-  draft: Extract<CaseDraft, { pathway: "lung" }>;
-  onUpdateRegion: (
-    region: LungRegion,
-    key: LungFinding,
-    value: Assessment,
-  ) => void;
-  onUpdateVentilation: (value: string) => void;
-}
-
-function LungDetails({
-  draft,
-  onUpdateRegion,
-  onUpdateVentilation,
-}: LungDetailsProps) {
-  return (
-    <div className="structured-content">
-      <div className="form-grid structured-top-fields">
-        <label className="form-field">
-          <span>Ventilatory support</span>
-          <select
-            value={draft.ventilatorySupport}
-            onChange={(event) => onUpdateVentilation(event.currentTarget.value)}
-          >
-            {VENTILATORY_SUPPORT.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <section className="lung-finding-sections" aria-label="Lung findings by region">
-        {LUNG_FINDINGS.map(([key, label]) => (
-          <section className="lung-finding-section" key={key}>
-            <div className="lung-finding-heading">
-              <h3>{label}</h3>
-              <div className="lung-finding-guidance">
-                <p id={`lung-${key}-help`}>
-                  Choose Yes or No, or leave Not assessed selected.
-                </p>
-                <span>
-                  {LUNG_REGIONS.filter((region) => draft.findings[region][key] !== "not_assessed").length} of {LUNG_REGIONS.length} regions recorded
-                </span>
-              </div>
-            </div>
-            <div className="lung-region-responses">
-              {LUNG_REGIONS.map((region) => {
-                const selected = draft.findings[region][key];
-                return (
-                  <div
-                    className="lung-region-response"
-                    key={region}
-                  >
-                    <strong className="lung-region-label" id={`lung-${key}-${region}`}>
-                      {region}
-                    </strong>
-                    <div
-                      className="lung-assessment-options"
-                      role="group"
-                      aria-labelledby={`lung-${key}-${region}`}
-                      aria-describedby={`lung-${key}-help`}
-                    >
-                      {(
-                        [
-                          ["yes", "Yes"],
-                          ["no", "No"],
-                        ] as const
-                      ).map(([value, optionLabel]) => (
-                        <label className="lung-assessment-option" key={value}>
-                          <input
-                            type="radio"
-                            name={`lung-${key}-${region}`}
-                            value={value}
-                            checked={selected === value}
-                            onChange={() => onUpdateRegion(region, key, value)}
-                          />
-                          <span>{optionLabel}</span>
-                        </label>
-                      ))}
-                      <label className="lung-not-assessed">
-                        <input
-                          type="checkbox"
-                          checked={selected === "not_assessed" || selected === "unable"}
-                          onChange={(event) => {
-                            if (event.currentTarget.checked) {
-                              onUpdateRegion(region, key, "not_assessed");
-                            }
-                          }}
-                        />
-                        <span>Not assessed</span>
-                      </label>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ))}
-      </section>
-    </div>
   );
 }
 
