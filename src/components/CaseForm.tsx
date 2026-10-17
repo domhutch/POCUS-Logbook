@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import {
   HEART_FINDINGS,
   HEART_VIEWS,
-  ABDOMEN_EXAMINATION_POINTS,
   DVT_SITES,
   DVT_SITE_FINDINGS,
   HD_QUESTIONS,
@@ -34,6 +33,7 @@ import {
   type ManagementImpact,
 } from "../domain/logbook";
 import { findPrivacyWarnings } from "../domain/privacy-check";
+import { AbdomenFormFields } from "../pathways/abdomen/AbdomenFormFields";
 
 interface CaseFormProps {
   draft: CaseDraft;
@@ -325,74 +325,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               onUpdateField={(key, value) => updateField(key, value)}
             />
           ) : draft.pathway === "abdomen" ? (
-            <div className="form-grid">
-              <fieldset className="checklist-fieldset abdomen-points">
-                <legend>Examination points attempted</legend>
-                <div className="abdomen-point-list">
-                  {ABDOMEN_EXAMINATION_POINTS.map((point) => (
-                    <label className="check-option" key={point}>
-                      <input
-                        type="checkbox"
-                        checked={draft.examinationPoints.includes(point)}
-                        onChange={(event) => updateField(
-                          "examinationPoints",
-                          event.currentTarget.checked
-                            ? [...draft.examinationPoints, point]
-                            : draft.examinationPoints.filter((item) => item !== point),
-                        )}
-                      />
-                      <span>{point}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-              <label className="form-field">
-                <span>RUQ · diaphragm and liver</span>
-                <textarea value={draft.rightUpperQuadrant} maxLength={500} onChange={(event) => updateField("rightUpperQuadrant", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>LUQ · diaphragm and spleen</span>
-                <textarea value={draft.leftUpperQuadrant} maxLength={500} onChange={(event) => updateField("leftUpperQuadrant", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>Right kidney · size and appearance</span>
-                <textarea value={draft.rightKidney} maxLength={500} onChange={(event) => updateField("rightKidney", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>Right hydronephrosis</span>
-                <select value={draft.rightHydronephrosis} onChange={(event) => updateField("rightHydronephrosis", event.currentTarget.value as AbdomenCaseFields["rightHydronephrosis"])}>
-                  {["not_assessed", "none", "mild", "moderate", "severe"].map((value) => <option key={value} value={value}>{value === "not_assessed" ? "Not assessed" : value === "none" ? "None" : value[0].toUpperCase() + value.slice(1)}</option>)}
-                </select>
-              </label>
-              <label className="form-field">
-                <span>Left kidney · size and appearance</span>
-                <textarea value={draft.leftKidney} maxLength={500} onChange={(event) => updateField("leftKidney", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>Left hydronephrosis</span>
-                <select value={draft.leftHydronephrosis} onChange={(event) => updateField("leftHydronephrosis", event.currentTarget.value as AbdomenCaseFields["leftHydronephrosis"])}>
-                  {["not_assessed", "none", "mild", "moderate", "severe"].map((value) => <option key={value} value={value}>{value === "not_assessed" ? "Not assessed" : value === "none" ? "None" : value[0].toUpperCase() + value.slice(1)}</option>)}
-                </select>
-              </label>
-              <label className="form-field">
-                <span>Bladder size</span>
-                <select value={draft.bladderSize} onChange={(event) => updateField("bladderSize", event.currentTarget.value as AbdomenCaseFields["bladderSize"])}>
-                  {["not_assessed", "not_seen", "small", "normal", "large"].map((value) => <option key={value} value={value}>{value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}</option>)}
-                </select>
-              </label>
-              <label className="form-field">
-                <span>Bladder location and description</span>
-                <textarea value={draft.bladderDescription} maxLength={500} onChange={(event) => updateField("bladderDescription", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>Free fluid · location and description</span>
-                <textarea value={draft.freeFluid} maxLength={500} onChange={(event) => updateField("freeFluid", event.currentTarget.value)} />
-              </label>
-              <label className="form-field">
-                <span>Other comments</span>
-                <textarea value={draft.otherComments} maxLength={500} onChange={(event) => updateField("otherComments", event.currentTarget.value)} />
-              </label>
-            </div>
+            <AbdomenFormFields draft={draft} onChange={onChange} />
           ) : draft.pathway === "dvt" ? (
             <div className="dvt-details">
               <p className="case-mix-protocol">Required points include the saphenofemoral junction, common femoral vein, and popliteal vein. Attempt all views; distal views beyond the popliteal trifurcation are optional.</p>

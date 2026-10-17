@@ -16,12 +16,11 @@ Code is divided into `domain`, `storage`, `cloud`, `hooks`, and `components`. Do
 
 | Priority | Finding | Suggested improvement | Difficulty |
 | --- | --- | --- | --- |
-| Before first public release | No `CONTRIBUTING.md`, security reporting instructions, or issue templates are present. | Add a short contributor guide with setup, checks, data-model/migration guidance, and a clear way to report bugs or security issues. Add issue forms for bugs and feature requests. A code of conduct is optional but useful if accepting community contributions. | Easy |
 | Before distributing builds | The lockfile records license metadata, but there is no generated third-party license/notice report for shipped bundles. Asset provenance is also not documented alongside each asset. | Generate and review a dependency license inventory; identify which notices must accompany web/native distributions. Record the source and license for icons and images in an asset credits file. | Moderate |
 | Before accepting pull requests | The GitHub workflow runs checks on pushes to `main` and manual dispatch, but there is no pull-request validation workflow. Actions are referenced by version tags rather than immutable commit SHAs. | Add a PR workflow that runs `npm ci` and `npm run check`; pin actions to verified SHAs and keep readable version comments. | Easy to moderate |
-| Maintainability | `src/App.tsx` coordinates navigation, persistence actions, sample data, preferences, and printing; `src/components/CaseForm.tsx` contains all pathway forms; `src/styles.css` is a large global stylesheet. | Extract only where it creates a clear boundary: form sections by pathway, app actions into focused hooks, and styles by component or feature. Keep data behavior unchanged and refactor in small tested steps. | Moderate to difficult |
-| Test confidence | Most tests are domain/storage tests; browser-dependent flows such as case-save feedback, print preview, and export delivery do not have UI-level regression coverage. | Add a lightweight component test setup only when a specific UI regression needs it; prioritize save failure feedback and print/export actions. Avoid adding a large test stack without a use case. | Moderate |
-| Contributor readability | The README has useful setup and product documentation, but the app's data flow and extension points are not summarized in one short architecture guide. | Add a small architecture note showing UI → hooks → domain/storage/cloud boundaries, plus how a pathway is added and how persisted data is migrated. | Easy |
+| Maintainability | `src/App.tsx` still coordinates navigation and several app workflows; `src/components/CaseForm.tsx` and `CaseReview.tsx` branch on pathway; `src/domain/metrics.ts`, `case-csv.ts`, and `case-print.ts` also contain pathway-specific branches; `src/styles.css` is a large global stylesheet. | Extract pathway-owned case behavior behind small feature modules and keep shared shells in the logbook UI. Move one seam at a time and keep serialized data stable. | Moderate to difficult |
+| Test confidence | Domain, persistence, backup, and export formats have automated tests. Browser-dependent flows such as save feedback, print preview, and actual file delivery do not have UI-level regression coverage. | Add component/browser tests only for concrete regressions or release-critical flows; avoid a large test stack without a use case. | Moderate |
+| Contributor readability | `CONTRIBUTING.md` now documents setup, code boundaries, migrations, and privacy. A worked guide for adding a pathway or curriculum profile would make extension easier. | Add a concise extension guide after the module contracts are established, with one end-to-end example and required tests. | Easy |
 
 ## Important licensing boundary
 
@@ -35,4 +34,53 @@ The app links to and summarizes selected ICS curriculum requirements, while offi
 - `src/hooks/`: app workflows that coordinate domain operations and UI state.
 - `src/components/`: screens and form controls.
 
-The main improvement is not a wholesale rewrite. Preserve these boundaries and extract large modules when a concrete change can be isolated and covered by a regression test.
+The current form/report modules for Heart and Lung show the start of modality-owned code, but most case behavior is still spread across pathway branches in the form, review, case list, metrics, backup validation, CSV, and PDF modules.
+
+## Proposed extension model
+
+Keep **scan modality** separate from **curriculum profile**:
+
+- A **modality module** describes the case shape and behavior for one scan type, such as Heart, Lung, or DVT. It owns its structured fields, form section, review section, case summary, privacy-text extraction, and pathway-specific export mapping where needed.
+- A **curriculum profile** describes versioned requirements for a modality: totals, supervision, quotas, case mix, protocol guidance, source documents, and effective dates. For example, FUSIC Heart v13 is a profile for Heart, not a second Heart case type.
+- Shared **logbook modules** own navigation, pathway selection, case lists, filtering, common case fields, local settings, and the common progress/review shell.
+- Shared **case review** owns common case metadata and delegates the structured details area to the selected modality module.
+
+Curriculum additions should be ordinary TypeScript modules imported into a registry at build time. This meets the goal of allowing contributors to add curricula by coding, without a runtime curriculum editor, downloaded definitions, or ingestion of training packs. Keep curriculum facts and source citations in data-focused profile files; keep form behavior in modality components.
+
+An eventual layout could look like this (names are illustrative):
+
+```text
+src/
+  app/                         # routing and app-level coordination
+  features/logbook/            # case list, overview, settings, shared case workflow
+  features/case-review/        # common review shell
+  pathways/
+    registry.ts                # statically imported modality modules
+    heart/
+      case.ts                  # Heart-specific case fields and defaults
+      CaseFields.tsx           # Heart form fields
+      CaseDetails.tsx          # Heart review fields
+      metrics.ts               # Heart-specific metrics contributions
+      exports.ts               # Heart-specific CSV/PDF mappings
+      curricula/
+        fusic-heart-v13.ts     # versioned requirements and sources
+    lung/
+      ...
+  domain/                      # common case types and pure shared rules
+  storage/                     # IndexedDB schema, backup, and migrations
+```
+
+Do not create empty folders or move files solely to match this sketch. Extract a module when it has a cohesive responsibility and can be tested independently.
+
+## Suggested modularization order
+
+1. **Define the boundaries before moving code (mapped).** This document separates modality modules from curriculum profiles and records the proposed extension points. Keep the existing discriminated case union; it gives TypeScript useful checks.
+2. **Extract form sections (in progress, moderate).** `CaseForm` remains the shared shell for date, supervision, demographics, and notes. Abdomen's structured fields are the first extracted component in `src/pathways/abdomen/AbdomenFormFields.tsx`. Follow the same pattern for the other modalities; Heart and Lung already have some form/report separation.
+3. **Extract case review and list summaries (moderate).** Keep common metadata and action controls shared; delegate structured details and pathway-specific summary text to each modality.
+4. **Move metrics and export mappings behind modality modules (moderate/difficult).** Start with read-only functions. Preserve the current CSV columns, print output, and metric meanings with regression tests.
+5. **Separate curriculum profiles from modality behavior (moderate/difficult).** Convert the existing requirements catalogue into typed versioned profiles and have progress calculations consume the selected profile. Before storing profile selection, decide whether switching profile reinterprets all existing cases or whether cases/logbooks retain the profile version they were recorded under.
+6. **Make extension contributor-friendly (easy).** Add an end-to-end guide showing how to add a profile and, when required, a new modality, including source checks, backup validation, migrations, privacy checks, sample cases, exports, and tests.
+
+Adding only a new curriculum profile for an existing modality should not require a new case schema. A new modality can still require coordinated updates to the discriminated case type, draft factory, backup validator, IndexedDB data compatibility, metrics, and exports. Keep those integrations explicit rather than hiding them behind a highly dynamic plugin system.
+
+The main improvement is not a wholesale rewrite. Preserve the existing boundaries and extract large modules when a concrete change can be isolated and covered by a regression test.
