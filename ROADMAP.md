@@ -2,19 +2,20 @@
 
 ## Product direction
 
-Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The app will use one mobile-friendly web codebase that can run as an installable PWA and be packaged as iOS and Android apps with Capacitor.
+Build an open-source, offline-first logbook for personal POCUS training and post-certification practice. The primary product is a mobile-friendly installable PWA. Packaging the same codebase for iOS and Android with Capacitor remains a future option, rather than a requirement for the initial product direction.
 
-The native apps must include the built web assets in the app package. They must not rely on a hosted web app being downloaded at launch. The first release will store data on the device; cloud accounts and synchronisation are out of scope.
+The initial product stores data on the device and works offline. There is no POCUS Logbook account service or app-operated data backend. Optional user-managed cloud backup and synchronisation are planned as future work; any native app builds must include the web assets in the app package and must not rely on downloading the app from a hosted web server at launch.
 
 ## Product principles
 
-- **Private by default:** avoid patient-identifiable information; keep records on-device in the initial release.
+- **Private by default:** avoid patient-identifiable information; keep records on-device by default and make any cloud connection optional and user-authorized.
 - **Useful offline:** recording and reviewing cases should not require a network connection.
 - **One source of truth:** use a shared data model and interface across PWA, iOS, and Android.
 - **Pathway-aware, not one-size-fits-all:** totals, supervision minimums, case mix, and other rules differ by modality and curriculum version.
 - **Training mode is not certification:** show progress as a personal aid, never as an accreditation decision.
 - **Certification does not erase history:** hiding training targets must leave cases and personal statistics intact.
-- **Portable data:** users can export readable records and make a restorable backup.
+- **Portable data:** users can export readable records and make a restorable backup; future cloud copies are encrypted on-device and stored directly with a provider chosen by the user.
+- **No app-operated user accounts:** do not collect email addresses or maintain a user directory for logbook access or sync.
 
 ## Roadmap
 
@@ -24,7 +25,7 @@ These are a practical starting order based on the open checklist below, not new 
 
 1. Cover local persistence failure cases and ensure failed saves are never reported as successful.
 2. Add automated coverage for CSV and PDF export formats, including combined case reports.
-3. Verify printing, safe-area layout, and backup/export behavior in installed iOS and Android builds.
+3. Verify printing, safe-area layout, and backup/export behavior in the PWA; repeat these checks if native packaging is pursued.
 
 Other open requests remain listed in their relevant sections below. Update this shortlist when priorities change.
 
@@ -76,38 +77,45 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 - [x] Export a selected pathway as CSV with stable columns, case numbers, pathway-specific findings, and no internal IDs or timestamps; CSV text is escaped and spreadsheet formulas are neutralized.
 - [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
+- [x] Encrypt new backup exports on-device with a user-held passphrase; authenticate the encrypted envelope and retain restore support for older plaintext JSON backups. The passphrase is not stored or recoverable by the app.
 - [x] Produce a print-ready PDF sheet for an individual case using the browser/device print dialog.
 - [x] Produce a pathway-specific printable PDF logbook/report with the supplied training-logbook table layout, blank rows to the pathway reference, and continuation pages for extra cases.
 - [x] Download all saved case reports for a pathway as one PDF, with each case on its own A4 page; fit previews to the available screen width and provide A4 print margins.
-- [x] Use the native share sheet for backup and CSV files where supported, keep browser downloads as the web fallback, and show actionable errors when an export cannot be created or shared.
+- [x] Move logbook, CSV, PDF, backup, and restore controls into Settings; use the native share sheet for backup and CSV files where supported, keep browser downloads as the web fallback, and show actionable errors when an export cannot be created or shared.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
 
-**Exit criteria:** exported records can be inspected, and a backup can be restored into a clean installation without data loss. JSON backup/restore is implemented for the web app; native backup and CSV files use the system share sheet. Native device behavior still needs release verification.
+**Exit criteria:** exported records can be inspected, and encrypted or legacy backups can be restored into a clean installation without data loss. PWA backup/export controls are in Settings; native backup and CSV files use the system share sheet when packaged. Native device behavior still needs release verification.
 
 ### Stretch goals
 
 These are optional follow-ons after reliable local backup and restore:
 
-1. **Encrypted home-server backups:** client-side encryption before transfer, authenticated access, explicit server configuration, and a tested key recovery/export process. Do not send readable case data to a server.
-2. **Backup reminders and history:** show the last successful backup date and let users set a local reminder; never claim a server copy exists until its upload is confirmed.
-3. [x] **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
-4. **Printable review reports:** produce a user-selected, de-identified PDF summary.
-5. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
-6. **Additional pathways:** add DVT, Abdomen, Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed.
-7. **Advanced echo findings:** after the HD pathway is implemented, consider recording advanced echocardiography findings beyond its curriculum. Map the overlap with the HD requirements first so the curriculum fields are not duplicated.
+1. **User-managed provider sync:** preserve local-first and offline behavior; connect directly from the user's device to a provider they choose, with no app-operated account service or data relay. The encrypted portable backup and restore layer is implemented; never send readable case data to a provider through the app.
+   - First plan the threat model, provider permissions, OAuth flows, PWA/native credential storage, deletion/disconnection behavior, and privacy disclosures. Do not request email/profile scopes or retain provider account identifiers.
+   - Before provider sync, review the passphrase-based key derivation strength and recovery UX on target devices. Explain that losing the passphrase makes the encrypted copy unrecoverable; provide a recovery/passphrase verification flow.
+   - Start with one provider after feasibility review. Evaluate Google Drive and OneDrive app-specific folders, Nextcloud authentication and server compatibility, and iCloud's platform-specific file access separately. Keep provider tokens on-device using platform-appropriate secure storage; use OAuth authorization code with PKCE for public clients.
+   - Add upload confirmation, last-success status, file/version integrity checks, revocation and deletion guidance, and a conflict flow that never silently overwrites cases. Retain readable manual export/import as a recovery path.
+   - After one-provider backup/restore is reliable, consider opt-in cross-device sync with explicit conflict resolution and preservation of both copies when they differ.
+2. **Privacy-preserving product metrics (optional):** decide whether any metrics are needed before adding telemetry. Default to off; never send logbook content, email, provider identity, or persistent installation identifiers. If enabled, collect only coarse, batched feature/version counts and document that hosting and provider infrastructure may still process connection metadata such as IP addresses.
+3. **Backup reminders and history:** show the last successful backup date and let users set a local reminder; never claim a provider copy exists until its upload is confirmed.
+4. [x] **Spreadsheet-friendly CSV export:** export a selected pathway with stable column names and no internal or patient-identifying fields.
+5. **Printable review reports:** produce a user-selected, de-identified PDF summary.
+6. **Richer personal review:** activity over time, scan-type summaries, and verified case-mix views without turning the app into a clinical decision tool.
+7. **Additional pathways:** add DVT, Abdomen, Vascular, HD, and Focused TOE after their requirements and versioned sources are reviewed.
+8. **Advanced echo findings:** after the HD pathway is implemented, consider recording advanced echocardiography findings beyond its curriculum. Map the overlap with the HD requirements first so the curriculum fields are not duplicated.
 
-### 5. Mobile packaging and release readiness
+### 5. PWA release readiness and optional native packaging
 
 - [x] Add a GitHub Pages build/deploy workflow and document site-origin storage, local backup/restore, and test-data privacy.
-- [ ] Generate and check in the iOS and Android Capacitor platform projects when platform tooling is available.
-- [ ] Verify the native app loads from assets packaged inside the app, with no hosted-app URL configured.
-- [ ] Test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
+- [ ] Verify PWA install, upgrades, offline use, storage, backup/restore, printing, and exports on supported browsers and mobile devices.
+- [ ] If native packaging is pursued, generate and check in the iOS and Android Capacitor platform projects when platform tooling is available.
+- [ ] If native packaging is pursued, verify the app loads from packaged assets with no hosted-app URL configured, and test install, upgrades, offline use, storage, backup/restore, and exports on iOS and Android.
 - [x] Add automated tests for JSON backup validation, v1 migration, and restore merge behavior.
 - [x] Add catalogue integrity tests for source links, route limits, Vascular quotas, the fTOE alternate route, and the FUSIC HD effective date.
 - [ ] Add automated tests for persistence failures and CSV/PDF export formats; progress boundary tests are tracked in section 3.
 - [ ] Document build, release, data-backup, and privacy expectations.
 
-**Exit criteria:** installed native builds work in airplane mode and preserve user data across supported upgrades.
+**Exit criteria:** the PWA installs, works offline, and preserves user data across supported upgrades. If native packaging is pursued, native builds also meet those criteria using bundled assets.
 
 ## User feedback backlog
 
@@ -174,13 +182,14 @@ Heart, Lung, DVT, Abdomen, Vascular, and HD also limit healthy-volunteer studies
 
 - **UI and build:** React, TypeScript, Vite.
 - **PWA:** Vite PWA plugin with a generated service worker and web app manifest.
-- **Native packaging:** Capacitor; native builds use the local `dist` output (`webDir`) and do not configure a remote web server.
+- **Optional native packaging:** Capacitor; if pursued, native builds use the local `dist` output (`webDir`) and do not configure a remote web server.
 - **Persistence:** on-device storage is the initial direction; select and test the concrete storage implementation during the data-model phase.
-- **Backend:** none in the first release.
+- **Backend:** no app-operated account service, data relay, or logbook storage backend is planned. The PWA and optional native clients connect directly to user-authorized storage providers for future sync.
 
 ## Out of scope for the initial release
 
-- User accounts, hosted storage, and cross-device synchronisation.
+- An app-operated user account service, hosted logbook storage, or data relay.
+- Cloud sync in the initial release; future sync must be optional, user-managed, and encrypted on-device before upload.
 - Clinical decision support or use of training records as a clinical record.
 - Automatic claims of FUSIC/TOE eligibility, competence, or accreditation.
 - Capturing patient identifiers or storing clinical images.

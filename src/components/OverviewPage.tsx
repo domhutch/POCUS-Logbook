@@ -1,4 +1,3 @@
-import { useRef, type ChangeEvent } from "react";
 import type { CaseMixSummary, TrainingProgress } from "../domain/metrics";
 import { PATHWAYS, type Pathway } from "../domain/logbook";
 
@@ -15,16 +14,8 @@ interface OverviewPageProps {
   testDataStatus: string | null;
   trainingMode: boolean;
   isReady: boolean;
-  hasCases: boolean;
-  isHandlingBackup: boolean;
-  backupStatus: string | null;
   onTrainingModeChange: (enabled: boolean) => void;
   onShowCases: () => void;
-  onPrintLogbook: () => void;
-  onDownloadCaseReports: () => void;
-  onExportCsv: () => void;
-  onExportBackup: () => void;
-  onRestoreBackup: (event: ChangeEvent<HTMLInputElement>) => void;
   onPopulateTestCases: (pathway: Pathway) => void;
   onClearTestCases: () => void;
 }
@@ -42,20 +33,11 @@ function OverviewPage({
   testDataStatus,
   trainingMode,
   isReady,
-  hasCases,
-  isHandlingBackup,
-  backupStatus,
   onTrainingModeChange,
   onShowCases,
-  onPrintLogbook,
-  onDownloadCaseReports,
-  onExportCsv,
-  onExportBackup,
-  onRestoreBackup,
   onPopulateTestCases,
   onClearTestCases,
 }: OverviewPageProps) {
-  const backupInputRef = useRef<HTMLInputElement>(null);
   const details = PATHWAYS[pathway];
 
   return (
@@ -171,34 +153,6 @@ function OverviewPage({
           </p>
         </>
       )}
-
-      <section className="backup-panel" aria-labelledby="backup-title">
-        <div className="backup-copy">
-          <p className="eyebrow">Recovery</p>
-          <h2 id="backup-title">Keep a safe copy</h2>
-          <p>Download a portable backup or merge one into this logbook. Existing cases and preferences are kept on conflicts.</p>
-        </div>
-        <div className="backup-actions">
-          <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
-          <button className="button button-secondary" onClick={onDownloadCaseReports} disabled={!isReady || !hasCases}>Download all case reports PDF</button>
-          <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
-          <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Export backup</button>
-          <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Merge backup</button>
-          <input
-            ref={backupInputRef}
-            className="sr-only"
-            type="file"
-            accept=".json,application/json"
-            aria-label="Choose a POCUS Logbook backup file"
-            onChange={onRestoreBackup}
-          />
-        </div>
-        <details className="backup-privacy">
-          <summary>Backup privacy</summary>
-          <p>The JSON backup is readable and not encrypted. Store it somewhere private. On native devices, choose a private destination in the share sheet; the app cannot confirm that it was saved.</p>
-        </details>
-        {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
-      </section>
 
       {canManageTestData && (
         <details className="test-data-panel">

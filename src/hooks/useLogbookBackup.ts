@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { createBackup, parseBackup } from "../domain/backup";
+import { decryptBackup, encryptBackup, isEncryptedBackupFile } from "../domain/encrypted-backup";
 import { csvFilename, createCasesCsv } from "../domain/case-csv";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 import {
@@ -83,7 +84,7 @@ export function useLogbookBackup({
   const [status, setStatus] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
-  async function exportBackup() {
+  async function exportBackup(passphrase: string) {
     setIsBusy(true);
     setError(null);
     setStatus(null);
@@ -96,14 +97,19 @@ export function useLogbookBackup({
         lung: storedModes.lung ?? trainingModes.lung,
         heart: storedModes.heart ?? trainingModes.heart,
       });
-      const file = new Blob([JSON.stringify(backup, null, 2)], {
+      const serialized = JSON.stringify(backup);
+      if (new TextEncoder().encode(serialized).byteLength > MAX_BACKUP_SIZE) {
+        throw new Error("Backup data is larger than the supported 10 MB limit.");
+      }
+      const encrypted = await encryptBackup(serialized, passphrase);
+      const file = new Blob([encrypted], {
         type: "application/json",
       });
-      const filename = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.json`;
-      const delivery = await deliverExport(file, filename, "POCUS Logbook backup");
+      const filename = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.pocusbackup`;
+      const delivery = await deliverExport(file, filename, "Encrypted POCUS Logbook backup");
       setStatus(delivery === "shared"
-        ? `Backup prepared for sharing with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Choose a private destination in the share sheet; the app cannot confirm that it was saved.`
-        : `Backup download started with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Save the file somewhere private.`);
+        ? `Encrypted backup prepared for sharing with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Choose a destination; the app cannot confirm that it was saved.`
+        : `Encrypted backup download started with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Keep your passphrase safe; it cannot be recovered.`);
     } catch (cause) {
       if (isShareCancelled(cause)) {
         setStatus("Backup sharing was cancelled. No save was confirmed.");
@@ -135,7 +141,7 @@ export function useLogbookBackup({
     }
   }
 
-  async function restoreBackupFromFile(event: ChangeEvent<HTMLInputElement>) {
+  async function restoreBackupFromFile(event: ChangeEvent<HTMLInputElement>, passphrase: string) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
     if (!file) return;
@@ -144,10 +150,17 @@ export function useLogbookBackup({
     setError(null);
     setStatus(null);
     try {
-      if (file.size > MAX_BACKUP_SIZE) {
-        throw new Error("Backup files must be 10 MB or smaller.");
+      if (file.size > 15 * 1024 * 1024) {
+        throw new Error("Backup files must be 15 MB or smaller.");
       }
-      const backup = parseBackup(await file.text());
+      const serialized = await file.text();
+      const decrypted = isEncryptedBackupFile(serialized)
+        ? await decryptBackup(serialized, passphrase)
+        : serialized;
+      if (new TextEncoder().encode(decrypted).byteLength > MAX_BACKUP_SIZE) {
+        throw new Error("Decrypted backup files must be 10 MB or smaller.");
+      }
+      const backup = parseBackup(decrypted);
       const result = await restoreBackup(backup);
       await refreshEntries();
       setStatus(

@@ -484,16 +484,8 @@ function App() {
             changedManagementCount={changedManagementCount}
             trainingMode={trainingModes[activePathway]}
             isReady={isReady}
-            hasCases={pathwayEntries.length > 0}
-            isHandlingBackup={backup.isBusy}
-            backupStatus={backup.status}
             onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}
             onShowCases={() => setActivePage("cases")}
-            onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway)}
-            onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway)}
-            onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
-            onExportBackup={() => void backup.exportBackup()}
-            onRestoreBackup={(event) => void backup.restoreBackupFromFile(event)}
             onPopulateTestCases={(pathwayToPopulate) =>
               void handlePopulateTestCases(pathwayToPopulate)
             }
@@ -516,7 +508,15 @@ function App() {
             settings={appSettings}
             isSaving={isSavingSettings}
             status={settingsStatus}
+            cases={pathwayEntries}
+            isHandlingBackup={backup.isBusy}
+            backupStatus={backup.status}
             onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
+            onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway)}
+            onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway)}
+            onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
+            onExportBackup={(passphrase) => backup.exportBackup(passphrase)}
+            onRestoreBackup={(event, passphrase) => backup.restoreBackupFromFile(event, passphrase)}
           />
         )}
 
