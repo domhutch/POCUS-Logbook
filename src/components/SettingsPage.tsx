@@ -10,8 +10,8 @@ interface SettingsPageProps {
 
 const TEXT_SIZES: { value: TextSize; label: string; description: string }[] = [
   { value: "small", label: "Small", description: "More content on screen" },
-  { value: "default", label: "Default", description: "Original app size" },
-  { value: "large", label: "Large", description: "Larger text and controls" },
+  { value: "default", label: "Default", description: "Larger text, standard buttons" },
+  { value: "large", label: "Large", description: "Largest text and controls" },
 ];
 
 function SettingsPage({ settings, isSaving, status, onSave }: SettingsPageProps) {
@@ -42,7 +42,7 @@ function SettingsPage({ settings, isSaving, status, onSave }: SettingsPageProps)
       <section className="settings-panel" aria-labelledby="text-size-heading">
         <div className="settings-panel-heading">
           <h3 id="text-size-heading">Text size</h3>
-          <p>Adjust the size of text and controls throughout the app.</p>
+          <p>Choose a text size. Default uses larger text with standard button sizing.</p>
         </div>
         <div className="text-size-options" role="group" aria-label="Text size">
           {TEXT_SIZES.map((option) => (

@@ -23,6 +23,7 @@ export function useLogbookData() {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     supervisors: [],
     textSize: "default",
+    textScaleVersion: 2,
   });
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);

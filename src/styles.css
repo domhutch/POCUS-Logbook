@@ -30,8 +30,12 @@ html[data-text-size="small"] {
   font-size: 90%;
 }
 
-html[data-text-size="large"] {
+html[data-text-size="default"] {
   font-size: 112.5%;
+}
+
+html[data-text-size="large"] {
+  font-size: 125%;
 }
 
 body {
@@ -1226,7 +1230,7 @@ summary:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: calc(1rem + env(safe-area-inset-top, 0px)) 1rem 1rem;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   background: var(--canvas);
 }
@@ -1249,6 +1253,24 @@ summary:focus-visible {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.pdf-download-status,
+.pdf-download-error {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d6e5d8;
+  border-radius: 8px;
+  background: #f0f7f3;
+  color: #35634c;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.pdf-download-error {
+  border-color: #e7c7bf;
+  background: #fff8f6;
+  color: #67392e;
 }
 
 .print-preview-frame {
@@ -2221,7 +2243,7 @@ summary:focus-visible {
   }
 
   .print-preview-overlay {
-    padding: 0.6rem;
+    padding: calc(0.6rem + env(safe-area-inset-top, 0px)) 0.6rem 0.6rem;
     padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
   }
 
@@ -2231,11 +2253,13 @@ summary:focus-visible {
   }
 
   .print-preview-toolbar > div {
+    display: grid;
+    grid-template-columns: 1fr;
     width: 100%;
   }
 
   .print-preview-toolbar .button {
-    flex: 1;
+    width: 100%;
   }
 
   .case-review-actions {
@@ -2617,6 +2641,12 @@ summary:focus-visible {
   .app-footer {
     font-size: 0.63rem;
   }
+}
+
+/* The promoted default enlarges text while keeping primary button padding at
+   its former default size. */
+html[data-text-size="default"] .button {
+  padding: calc(0.65rem / 1.125) calc(1rem / 1.125);
 }
 
 @media (prefers-reduced-motion: reduce) {

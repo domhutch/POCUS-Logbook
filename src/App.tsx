@@ -105,11 +105,7 @@ function App() {
 
   useEffect(() => {
     if (!isReady) return;
-    if (appSettings.textSize === "default") {
-      document.documentElement.removeAttribute("data-text-size");
-    } else {
-      document.documentElement.dataset.textSize = appSettings.textSize;
-    }
+    document.documentElement.dataset.textSize = appSettings.textSize;
   }, [appSettings.textSize, isReady]);
 
   function startNewCase() {
@@ -550,14 +546,22 @@ function App() {
           aria-labelledby="print-preview-title"
         >
           <header className="print-preview-toolbar">
-            <h2 id="print-preview-title">Print preview</h2>
+            <h2 id="print-preview-title">PDF preview</h2>
             <div>
               <button
                 className="button button-secondary"
                 type="button"
                 onClick={printing.closePreview}
               >
-                Back to cases
+                Close and return to logbook
+              </button>
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={() => void printing.downloadPdf()}
+                disabled={!printing.isFrameReady || printing.isDownloading}
+              >
+                {printing.isDownloading ? "Preparing PDF…" : "Download PDF"}
               </button>
               <button
                 className="button button-primary"
@@ -569,10 +573,16 @@ function App() {
               </button>
             </div>
           </header>
+          {printing.downloadStatus && (
+            <p className="pdf-download-status" role="status">{printing.downloadStatus}</p>
+          )}
+          {printing.downloadError && (
+            <p className="pdf-download-error" role="alert">{printing.downloadError}</p>
+          )}
           <iframe
             ref={printing.frameRef}
             className="print-preview-frame"
-            title="Printable case sheet"
+            title="POCUS Logbook PDF preview"
             srcDoc={printing.document}
             onLoad={printing.markFrameReady}
           />

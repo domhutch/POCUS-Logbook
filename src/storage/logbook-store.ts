@@ -18,11 +18,13 @@ export type TextSize = "small" | "default" | "large";
 export interface AppSettings {
   supervisors: string[];
   textSize: TextSize;
+  textScaleVersion: number;
 }
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
   supervisors: [],
   textSize: "default",
+  textScaleVersion: 2,
 };
 
 interface StoredAppSettings extends AppSettings {
@@ -140,10 +142,23 @@ export async function savePathwayMode(
 }
 
 export async function getAppSettings(): Promise<AppSettings> {
-  const settings = await (await database).get("preferences", "app");
-  return settings
-    ? { supervisors: settings.supervisors, textSize: settings.textSize }
-    : DEFAULT_APP_SETTINGS;
+  const db = await database;
+  const settings = await db.get("preferences", "app");
+  if (!settings) return DEFAULT_APP_SETTINGS;
+  if (settings.textScaleVersion !== 2) {
+    const migrated: AppSettings = {
+      supervisors: settings.supervisors,
+      textSize: settings.textSize === "large" ? "default" : settings.textSize,
+      textScaleVersion: 2,
+    };
+    await db.put("preferences", { id: "app", ...migrated });
+    return migrated;
+  }
+  return {
+    supervisors: settings.supervisors,
+    textSize: settings.textSize,
+    textScaleVersion: settings.textScaleVersion,
+  };
 }
 
 export async function saveAppSettings(settings: AppSettings): Promise<void> {

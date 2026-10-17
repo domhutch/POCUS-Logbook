@@ -115,7 +115,7 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 ### Bugs and usability issues
 
 - [x] **P1 · Print/PDF layout:** use a compact, FUSIC-style A4 report layout and automatically scale individual case sheets to the printable page height.
-- [ ] **P1 · Installed-PWA printing:** verify print/save-to-PDF on an iOS Home Screen install. If the browser blocks a new print window, the app now offers an in-app print-preview fallback.
+- [ ] **P1 · Installed-PWA printing:** verify the in-app PDF preview, print dialog, direct download, and close-to-logbook flow on an iOS Home Screen install. The app now keeps the preview in-app instead of opening a separate window.
 - [x] **P1 · Case review:** add a read-only case detail view from the Cases screen, covering pathway-specific details, findings, supervision, and notes.
 - [ ] **P1 · Scan review:** provide a way to view scans/images that have been added to cases.
 - [ ] **P1 · Installed PWA safe-area layout:** prevent the iOS Home Screen “Liquid Glass”/system UI area from overlapping the top of the app. Safe-area support is in place; verify it on an installed iOS Home Screen app.
