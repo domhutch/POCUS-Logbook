@@ -253,7 +253,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
         <details className="structured-details optional-details" open>
           <summary>Case context and review markers <span>Optional</span></summary>
           <div className="form-grid">
-            {draft.pathway === "heart" && (
+            {(draft.pathway === "heart" || draft.pathway === "lung") && (
               <>
                 <label className="form-field">
                   <span>Age (years) <span className="optional-mark">Optional</span></span>
@@ -304,7 +304,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
               </select>
             </label>
           </div>
-          {draft.pathway === "heart" && <p className="privacy-note">Demographics are stored with this case and included in exports. Do not enter patient names, dates of birth, or record numbers.</p>}
+          {(draft.pathway === "heart" || draft.pathway === "lung") && <p className="privacy-note">Demographics are stored with this case and included in exports. Do not enter patient names, dates of birth, or record numbers.</p>}
         </details>
 
         <details className="structured-details" open>

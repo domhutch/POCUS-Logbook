@@ -26,6 +26,7 @@ interface CaseReviewProps {
   caseNumber: number;
   onPrint: () => void;
   onPrintHeartIcsForm: () => void;
+  onPrintLungIcsForm: () => void;
   onEdit: () => void;
   onClose: () => void;
 }
@@ -39,7 +40,7 @@ function ReviewField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onEdit, onClose }: CaseReviewProps) {
+function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onPrintLungIcsForm, onEdit, onClose }: CaseReviewProps) {
   const caseType =
     entry.caseType === "healthy_volunteer" ? "Healthy volunteer" : "Clinical scan";
   const supervision = formatSupervision(entry);
@@ -76,6 +77,11 @@ function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onEdit, o
               ICS PDF
             </button>
           )}
+          {entry.pathway === "lung" && (
+            <button className="button button-secondary" type="button" onClick={onPrintLungIcsForm}>
+              ICS PDF
+            </button>
+          )}
           <button className="button button-secondary" type="button" onClick={onClose}>
             Back to cases
           </button>
@@ -89,12 +95,12 @@ function CaseReview({ entry, caseNumber, onPrint, onPrintHeartIcsForm, onEdit, o
         <h3 id="review-details-title">Case context and review markers</h3>
         <dl className="review-fields">
           <ReviewField label="Case type" value={caseType} />
-          {entry.pathway === "heart" && (
+          {(entry.pathway === "heart" || entry.pathway === "lung") && (
             <>
               <ReviewField label="Age (years)" value={entry.patientAge} />
               <ReviewField label="Gender" value={entry.patientGender} />
               <ReviewField label="BMI" value={entry.patientBmi} />
-              <ReviewField label="Operator" value={entry.operatorName} />
+              {entry.pathway === "heart" && <ReviewField label="Operator" value={entry.operatorName} />}
             </>
           )}
           <ReviewField label="Indication" value={entry.indication} />

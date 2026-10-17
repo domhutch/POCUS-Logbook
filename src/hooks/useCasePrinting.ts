@@ -2,8 +2,9 @@ import { useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import { createCasePrintDocument, createCaseReportsPrintDocument } from "../domain/case-print";
+import { createCasePrintDocument, createCaseReportsPrintDocument, createFullLogbookPrintDocument } from "../domain/case-print";
 import { createHeartIcsFormPrintDocument, createHeartIcsFormsPrintDocument } from "../domain/heart-ics-form";
+import { createLungIcsFormPrintDocument, createLungIcsFormsPrintDocument } from "../domain/lung-ics-form";
 import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -135,6 +136,32 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     }
   }
 
+  function printLungIcsForm(entry: Extract<LogbookCase, { pathway: "lung" }>, operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createLungIcsFormPrintDocument(entry, operatorName),
+        `lung-ics-report-form-${entry.date}.pdf`,
+        ".ics-form-sheet",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The Lung report form could not be created."));
+    }
+  }
+
+  function printLungIcsForms(entries: Extract<LogbookCase, { pathway: "lung" }>[], operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createLungIcsFormsPrintDocument(entries, operatorName),
+        `lung-ics-report-forms-all-${new Date().toISOString().slice(0, 10)}.pdf`,
+        ".ics-form-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The ICS Lung report forms could not be created."));
+    }
+  }
+
   function printLogbook(cases: LogbookCase[], pathway: Pathway, operatorName = "") {
     setError(null);
     try {
@@ -158,6 +185,19 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       );
     } catch (cause) {
       setError(errorMessage(cause, "The case report PDF could not be created."));
+    }
+  }
+
+  function printFullLogbook(cases: LogbookCase[], operatorName = "") {
+    setError(null);
+    try {
+      printDocument(
+        createFullLogbookPrintDocument(cases, operatorName),
+        `critsono-full-logbook-${new Date().toISOString().slice(0, 10)}.pdf`,
+        ".report-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The full logbook PDF could not be created."));
     }
   }
 
@@ -291,8 +331,11 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     printCase,
     printHeartIcsForm,
     printHeartIcsForms,
+    printLungIcsForm,
+    printLungIcsForms,
     printLogbook,
     printCaseReports,
+    printFullLogbook,
     closePreview,
     printPreview,
     downloadPdf,

@@ -147,6 +147,10 @@ function App() {
     });
   }
 
+  function printLungIcsForm(entry: Extract<LogbookCase, { pathway: "lung" }>) {
+    printing.printLungIcsForm(entry, appSettings.operatorName);
+  }
+
   function startEditing(entry: LogbookCase) {
     setCaseSaveStatus(null);
     setReturnPage("cases");
@@ -592,14 +596,21 @@ function App() {
             isSaving={isSavingSettings}
             status={settingsStatus}
             cases={pathwayEntries}
+            allCases={entries}
             heartCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart")}
+            lungCases={entries.filter((entry): entry is Extract<LogbookCase, { pathway: "lung" }> => entry.pathway === "lung")}
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
             onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
             onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway, appSettings.operatorName)}
             onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway, appSettings.operatorName)}
+            onDownloadFullLogbook={() => printing.printFullLogbook(entries, appSettings.operatorName)}
             onDownloadHeartIcsForms={() => printing.printHeartIcsForms(
               entries.filter((entry): entry is Extract<LogbookCase, { pathway: "heart" }> => entry.pathway === "heart"),
+              appSettings.operatorName,
+            )}
+            onDownloadLungIcsForms={() => printing.printLungIcsForms(
+              entries.filter((entry): entry is Extract<LogbookCase, { pathway: "lung" }> => entry.pathway === "lung"),
               appSettings.operatorName,
             )}
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
@@ -614,6 +625,7 @@ function App() {
             caseNumber={caseNumbers.get(reviewedCase.id) ?? 1}
             onPrint={() => printCase(reviewedCase)}
             onPrintHeartIcsForm={() => reviewedCase.pathway === "heart" && printHeartIcsForm(reviewedCase)}
+            onPrintLungIcsForm={() => reviewedCase.pathway === "lung" && printLungIcsForm(reviewedCase)}
             onEdit={() => startEditing(reviewedCase)}
             onClose={closeReview}
           />
@@ -648,6 +660,7 @@ function App() {
             onReview={startReviewing}
             onPrint={printCase}
             onPrintHeartIcsForm={printHeartIcsForm}
+            onPrintLungIcsForm={printLungIcsForm}
             onEdit={startEditing}
             onDelete={(entry) => void handleDelete(entry)}
           />

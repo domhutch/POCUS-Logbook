@@ -16,7 +16,6 @@ import {
   type Pathway,
   type HeartCaseFields,
   type LungCaseFields,
-  type AbdomenCaseFields,
   DVT_SITES,
   DVT_SITE_FINDINGS,
   HD_QUESTIONS,
@@ -31,7 +30,7 @@ import {
   type VascularAssessment,
 } from "./logbook";
 
-export const BACKUP_SCHEMA_VERSION = 8;
+export const BACKUP_SCHEMA_VERSION = 9;
 export const BACKUP_APP_ID = "pocus-logbook";
 const VERSION_ONE_BACKUP = 1;
 const VERSION_TWO_BACKUP = 2;
@@ -40,6 +39,7 @@ const VERSION_FOUR_BACKUP = 4;
 const VERSION_FIVE_BACKUP = 5;
 const VERSION_SIX_BACKUP = 6;
 const VERSION_SEVEN_BACKUP = 7;
+const VERSION_EIGHT_BACKUP = 8;
 
 export interface LogbookBackup {
   app: typeof BACKUP_APP_ID;
@@ -61,10 +61,6 @@ type VersionOneLogbookCase =
 type VersionTwoLogbookCase =
   | (LungCaseFields & { curriculumPlus: boolean })
   | (HeartCaseFields & { curriculumPlus: boolean });
-type VersionThreeLogbookCase = LungCaseFields | HeartCaseFields;
-type VersionFourLogbookCase = LungCaseFields | HeartCaseFields | AbdomenCaseFields;
-type VersionFiveLogbookCase = VersionFourLogbookCase | Extract<LogbookCase, { pathway: "dvt" }>;
-type VersionSixLogbookCase = VersionFiveLogbookCase | Extract<LogbookCase, { pathway: "hd" }>;
 
 interface BackupEnvelope {
   app: typeof BACKUP_APP_ID;
@@ -104,6 +100,15 @@ const versionTwoCaseFields = [
   ...legacyCaseFields.slice(7),
 ] as const;
 const lungCaseFields = [
+  ...caseFields,
+  "patientAge",
+  "patientGender",
+  "patientBmi",
+  "ventilatorySupport",
+  "regions",
+  "findings",
+];
+const versionEightLungCaseFields = [
   ...caseFields,
   "ventilatorySupport",
   "regions",
@@ -351,8 +356,12 @@ function isLogbookCase(
           ? versionOneLungCaseFields
           : schemaVersion === VERSION_TWO_BACKUP
             ? versionTwoLungCaseFields
-            : lungCaseFields,
+            : schemaVersion === BACKUP_SCHEMA_VERSION
+              ? lungCaseFields
+              : versionEightLungCaseFields,
       ) &&
+      (schemaVersion !== BACKUP_SCHEMA_VERSION ||
+        (isString(value.patientAge, 20) && isString(value.patientGender, 40) && isString(value.patientBmi, 20))) &&
       isUniqueEnumArray(value.regions, lungRegions) &&
       isString(value.ventilatorySupport, 120) &&
       isLungFindings(value.findings)
@@ -367,11 +376,11 @@ function isLogbookCase(
           ? versionOneHeartCaseFields
           : schemaVersion === VERSION_TWO_BACKUP
             ? versionTwoHeartCaseFields
-            : schemaVersion === BACKUP_SCHEMA_VERSION
+            : schemaVersion >= VERSION_EIGHT_BACKUP
               ? heartCaseFields
               : versionSevenHeartCaseFields,
       ) &&
-      (schemaVersion !== BACKUP_SCHEMA_VERSION ||
+      (schemaVersion < VERSION_EIGHT_BACKUP ||
         (isString(value.patientAge, 20) && isString(value.patientGender, 40) &&
           isString(value.patientBmi, 20) && isString(value.operatorName, 100))) &&
       isString(value.cardiovascularSupport, 120) &&
@@ -406,6 +415,21 @@ function isLogbookCase(
       isVascularAssessmentRecord(value.assessments) && isString(value.otherComments, 2000);
   }
   return false;
+}
+
+function normalizeLegacyDemographics(entries: unknown[]): LogbookCase[] {
+  return entries.map((item) => {
+    const entry = item as LogbookCase & Partial<Pick<LungCaseFields, "patientAge" | "patientGender" | "patientBmi">> & {
+      operatorName?: string;
+    };
+    if (entry.pathway === "lung") {
+      return { ...entry, patientAge: entry.patientAge ?? "", patientGender: entry.patientGender ?? "", patientBmi: entry.patientBmi ?? "" };
+    }
+    if (entry.pathway === "heart") {
+      return { ...entry, patientAge: entry.patientAge ?? "", patientGender: entry.patientGender ?? "", patientBmi: entry.patientBmi ?? "", operatorName: entry.operatorName ?? "" };
+    }
+    return entry;
+  });
 }
 
 function isBackupEnvelope(value: unknown): value is BackupEnvelope {
@@ -470,6 +494,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       VERSION_FIVE_BACKUP,
       VERSION_SIX_BACKUP,
       VERSION_SEVEN_BACKUP,
+      VERSION_EIGHT_BACKUP,
       BACKUP_SCHEMA_VERSION,
     ].includes(value.schemaVersion) ||
     !value.cases.every((entry) =>
@@ -491,13 +516,13 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases.map(
+      cases: normalizeLegacyDemographics(value.cases.map(
         (entry): LogbookCase => ({
           ...entry,
           impressionCategory: "not_recorded",
           managementImpact: "not_recorded",
         }),
-      ),
+      )),
       pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -507,13 +532,13 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases.map((entry): LogbookCase => {
+      cases: normalizeLegacyDemographics(value.cases.map((entry): LogbookCase => {
         const {
           curriculumPlus: _curriculumPlus,
           ...currentEntry
         } = entry as VersionTwoLogbookCase;
         return currentEntry;
-      }),
+      })),
       pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -523,7 +548,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases as VersionThreeLogbookCase[],
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: { ...value.pathwayModes, abdomen: true, dvt: true, hd: true, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -533,7 +558,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases as VersionFourLogbookCase[],
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: { ...value.pathwayModes, dvt: true, hd: true, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -543,7 +568,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases as VersionFiveLogbookCase[],
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: { ...value.pathwayModes, hd: true, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -553,7 +578,7 @@ export function parseBackup(serialized: string): LogbookBackup {
       app: BACKUP_APP_ID,
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: value.exportedAt,
-      cases: value.cases as VersionSixLogbookCase[],
+      cases: normalizeLegacyDemographics(value.cases),
       pathwayModes: { ...value.pathwayModes, vascular: true } as Record<Pathway, boolean>,
     };
   }
@@ -565,8 +590,23 @@ export function parseBackup(serialized: string): LogbookBackup {
       exportedAt: value.exportedAt,
       cases: value.cases.map((entry): LogbookCase => {
         const legacyEntry = entry as unknown as LogbookCase;
-        return legacyEntry.pathway === "heart"
-          ? { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "", operatorName: "" }
+        if (legacyEntry.pathway === "heart") return { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "", operatorName: "" };
+        if (legacyEntry.pathway === "lung") return { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "" };
+        return legacyEntry;
+      }),
+      pathwayModes: value.pathwayModes as Record<Pathway, boolean>,
+    };
+  }
+
+  if (value.schemaVersion === VERSION_EIGHT_BACKUP) {
+    return {
+      app: BACKUP_APP_ID,
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: value.exportedAt,
+      cases: value.cases.map((entry): LogbookCase => {
+        const legacyEntry = entry as unknown as LogbookCase;
+        return legacyEntry.pathway === "lung"
+          ? { ...legacyEntry, patientAge: "", patientGender: "", patientBmi: "" }
           : legacyEntry;
       }),
       pathwayModes: value.pathwayModes as Record<Pathway, boolean>,

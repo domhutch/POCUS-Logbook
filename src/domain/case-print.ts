@@ -73,7 +73,7 @@ function lungDetails(entry: Extract<LogbookCase, { pathway: "lung" }>) {
     return `<tr><th scope="row"><span class="checkbox ${attempted ? "checked" : ""}"></span>${escapeHtml(region)}</th>${findings}</tr>`;
   }).join("");
 
-  return `<section class="section"><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Regional findings</h2><table class="report-table lung-table"><thead><tr><th scope="col">Probe position</th>${LUNG_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`;
+  return `<section class="section"><h2>Demographics</h2><div class="field-grid">${field("Age (years)", entry.patientAge)}${field("Gender", entry.patientGender)}${field("BMI", entry.patientBmi)}</div><h2>Scan conditions</h2><div class="field-grid">${field("Ventilatory support", entry.ventilatorySupport)}${field("Image quality", entry.imageQuality === "not_recorded" ? "" : formatImageQuality(entry.imageQuality))}</div><h2>Regional findings</h2><table class="report-table lung-table"><thead><tr><th scope="col">Probe position</th>${LUNG_FINDINGS.map(([, label]) => `<th scope="col">${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></section>`;
 }
 
 function heartDetails(entry: Extract<LogbookCase, { pathway: "heart" }>) {
@@ -259,6 +259,21 @@ export function createCaseReportsPrintDocument(
   const reports = cases
     .filter((entry) => entry.pathway === pathway)
     .map((entry) => createCasePrintDocument(entry, operatorName));
+  return combineCaseReports(reports, `${PATHWAYS[pathway].label} case reports`);
+}
+
+export function createFullLogbookPrintDocument(cases: LogbookCase[], operatorName = "") {
+  if (cases.length === 0) {
+    throw new Error("There are no saved cases to include in this PDF.");
+  }
+  const reports = cases
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date) || a.pathway.localeCompare(b.pathway) || a.createdAt.localeCompare(b.createdAt))
+    .map((entry) => createCasePrintDocument(entry, operatorName));
+  return combineCaseReports(reports, "Full CritSono logbook");
+}
+
+function combineCaseReports(reports: string[], title: string) {
   if (reports.length === 0) {
     throw new Error("There are no saved cases to include in this PDF.");
   }
@@ -276,7 +291,7 @@ export function createCaseReportsPrintDocument(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${PATHWAYS[pathway].label} case reports</title>
+  <title>${escapeHtml(title)}</title>
   <style>${styles}
     @media print { body { width: 194mm; } }
     .report-collection .sheet { margin: 0 auto; break-after: page; page-break-after: always; }

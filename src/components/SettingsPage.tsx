@@ -9,13 +9,17 @@ interface SettingsPageProps {
   isSaving: boolean;
   status: string | null;
   cases: LogbookCase[];
+  allCases: LogbookCase[];
   heartCases: Extract<LogbookCase, { pathway: "heart" }>[];
+  lungCases: Extract<LogbookCase, { pathway: "lung" }>[];
   isHandlingBackup: boolean;
   backupStatus: string | null;
   onSave: (settings: AppSettings) => void;
   onPrintLogbook: () => void;
   onDownloadCaseReports: () => void;
+  onDownloadFullLogbook: () => void;
   onDownloadHeartIcsForms: () => void;
+  onDownloadLungIcsForms: () => void;
   onExportCsv: () => void;
   onExportBackup: (passphrase: string) => Promise<void>;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>, passphrase: string) => Promise<void>;
@@ -32,13 +36,17 @@ function SettingsPage({
   isSaving,
   status,
   cases,
+  allCases,
   heartCases,
+  lungCases,
   isHandlingBackup,
   backupStatus,
   onSave,
   onPrintLogbook,
   onDownloadCaseReports,
+  onDownloadFullLogbook,
   onDownloadHeartIcsForms,
+  onDownloadLungIcsForms,
   onExportCsv,
   onExportBackup,
   onRestoreBackup,
@@ -256,7 +264,9 @@ function SettingsPage({
         <div className="backup-actions">
           <button className="button button-secondary" type="button" onClick={onPrintLogbook}>Print logbook / PDF</button>
           <button className="button button-secondary" type="button" onClick={onDownloadCaseReports} disabled={!cases.length}>Download all case reports PDF</button>
+          <button className="button button-secondary" type="button" onClick={onDownloadFullLogbook} disabled={!allCases.length}>Download full logbook PDF</button>
           <button className="button button-secondary" type="button" onClick={onDownloadHeartIcsForms} disabled={!heartCases.length}>Download all ICS Heart forms PDF</button>
+          <button className="button button-secondary" type="button" onClick={onDownloadLungIcsForms} disabled={!lungCases.length}>Download all ICS Lung forms PDF</button>
           <button className="button button-secondary" type="button" onClick={onExportCsv} disabled={isHandlingBackup}>Export CSV</button>
           <button
             className="button button-secondary"
