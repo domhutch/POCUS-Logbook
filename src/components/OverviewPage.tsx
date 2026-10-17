@@ -19,6 +19,7 @@ interface OverviewPageProps {
   onTrainingModeChange: (enabled: boolean) => void;
   onShowCases: () => void;
   onPrintLogbook: () => void;
+  onDownloadCaseReports: () => void;
   onExportCsv: () => void;
   onExportBackup: () => void;
   onRestoreBackup: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -43,6 +44,7 @@ function OverviewPage({
   onTrainingModeChange,
   onShowCases,
   onPrintLogbook,
+  onDownloadCaseReports,
   onExportCsv,
   onExportBackup,
   onRestoreBackup,
@@ -174,6 +176,7 @@ function OverviewPage({
         </div>
         <div className="backup-actions">
           <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
+          <button className="button button-secondary" onClick={onDownloadCaseReports} disabled={!isReady}>Download all case reports PDF</button>
           <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
           <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Export backup</button>
           <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Merge backup</button>

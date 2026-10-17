@@ -466,6 +466,7 @@ function App() {
             onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}
             onShowCases={() => setActivePage("cases")}
             onPrintLogbook={() => printing.printLogbook(pathwayEntries, activePathway)}
+            onDownloadCaseReports={() => printing.printCaseReports(pathwayEntries, activePathway)}
             onExportCsv={() => void backup.exportCsv(pathwayEntries, activePathway)}
             onExportBackup={() => void backup.exportBackup()}
             onRestoreBackup={(event) => void backup.restoreBackupFromFile(event)}

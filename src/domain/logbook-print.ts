@@ -147,7 +147,7 @@ export function createLogbookPrintDocument(
     }
     @media screen {
       body { padding: 1px; background: #e9ece9; }
-      .logbook-page { margin-bottom: 10mm; padding: 8mm; background: #fff; box-shadow: 0 2px 12px #0002; }
+      .logbook-page { width: min(190mm, calc(100vw - 24px)); margin: 0 auto 10mm; padding: 8mm; background: #fff; box-shadow: 0 2px 12px #0002; }
     }
   </style>
 </head>

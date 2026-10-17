@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import { createCasePrintDocument } from "../domain/case-print";
+import { createCasePrintDocument, createCaseReportsPrintDocument } from "../domain/case-print";
 import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -114,6 +114,18 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     }
   }
 
+  function printCaseReports(cases: LogbookCase[], pathway: Pathway) {
+    try {
+      printDocument(
+        createCaseReportsPrintDocument(cases, pathway),
+        `pocus-${pathway}-case-reports.pdf`,
+        ".report-collection",
+      );
+    } catch (cause) {
+      setError(errorMessage(cause, "The case report PDF could not be created."));
+    }
+  }
+
   function closePreview() {
     setDocument(null);
     setIsFrameReady(false);
@@ -163,8 +175,9 @@ export function useCasePrinting(setError: (message: string | null) => void) {
         import("html2canvas"),
         import("jspdf"),
       ]);
-      const pageElements =
-        downloadInfo.contentSelector === "main"
+      const pageElements = downloadInfo.contentSelector === ".report-collection"
+        ? Array.from(target.querySelectorAll<HTMLElement>(".sheet"))
+        : downloadInfo.contentSelector === "main"
           ? Array.from(target.querySelectorAll<HTMLElement>(".logbook-page"))
           : [target as HTMLElement];
       if (pageElements.length === 0) {
@@ -231,6 +244,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
     frameRef,
     printCase,
     printLogbook,
+    printCaseReports,
     closePreview,
     printPreview,
     downloadPdf,

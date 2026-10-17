@@ -163,8 +163,8 @@ export function createCasePrintDocument(entry: LogbookCase) {
       .sheet { break-inside: avoid; }
     }
     @media screen {
-      body { margin-top: 24px; margin-bottom: 24px; }
-      .sheet { box-shadow: 0 8px 30px rgb(31 55 45 / 8%); }
+      body { width: auto; margin: 12px 0; }
+      .sheet { width: min(194mm, calc(100vw - 24px)); box-shadow: 0 8px 30px rgb(31 55 45 / 8%); }
     }
   </style>
 </head>
@@ -202,6 +202,58 @@ export function createCasePrintDocument(entry: LogbookCase) {
     window.addEventListener("beforeprint", fitPrintSheet);
     window.requestAnimationFrame(fitPrintSheet);
   </script>
+</body>
+</html>`;
+}
+
+export function createCaseReportsPrintDocument(
+  cases: LogbookCase[],
+  pathway: LogbookCase["pathway"],
+) {
+  const reports = cases
+    .filter((entry) => entry.pathway === pathway)
+    .map((entry) => createCasePrintDocument(entry));
+  if (reports.length === 0) {
+    throw new Error("There are no saved cases to include in this PDF.");
+  }
+
+  const styles = reports[0].match(/<style>([\s\S]*?)<\/style>/)?.[1];
+  const sheets = reports.map((report) =>
+    report.match(/<main class="sheet">[\s\S]*?<\/main>/)?.[0],
+  );
+  if (!styles || sheets.some((sheet) => !sheet)) {
+    throw new Error("The case reports could not be prepared for printing.");
+  }
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${pathway === "lung" ? "Lung" : "Heart"} case reports</title>
+  <style>${styles}
+    @media print { body { width: 194mm; } }
+    .report-collection .sheet { margin: 0 auto; break-after: page; page-break-after: always; }
+    .report-collection .sheet:last-child { break-after: auto; page-break-after: auto; }
+    @media screen {
+      body { width: auto; margin: 12px 0; }
+      .report-collection .sheet { width: min(194mm, calc(100vw - 24px)); margin: 0 auto 24px; }
+    }
+  </style>
+</head>
+<body><main class="report-collection">${sheets.join("")}</main>
+<script>
+  function fitReportSheets() {
+    const printableHeight = 275 * 96 / 25.4;
+    document.querySelectorAll(".report-collection .sheet").forEach((sheet) => {
+      const scale = Math.min(1, printableHeight / sheet.offsetHeight);
+      sheet.style.setProperty("--print-scale", scale.toFixed(4));
+    });
+  }
+  fitReportSheets();
+  window.addEventListener("beforeprint", fitReportSheets);
+  window.requestAnimationFrame(fitReportSheets);
+</script>
 </body>
 </html>`;
 }
