@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a reproducible problem in POCUS Logbook.
+title: "Bug: "
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Do not include patient-identifiable information, real case details, logbook backups, or exports.
+        Use synthetic data only. Report security vulnerabilities privately using the link above.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use synthetic data and list the smallest set of steps that shows the problem.
+      placeholder: |
+        1. Open …
+        2. Choose …
+        3. See …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version or commit
+      placeholder: Version number, release, or commit hash
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: e.g. Safari on iOS 18, installed to Home Screen
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add non-sensitive screenshots or details if they help explain the issue.

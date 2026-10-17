@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an improvement to POCUS Logbook.
+title: "Feature: "
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Do not include patient-identifiable information, real case details, logbook backups, or exports.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Explain the use case and who it affects.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the change you have in mind. Mention privacy, offline use, or data portability implications if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches or workarounds you have considered.

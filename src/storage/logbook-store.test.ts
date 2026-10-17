@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createBackup, parseBackup } from "../domain/backup";
 import { createSampleCases } from "../domain/metrics";
 import {
@@ -68,6 +68,29 @@ describe("pathway training modes", () => {
 
     expect(await getPathwayModes()).toEqual({ heart: false, lung: true, abdomen: true, dvt: true, hd: true, vascular: true });
     expect(await getCases()).toEqual(casesBefore);
+  });
+});
+
+describe("case persistence failures", () => {
+  it("rejects a failed write and leaves the case unsaved", async () => {
+    const draft = createDraft("heart");
+    draft.id = "case-write-failure";
+    const put = vi.spyOn(IDBObjectStore.prototype, "put").mockImplementation(() => {
+      throw new DOMException("Storage is full", "QuotaExceededError");
+    });
+
+    try {
+      await expect(saveCase(draft)).rejects.toMatchObject({
+        name: "QuotaExceededError",
+        message: "Storage is full",
+      });
+    } finally {
+      put.mockRestore();
+    }
+
+    expect(await getCases()).not.toContainEqual(
+      expect.objectContaining({ id: draft.id }),
+    );
   });
 });
 

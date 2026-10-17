@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { addTimestamps, createDraft } from "./logbook";
-import { createCasePrintDocument } from "./case-print";
+import {
+  createCasePrintDocument,
+  createCaseReportsPrintDocument,
+} from "./case-print";
 
 describe("printable case sheets", () => {
   it("includes pathway-specific Lung findings and escapes user text", () => {
@@ -46,5 +49,37 @@ describe("printable case sheets", () => {
     expect(document).toContain('class="report-table heart-table"');
     expect(document).toContain('<strong class="selected">No</strong>');
     expect(document).toContain("LV dilated");
+  });
+});
+
+describe("combined case report PDFs", () => {
+  it("includes one printable sheet per selected-pathway case", () => {
+    const first = createDraft("heart");
+    first.date = "2026-10-01";
+    first.diagnosis = "First report";
+    const second = createDraft("heart");
+    second.date = "2026-10-02";
+    second.diagnosis = "Second report";
+    const otherPathway = createDraft("lung");
+    otherPathway.diagnosis = "Must not appear";
+
+    const document = createCaseReportsPrintDocument(
+      [addTimestamps(first), addTimestamps(otherPathway), addTimestamps(second)],
+      "heart",
+    );
+
+    expect(document).toContain("Heart case reports");
+    expect(document.match(/<main class="sheet">/g)).toHaveLength(2);
+    expect(document).toContain("First report");
+    expect(document).toContain("Second report");
+    expect(document).not.toContain("Must not appear");
+    expect(document).toContain(".report-collection .sheet { margin: 0 auto; break-after: page;");
+    expect(document).toContain(".report-collection .sheet:last-child { break-after: auto;");
+  });
+
+  it("reports when the selected pathway has no cases", () => {
+    expect(() => createCaseReportsPrintDocument([], "heart")).toThrow(
+      "There are no saved cases to include in this PDF.",
+    );
   });
 });

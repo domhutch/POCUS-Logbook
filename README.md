@@ -10,6 +10,8 @@ Curriculum names, requirements, and linked training-pack documents are reference
 
 See [ROADMAP.md](./ROADMAP.md) for the planned product scope, curriculum research, and milestones.
 
+Contributors: see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup and pull request guidance. Report vulnerabilities privately using the process in [SECURITY.md](./SECURITY.md). Use the GitHub issue forms for bug reports and feature requests; do not include patient data or logbook exports.
+
 ## Requirements
 
 - Node.js 20 or newer

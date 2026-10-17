@@ -62,7 +62,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 **Exit criteria:** a user can record, find, inspect, and edit cases offline, with counts matching the stored records.
 
-- [ ] Add automated coverage for persistence failures and confirm failed saves are never reported as successful.
+- [x] Add storage-level automated coverage for persistence failures; failed writes propagate errors and leave the case unsaved. The app reports success only after persistence and refresh complete.
 
 ### 3. Progress, mode, and review
 
@@ -88,7 +88,7 @@ Other open requests remain listed in their relevant sections below. Update this 
 
 **Exit criteria:** exported records can be inspected, and encrypted or legacy backups can be restored into a clean installation without data loss. PWA backup/export controls are in Settings; native backup and CSV files use the system share sheet when packaged. Native device behavior still needs release verification.
 
-- [ ] Complete automated coverage for CSV and PDF export formats, including combined case reports. CSV and individual case/logbook print formats have tests; persistence-failure tests are tracked in section 2.
+- [x] Cover CSV and PDF export formats, including combined case reports. CSV, individual case, logbook, and combined case-report formats have automated tests.
 
 ### Stretch goals
 
@@ -120,6 +120,16 @@ These are optional follow-ons after reliable local backup and restore:
 - [x] Document build, release, data-backup, and privacy expectations in [`README.md`](./README.md).
 
 **Exit criteria:** the PWA installs, works offline, and preserves user data across supported upgrades. Native packaging, if pursued later, has separate release checks in the stretch goals.
+
+### 6. Open-source and contributor readiness
+
+The initial repository and dependency review is recorded in [`OPEN_SOURCE_REVIEW.md`](./OPEN_SOURCE_REVIEW.md). The codebase uses open-source packages and has domain, storage, provider, hook, and UI boundaries; the following release-readiness improvements remain:
+
+- [x] Add contributor setup and contribution guidance, issue templates, and security reporting instructions.
+- [ ] Generate and review third-party dependency notices for distributed builds; document provenance and licenses for non-package assets.
+- [ ] Run `npm ci` and `npm run check` on pull requests, and pin GitHub Actions to verified immutable commit SHAs.
+- [ ] Add a concise architecture guide for data flow, pathway extensions, and storage migrations.
+- [ ] Refactor oversized UI modules only when a concrete behavior change can be isolated and regression-tested.
 
 ## User feedback backlog
 
