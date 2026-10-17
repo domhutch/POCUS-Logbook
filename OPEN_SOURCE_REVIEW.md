@@ -18,9 +18,9 @@ Code is divided into `domain`, `storage`, `cloud`, `hooks`, and `components`. Do
 | --- | --- | --- | --- |
 | Before distributing builds | The lockfile records license metadata, but there is no generated third-party license/notice report for shipped bundles. Asset provenance is also not documented alongside each asset. | Generate and review a dependency license inventory; identify which notices must accompany web/native distributions. Record the source and license for icons and images in an asset credits file. | Moderate |
 | Before accepting pull requests | The GitHub workflow runs checks on pushes to `main` and manual dispatch, but there is no pull-request validation workflow. Actions are referenced by version tags rather than immutable commit SHAs. | Add a PR workflow that runs `npm ci` and `npm run check`; pin actions to verified SHAs and keep readable version comments. | Easy to moderate |
-| Maintainability | `src/App.tsx` still coordinates navigation and several app workflows; `src/components/CaseForm.tsx` and `CaseReview.tsx` branch on pathway; `src/domain/metrics.ts`, `case-csv.ts`, and `case-print.ts` also contain pathway-specific branches; `src/styles.css` is a large global stylesheet. | Extract pathway-owned case behavior behind small feature modules and keep shared shells in the logbook UI. Move one seam at a time and keep serialized data stable. | Moderate to difficult |
+| Maintainability | `src/App.tsx` still coordinates navigation and several app workflows; pathway modules now own form, review, list summary, metrics, and export details; backup validation and sample-case generation already have dedicated domain modules; `src/styles.css` is a large global stylesheet. | Reduce app-level coordination where that clarifies workflows, and split global styling only when a concrete feature boundary benefits from it. Keep serialized data stable. | Moderate to difficult |
 | Test confidence | Domain, persistence, backup, and export formats have automated tests. Browser-dependent flows such as save feedback, print preview, and actual file delivery do not have UI-level regression coverage. | Add component/browser tests only for concrete regressions or release-critical flows; avoid a large test stack without a use case. | Moderate |
-| Contributor readability | `CONTRIBUTING.md` now documents setup, code boundaries, migrations, and privacy. A worked guide for adding a pathway or curriculum profile would make extension easier. | Add a concise extension guide after the module contracts are established, with one end-to-end example and required tests. | Easy |
+| Contributor readability | `CONTRIBUTING.md` documents setup, code boundaries, migrations, privacy, and how to add a pathway or curriculum profile. | Keep the contributor guide aligned with the module contracts as they evolve. | Easy |
 
 ## Important licensing boundary
 
@@ -34,7 +34,7 @@ The app links to and summarizes selected ICS curriculum requirements, while offi
 - `src/hooks/`: app workflows that coordinate domain operations and UI state.
 - `src/components/`: screens and form controls.
 
-All six pathways now own their structured form fields, review details, case-card summaries, metric breakdowns, CSV columns and values, and individual PDF detail layouts under `src/pathways/`. Shared components and domain export builders retain common fields, formatting, and output assembly, then dispatch to pathway modules. Curriculum profiles, backup validation, sample-case generation, and some app-level actions remain coordinated in shared files by design or are still candidates for extraction.
+All six pathways now own their structured form fields, review details, case-card summaries, metric breakdowns, CSV columns and values, and individual PDF detail layouts under `src/pathways/`. Shared components and domain export builders retain common fields, formatting, and output assembly, then dispatch to pathway modules. Versioned curriculum profile data is now separated into `src/curricula/fusic/` with a static registry. FUSIC is still the only active curriculum, and no per-user or per-case profile selection is stored. Backup validation is contained in `src/domain/backup.ts`, and synthetic sample-case generation is contained in `src/domain/admin-sample-data.ts`; both already have clear module boundaries. Some app-level actions remain coordinated in `src/App.tsx`, which can be split when a cohesive workflow needs independent ownership.
 
 ## Proposed extension model
 
@@ -62,9 +62,12 @@ src/
       CaseDetails.tsx          # Heart review fields
       metrics.ts               # Heart-specific metrics contributions
       exports.ts               # Heart-specific CSV/PDF mappings
-      curricula/
-        fusic-heart-v13.ts     # versioned requirements and sources
     lung/
+      ...
+  curricula/                   # curriculum profiles and static registries
+    fusic/
+      registry.ts
+      heart.ts                  # versioned requirements and sources
       ...
   domain/                      # common case types and pure shared rules
   storage/                     # IndexedDB schema, backup, and migrations
@@ -78,8 +81,8 @@ Do not create empty folders or move files solely to match this sketch. Extract a
 2. **Extract form sections (complete, moderate).** `CaseForm` remains the shared shell for date, supervision, demographics, and notes. All six current pathways have structured fields in pathway-owned `...FormFields.tsx` components under `src/pathways/`. Each receives a pathway-specific draft and reports changes through the shared `CaseDraft` callback. The case data shape remains unchanged.
 3. **Extract case review and list summaries (complete, moderate).** Common metadata and actions remain in `CaseReview` and `CaseList`; pathway-owned review details are in `...ReviewDetails.tsx`, and pathway-owned case-card summaries are in each module's `caseSummary.ts`. Shared UI dispatches through explicit discriminated-union cases.
 4. **Move metrics and export mappings behind modality modules (complete, moderate/difficult).** Read-only metric breakdowns, pathway case-mix counts, CSV columns/values, and individual PDF detail layouts now live under `src/pathways/`. Shared domain code retains common aggregation, CSV escaping/assembly, print styling, and document assembly. Regression tests confirm existing output and metric meanings.
-5. **Separate curriculum profiles from modality behavior (moderate/difficult).** Convert the existing requirements catalogue into typed versioned profiles and have progress calculations consume the selected profile. Before storing profile selection, decide whether switching profile reinterprets all existing cases or whether cases/logbooks retain the profile version they were recorded under.
-6. **Make extension contributor-friendly (easy).** Add an end-to-end guide showing how to add a profile and, when required, a new modality, including source checks, backup validation, migrations, privacy checks, sample cases, exports, and tests.
+5. **Separate curriculum profiles from modality behavior (complete, moderate/difficult).** Requirements now live in typed, versioned files under `src/curricula/fusic/`; a static registry identifies the default active FUSIC profile for each supported pathway, and progress calculations read through that registry. fTOE remains catalogued separately as a future profile and is not an active pathway. Before adding profile selection or recording profile IDs, decide whether changing a profile reinterprets all existing cases or whether cases/logbooks retain the profile version used when they were recorded.
+6. **Make extension contributor-friendly (complete, easy).** `CONTRIBUTING.md` now gives an end-to-end checklist for adding a curriculum profile or pathway, including source checks, backup validation, migrations, privacy, sample cases, exports, and tests.
 
 Adding only a new curriculum profile for an existing modality should not require a new case schema. A new modality can still require coordinated updates to the discriminated case type, draft factory, backup validator, IndexedDB data compatibility, metrics, and exports. Keep those integrations explicit rather than hiding them behind a highly dynamic plugin system.
 

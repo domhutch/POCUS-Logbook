@@ -12,7 +12,7 @@ import {
   SAMPLE_CASE_ID_PREFIX,
 } from "./logbook";
 import { addTimestamps, createDraft } from "./logbook";
-import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
+import { getDefaultCurriculumProfile } from "./pathway-requirements";
 import { pathwayMetrics } from "../pathways/metrics";
 import { pathwayCaseMixMetrics } from "../pathways/caseMixMetrics";
 
@@ -92,7 +92,7 @@ export function summarizeTrainingProgress(
   pathway: Pathway,
 ): TrainingProgress {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
-  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const requirements = getDefaultCurriculumProfile(pathway);
   const supervisedCases = pathwayCases.filter((entry) => entry.supervised).length;
 
   return {
@@ -110,7 +110,7 @@ export function summarizeCaseMix(
   pathway: Pathway,
 ): CaseMixSummary {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
-  const requirements = PATHWAY_REQUIREMENTS[pathway];
+  const requirements = getDefaultCurriculumProfile(pathway);
   const scanTypeQuotas = requirements.scanTypeQuotas;
   const pathwayMixMetrics = pathwayCaseMixMetrics(pathwayCases, pathway, scanTypeQuotas ?? []);
   const healthyVolunteerCases = pathwayCases.filter(
