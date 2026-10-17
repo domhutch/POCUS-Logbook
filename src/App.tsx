@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import CaseForm from "./components/CaseForm";
@@ -8,6 +9,7 @@ import CaseList from "./components/CaseList";
 import CaseReview from "./components/CaseReview";
 import MetricsPage from "./components/MetricsPage";
 import OverviewPage from "./components/OverviewPage";
+import SettingsPage from "./components/SettingsPage";
 import { getCaseSequenceNumbers } from "./domain/case-display";
 import {
   createSampleCases,
@@ -26,8 +28,10 @@ import {
   addSampleCases,
   deleteSampleCases,
   deleteCase,
+  saveAppSettings,
   saveCase,
   savePathwayMode,
+  type AppSettings,
 } from "./storage/logbook-store";
 import { useCaseList } from "./hooks/useCaseList";
 import { useCasePrinting } from "./hooks/useCasePrinting";
@@ -36,7 +40,7 @@ import { useLogbookData } from "./hooks/useLogbookData";
 import { usePathwayMenu } from "./hooks/usePathwayMenu";
 import "./styles.css";
 
-type Page = "overview" | "cases" | "metrics" | "form" | "review";
+type Page = "overview" | "cases" | "metrics" | "settings" | "form" | "review";
 
 function App() {
   const [activePathway, setActivePathway] = useState<Pathway>("heart");
@@ -44,6 +48,8 @@ function App() {
     entries,
     trainingModes,
     setTrainingModes,
+    appSettings,
+    setAppSettings,
     isReady,
     error,
     setError,
@@ -52,11 +58,14 @@ function App() {
   const [activePage, setActivePage] = useState<Page>("overview");
   const [returnPage, setReturnPage] = useState<Exclude<Page, "form">>("overview");
   const [draft, setDraft] = useState<CaseDraft | null>(null);
+  const initialDraftRef = useRef<string | null>(null);
   const [reviewedCase, setReviewedCase] = useState<LogbookCase | null>(null);
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
   const [isHandlingTestData, setIsHandlingTestData] = useState(false);
   const [testDataStatus, setTestDataStatus] = useState<string | null>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState<string | null>(null);
   const pathwayMenuRef = usePathwayMenu();
   const caseNumbers = useMemo(() => getCaseSequenceNumbers(entries), [entries]);
   const {
@@ -93,15 +102,28 @@ function App() {
     document.title = pathwayLogbookName;
   }, [pathwayLogbookName]);
 
+  useEffect(() => {
+    if (!isReady) return;
+    if (appSettings.textSize === "default") {
+      document.documentElement.removeAttribute("data-text-size");
+    } else {
+      document.documentElement.dataset.textSize = appSettings.textSize;
+    }
+  }, [appSettings.textSize, isReady]);
+
   function startNewCase() {
     setReturnPage(activePage === "cases" ? "cases" : "overview");
-    setDraft(createDraft(activePathway));
+    const newDraft = createDraft(activePathway);
+    initialDraftRef.current = JSON.stringify(newDraft);
+    setDraft(newDraft);
     setActivePage("form");
   }
 
   function startEditing(entry: LogbookCase) {
     setReturnPage("cases");
-    setDraft({ ...entry });
+    const editedDraft = { ...entry };
+    initialDraftRef.current = JSON.stringify(editedDraft);
+    setDraft(editedDraft);
     setReviewedCase(null);
     setActivePage("form");
   }
@@ -117,18 +139,29 @@ function App() {
   }
 
   function cancelForm() {
+    if (
+      draft &&
+      initialDraftRef.current !== JSON.stringify(draft) &&
+      !window.confirm("Discard your unsaved changes to this case?")
+    ) {
+      return;
+    }
     setActivePage(returnPage);
     setDraft(null);
+    initialDraftRef.current = null;
   }
 
   function goToOverview() {
     if (
       activePage === "form" &&
-      !window.confirm("Discard this case without saving and return to Overview?")
+      draft &&
+      initialDraftRef.current !== JSON.stringify(draft) &&
+      !window.confirm("Discard your unsaved changes to this case and return to Overview?")
     ) {
       return;
     }
     setDraft(null);
+    initialDraftRef.current = null;
     setActivePage("overview");
   }
 
@@ -138,6 +171,7 @@ function App() {
       await refreshEntries();
       setActivePage("cases");
       setDraft(null);
+      initialDraftRef.current = null;
       return true;
     } catch (cause) {
       setError(
@@ -229,6 +263,25 @@ function App() {
     }
   }
 
+  async function handleSettingsSave(nextSettings: AppSettings) {
+    setIsSavingSettings(true);
+    setSettingsStatus(null);
+    try {
+      await saveAppSettings(nextSettings);
+      setAppSettings(nextSettings);
+      setSettingsStatus("Settings saved on this device.");
+      setError(null);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Settings could not be saved on this device.",
+      );
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -288,7 +341,9 @@ function App() {
                 ? "Overview"
                 : activePage === "cases"
                   ? "Your cases"
-                  : "Metrics"}
+                  : activePage === "metrics"
+                    ? "Metrics"
+                    : "Settings"}
             </h1>
             <nav className="page-navigation" aria-label="Main navigation">
               <button
@@ -312,11 +367,18 @@ function App() {
               >
                 Metrics
               </button>
+              <button
+                className={`page-navigation-link ${activePage === "settings" ? "is-active" : ""}`}
+                onClick={() => setActivePage("settings")}
+                aria-current={activePage === "settings" ? "page" : undefined}
+              >
+                Settings
+              </button>
             </nav>
           </>
         )}
 
-        {activePage !== "form" && activePage !== "review" && (
+        {activePage !== "form" && activePage !== "review" && activePage !== "settings" && (
           <div className="pathway-picker">
             <span className="pathway-picker-label">Logbook type</span>
             <details className="pathway-menu" ref={pathwayMenuRef}>
@@ -416,6 +478,16 @@ function App() {
             onChange={setDraft}
             onSave={handleSave}
             onCancel={cancelForm}
+            supervisors={appSettings.supervisors}
+          />
+        )}
+
+        {isReady && activePage === "settings" && (
+          <SettingsPage
+            settings={appSettings}
+            isSaving={isSavingSettings}
+            status={settingsStatus}
+            onSave={(nextSettings) => void handleSettingsSave(nextSettings)}
           />
         )}
 

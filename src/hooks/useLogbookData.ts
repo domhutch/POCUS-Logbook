@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   getCases,
+  getAppSettings,
   getPathwayModes,
+  type AppSettings,
 } from "../storage/logbook-store";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
@@ -18,16 +20,22 @@ export function useLogbookData() {
   const [entries, setEntries] = useState<LogbookCase[]>([]);
   const [trainingModes, setTrainingModes] =
     useState<Record<Pathway, boolean>>(INITIAL_TRAINING_MODES);
+  const [appSettings, setAppSettings] = useState<AppSettings>({
+    supervisors: [],
+    textSize: "default",
+  });
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshEntries = useCallback(async () => {
-    const [storedEntries, storedModes] = await Promise.all([
+    const [storedEntries, storedModes, storedAppSettings] = await Promise.all([
       getCases(),
       getPathwayModes(),
+      getAppSettings(),
     ]);
     setEntries(storedEntries);
     setTrainingModes((current) => ({ ...current, ...storedModes }));
+    setAppSettings(storedAppSettings);
     setIsReady(true);
     setError(null);
   }, []);
@@ -53,6 +61,8 @@ export function useLogbookData() {
     entries,
     trainingModes,
     setTrainingModes,
+    appSettings,
+    setAppSettings,
     isReady,
     error,
     setError,

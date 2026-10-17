@@ -24,6 +24,7 @@ interface CaseFormProps {
   onChange: (draft: CaseDraft) => void;
   onSave: (draft: CaseDraft) => Promise<boolean>;
   onCancel: () => void;
+  supervisors: string[];
 }
 
 const VENTILATORY_SUPPORT = [
@@ -41,8 +42,11 @@ function updateArrayItem<T extends string>(values: T[], value: T) {
     : [...values, value];
 }
 
-function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
+function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isEnteringCustomSupervisor, setIsEnteringCustomSupervisor] = useState(
+    Boolean(draft.supervisorName && !supervisors.includes(draft.supervisorName)),
+  );
   const isNewCase = !("createdAt" in draft);
   const privacyWarnings = findPrivacyWarnings(draft);
 
@@ -240,18 +244,39 @@ function CaseForm({ draft, onChange, onSave, onCancel }: CaseFormProps) {
         </label>
 
         {draft.supervised && (
-          <label className="form-field supervisor-field">
-            <span>Supervisor name <span className="optional-mark">Optional</span></span>
-            <input
-              type="text"
-              maxLength={100}
-              autoComplete="off"
-              value={draft.supervisorName}
-              onChange={(event) =>
-                updateField("supervisorName", event.currentTarget.value)
-              }
-            />
-          </label>
+          <div className="supervisor-field">
+            <label className="form-field">
+              <span>Supervisor name <span className="optional-mark">Optional</span></span>
+              <select
+                value={draft.supervisorName && !supervisors.includes(draft.supervisorName) ? "__other__" : draft.supervisorName}
+                onChange={(event) => {
+                  if (event.currentTarget.value === "__other__") {
+                    setIsEnteringCustomSupervisor(true);
+                    updateField("supervisorName", "");
+                  } else {
+                    setIsEnteringCustomSupervisor(false);
+                    updateField("supervisorName", event.currentTarget.value);
+                  }
+                }}
+              >
+                <option value="">Choose a supervisor</option>
+                {supervisors.map((name) => <option key={name} value={name}>{name}</option>)}
+                <option value="__other__">Enter another name…</option>
+              </select>
+            </label>
+            {(isEnteringCustomSupervisor || supervisors.length === 0) && (
+              <label className="form-field supervisor-custom-field">
+                <span>{supervisors.length ? "Other supervisor name" : "Supervisor name"}</span>
+                <input
+                  type="text"
+                  maxLength={100}
+                  autoComplete="off"
+                  value={draft.supervisorName}
+                  onChange={(event) => updateField("supervisorName", event.currentTarget.value)}
+                />
+              </label>
+            )}
+          </div>
         )}
 
         <details className="structured-details" open={isNewCase}>

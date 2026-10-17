@@ -13,6 +13,22 @@ interface PathwayMode {
   trainingMode: boolean;
 }
 
+export type TextSize = "small" | "default" | "large";
+
+export interface AppSettings {
+  supervisors: string[];
+  textSize: TextSize;
+}
+
+const DEFAULT_APP_SETTINGS: AppSettings = {
+  supervisors: [],
+  textSize: "default",
+};
+
+interface StoredAppSettings extends AppSettings {
+  id: "app";
+}
+
 interface LogbookDatabase extends DBSchema {
   cases: {
     key: string;
@@ -21,6 +37,10 @@ interface LogbookDatabase extends DBSchema {
   settings: {
     key: Pathway;
     value: PathwayMode;
+  };
+  preferences: {
+    key: "app";
+    value: StoredAppSettings;
   };
 }
 
@@ -39,7 +59,7 @@ function migrateCaseRecord(record: LogbookCase, oldVersion: number): LogbookCase
   return migrated;
 }
 
-const database = openDB<LogbookDatabase>("pocus-logbook", 3, {
+const database = openDB<LogbookDatabase>("pocus-logbook", 4, {
   blocked() {
     window.dispatchEvent(new Event("pocus-logbook-upgrade-blocked"));
   },
@@ -47,6 +67,9 @@ const database = openDB<LogbookDatabase>("pocus-logbook", 3, {
     if (oldVersion < 1) {
       db.createObjectStore("cases", { keyPath: "id" });
       db.createObjectStore("settings", { keyPath: "pathway" });
+    }
+    if (oldVersion < 4) {
+      db.createObjectStore("preferences", { keyPath: "id" });
     }
     if (oldVersion < 3) {
       const store = transaction.objectStore("cases");
@@ -114,6 +137,17 @@ export async function savePathwayMode(
   trainingMode: boolean,
 ): Promise<void> {
   await (await database).put("settings", { pathway, trainingMode });
+}
+
+export async function getAppSettings(): Promise<AppSettings> {
+  const settings = await (await database).get("preferences", "app");
+  return settings
+    ? { supervisors: settings.supervisors, textSize: settings.textSize }
+    : DEFAULT_APP_SETTINGS;
+}
+
+export async function saveAppSettings(settings: AppSettings): Promise<void> {
+  await (await database).put("preferences", { id: "app", ...settings });
 }
 
 export interface RestoreResult {
