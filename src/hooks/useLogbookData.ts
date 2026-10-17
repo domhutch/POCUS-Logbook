@@ -24,6 +24,8 @@ export function useLogbookData() {
     supervisors: [],
     textSize: "default",
     textScaleVersion: 2,
+    curriculum: "fusic",
+    enabledModules: { heart: true, lung: true },
   });
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);

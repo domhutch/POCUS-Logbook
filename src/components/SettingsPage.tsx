@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import type { AppSettings, TextSize } from "../storage/logbook-store";
+import { PATHWAYS, type Pathway } from "../domain/logbook";
 
 interface SettingsPageProps {
   settings: AppSettings;
@@ -38,6 +39,52 @@ function SettingsPage({ settings, isSaving, status, onSave }: SettingsPageProps)
           <p>Manage reusable choices and display preferences for this device.</p>
         </div>
       </div>
+
+      <section className="settings-panel" aria-labelledby="curriculum-heading">
+        <div className="settings-panel-heading">
+          <h3 id="curriculum-heading">Curriculum and modules</h3>
+          <p>Choose the curriculum and the modules you want available in your logbook.</p>
+        </div>
+        <label className="settings-field curriculum-field">
+          <span>Curriculum</span>
+          <select
+            value={settings.curriculum}
+            disabled={isSaving}
+            onChange={() => updateSettings({ ...settings, curriculum: "fusic" })}
+          >
+            <option value="fusic">FUSIC</option>
+          </select>
+          <small>FUSIC is currently the available curriculum.</small>
+        </label>
+        <div className="module-toggle-list" role="group" aria-label="FUSIC modules">
+          {(Object.keys(PATHWAYS) as Pathway[]).map((module) => {
+            const enabled = settings.enabledModules[module];
+            const isLastEnabled = enabled && Object.values(settings.enabledModules).filter(Boolean).length === 1;
+            return (
+              <label className="module-toggle" key={module}>
+                <span>
+                  <strong>{PATHWAYS[module].label.replace(/^FUSIC\s+/, "")}</strong>
+                  <small>{enabled ? "Available in the logbook" : "Hidden from the logbook"}</small>
+                </span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={enabled}
+                  disabled={isSaving || isLastEnabled}
+                  onChange={(event) => updateSettings({
+                    ...settings,
+                    enabledModules: {
+                      ...settings.enabledModules,
+                      [module]: event.currentTarget.checked,
+                    },
+                  })}
+                  aria-label={`${PATHWAYS[module].label.replace(/^FUSIC\s+/, "")} module`}
+                />
+              </label>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="settings-panel" aria-labelledby="text-size-heading">
         <div className="settings-panel-heading">

@@ -754,6 +754,59 @@ summary:focus-visible {
   font-size: 0.82rem;
 }
 
+.settings-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #dce3dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #273a33;
+  font-size: 0.82rem;
+}
+
+.curriculum-field {
+  max-width: 360px;
+  margin-top: 0.85rem;
+}
+
+.curriculum-field small,
+.module-toggle small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.module-toggle-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.module-toggle {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #edf0ec;
+  border-radius: 8px;
+}
+
+.module-toggle > span {
+  display: grid;
+  gap: 0.15rem;
+  color: #354840;
+  font-size: 0.8rem;
+}
+
+.module-toggle input {
+  width: 2.75rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  accent-color: var(--teal);
+}
+
 .supervisor-settings-list {
   display: grid;
   gap: 0.35rem;

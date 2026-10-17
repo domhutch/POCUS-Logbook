@@ -14,17 +14,27 @@ interface PathwayMode {
 }
 
 export type TextSize = "small" | "default" | "large";
+export type Curriculum = "fusic";
+
+export const DEFAULT_ENABLED_MODULES: Record<Pathway, boolean> = {
+  heart: true,
+  lung: true,
+};
 
 export interface AppSettings {
   supervisors: string[];
   textSize: TextSize;
   textScaleVersion: number;
+  curriculum: Curriculum;
+  enabledModules: Record<Pathway, boolean>;
 }
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
   supervisors: [],
   textSize: "default",
   textScaleVersion: 2,
+  curriculum: "fusic",
+  enabledModules: DEFAULT_ENABLED_MODULES,
 };
 
 interface StoredAppSettings extends AppSettings {
@@ -145,11 +155,23 @@ export async function getAppSettings(): Promise<AppSettings> {
   const db = await database;
   const settings = await db.get("preferences", "app");
   if (!settings) return DEFAULT_APP_SETTINGS;
-  if (settings.textScaleVersion !== 2) {
+  if (
+    settings.textScaleVersion !== 2 ||
+    !settings.curriculum ||
+    !settings.enabledModules
+  ) {
     const migrated: AppSettings = {
       supervisors: settings.supervisors,
-      textSize: settings.textSize === "large" ? "default" : settings.textSize,
+      textSize:
+        settings.textScaleVersion !== 2 && settings.textSize === "large"
+          ? "default"
+          : settings.textSize,
       textScaleVersion: 2,
+      curriculum: "fusic",
+      enabledModules: {
+        heart: settings.enabledModules?.heart ?? true,
+        lung: settings.enabledModules?.lung ?? true,
+      },
     };
     await db.put("preferences", { id: "app", ...migrated });
     return migrated;
@@ -158,6 +180,8 @@ export async function getAppSettings(): Promise<AppSettings> {
     supervisors: settings.supervisors,
     textSize: settings.textSize,
     textScaleVersion: settings.textScaleVersion,
+    curriculum: settings.curriculum,
+    enabledModules: settings.enabledModules,
   };
 }
 

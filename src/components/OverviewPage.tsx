@@ -4,6 +4,7 @@ import { PATHWAYS, type Pathway } from "../domain/logbook";
 
 interface OverviewPageProps {
   pathway: Pathway;
+  enabledPathways: Pathway[];
   progress: TrainingProgress;
   abnormalCount: number;
   changedManagementCount: number;
@@ -30,6 +31,7 @@ interface OverviewPageProps {
 
 function OverviewPage({
   pathway,
+  enabledPathways,
   progress,
   abnormalCount,
   changedManagementCount,
@@ -207,7 +209,7 @@ function OverviewPage({
             existing sample cases.
           </p>
           <div className="test-data-actions">
-            {(Object.keys(PATHWAYS) as Pathway[]).map((key) => (
+            {enabledPathways.map((key) => (
               <button
                 className="button button-secondary"
                 type="button"

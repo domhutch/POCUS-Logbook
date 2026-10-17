@@ -82,6 +82,10 @@ function App() {
   const printing = useCasePrinting(setError);
 
   const pathway = PATHWAYS[activePathway];
+  const enabledPathways = useMemo(
+    () => (Object.keys(PATHWAYS) as Pathway[]).filter((module) => appSettings.enabledModules[module]),
+    [appSettings.enabledModules],
+  );
   const pathwayLogbookName = `${pathway.label.replace(/^FUSIC\s+/, "")} Logbook`;
   const sampleMetricCases = useMemo(
     () => createSampleCases(activePathway),
@@ -107,6 +111,15 @@ function App() {
     if (!isReady) return;
     document.documentElement.dataset.textSize = appSettings.textSize;
   }, [appSettings.textSize, isReady]);
+
+  useEffect(() => {
+    if (enabledPathways.includes(activePathway)) return;
+    const nextPathway = enabledPathways[0];
+    if (nextPathway) {
+      setActivePathway(nextPathway);
+      resetFilters();
+    }
+  }, [activePathway, enabledPathways, resetFilters]);
 
   function startNewCase() {
     setCaseSaveStatus(null);
@@ -391,7 +404,7 @@ function App() {
                 <span className="pathway-menu-chevron" aria-hidden="true" />
               </summary>
               <div className="pathway-menu-options">
-                {(Object.keys(PATHWAYS) as Pathway[]).map((key) => {
+                {enabledPathways.map((key) => {
                   const caseCount = entries.filter(
                     (entry) => entry.pathway === key,
                   ).length;
@@ -460,6 +473,7 @@ function App() {
         {isReady && activePage === "overview" && (
           <OverviewPage
             pathway={activePathway}
+            enabledPathways={enabledPathways}
             progress={trainingProgress}
             caseMix={caseMix}
             canManageTestData={canManageTestData}
