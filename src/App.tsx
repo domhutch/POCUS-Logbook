@@ -435,6 +435,15 @@ function App() {
                 Try again
               </button>
             )}
+            {isReady && (
+              <button
+                className="button button-secondary"
+                type="button"
+                onClick={() => setError(null)}
+              >
+                Dismiss
+              </button>
+            )}
           </div>
         )}
 
@@ -461,6 +470,7 @@ function App() {
             changedManagementCount={changedManagementCount}
             trainingMode={trainingModes[activePathway]}
             isReady={isReady}
+            hasCases={pathwayEntries.length > 0}
             isHandlingBackup={backup.isBusy}
             backupStatus={backup.status}
             onTrainingModeChange={(enabled) => void handleTrainingModeChange(enabled)}

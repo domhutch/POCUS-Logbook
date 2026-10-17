@@ -7,7 +7,12 @@ import { createLogbookPrintDocument } from "../domain/logbook-print";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
 function errorMessage(cause: unknown, fallback: string) {
-  return cause instanceof Error ? cause.message : fallback;
+  if (cause instanceof Error) return cause.message;
+  if (cause && typeof cause === "object" && "message" in cause) {
+    const message = (cause as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return fallback;
 }
 
 function toBase64(file: Blob) {
@@ -91,6 +96,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
   }
 
   function printCase(entry: LogbookCase) {
+    setError(null);
     try {
       printDocument(
         createCasePrintDocument(entry),
@@ -103,6 +109,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
   }
 
   function printLogbook(cases: LogbookCase[], pathway: Pathway) {
+    setError(null);
     try {
       printDocument(
         createLogbookPrintDocument(cases, pathway),
@@ -115,6 +122,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
   }
 
   function printCaseReports(cases: LogbookCase[], pathway: Pathway) {
+    setError(null);
     try {
       printDocument(
         createCaseReportsPrintDocument(cases, pathway),
@@ -193,7 +201,7 @@ export function useCasePrinting(setError: (message: string | null) => void) {
       for (const [index, page] of pageElements.entries()) {
         if (index > 0) pdf.addPage();
         const canvas = await html2canvas(page, {
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
           backgroundColor: "#ffffff",
           logging: false,
@@ -204,14 +212,19 @@ export function useCasePrinting(setError: (message: string | null) => void) {
         );
         const width = canvas.width * scale;
         const height = canvas.height * scale;
-        pdf.addImage(
-          canvas.toDataURL("image/jpeg", 0.96),
-          "JPEG",
-          (pageWidth - width) / 2,
-          margin,
-          width,
-          height,
-        );
+        try {
+          pdf.addImage(
+            canvas.toDataURL("image/jpeg", 0.9),
+            "JPEG",
+            (pageWidth - width) / 2,
+            margin,
+            width,
+            height,
+          );
+        } finally {
+          canvas.width = 0;
+          canvas.height = 0;
+        }
       }
       const file = pdf.output("blob");
       const delivery = await deliverPdf(file, downloadInfo.filename);

@@ -14,6 +14,7 @@ interface OverviewPageProps {
   testDataStatus: string | null;
   trainingMode: boolean;
   isReady: boolean;
+  hasCases: boolean;
   isHandlingBackup: boolean;
   backupStatus: string | null;
   onTrainingModeChange: (enabled: boolean) => void;
@@ -39,6 +40,7 @@ function OverviewPage({
   testDataStatus,
   trainingMode,
   isReady,
+  hasCases,
   isHandlingBackup,
   backupStatus,
   onTrainingModeChange,
@@ -176,7 +178,7 @@ function OverviewPage({
         </div>
         <div className="backup-actions">
           <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
-          <button className="button button-secondary" onClick={onDownloadCaseReports} disabled={!isReady}>Download all case reports PDF</button>
+          <button className="button button-secondary" onClick={onDownloadCaseReports} disabled={!isReady || !hasCases}>Download all case reports PDF</button>
           <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
           <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Export backup</button>
           <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Merge backup</button>
