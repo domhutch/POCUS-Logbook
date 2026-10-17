@@ -14,35 +14,45 @@ export function useCasePrinting(setError: (message: string | null) => void) {
 
   function printDocument(printableDocument: string, fallbackMessage: string) {
     setError(null);
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      setDocument(printableDocument);
-      setIsFrameReady(false);
-      return;
-    }
-
+    let printWindow: Window | null = null;
     try {
+      printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        setDocument(printableDocument);
+        setIsFrameReady(false);
+        return;
+      }
       printWindow.document.open();
       printWindow.document.write(printableDocument);
       printWindow.document.close();
     } catch (cause) {
-      printWindow.close();
+      printWindow?.close();
+      setDocument(printableDocument);
+      setIsFrameReady(false);
       setError(messageFrom(cause, fallbackMessage));
     }
   }
 
   function printCase(entry: LogbookCase) {
-    printDocument(
-      createCasePrintDocument(entry),
-      "The printable case sheet could not be opened.",
-    );
+    try {
+      printDocument(
+        createCasePrintDocument(entry),
+        "The printable case sheet could not be opened. Try again or use the browser's print controls.",
+      );
+    } catch (cause) {
+      setError(messageFrom(cause, "The case PDF could not be created."));
+    }
   }
 
   function printLogbook(cases: LogbookCase[], pathway: Pathway) {
-    printDocument(
-      createLogbookPrintDocument(cases, pathway),
-      "The printable logbook could not be opened.",
-    );
+    try {
+      printDocument(
+        createLogbookPrintDocument(cases, pathway),
+        "The printable logbook could not be opened. Try again or use the browser's print controls.",
+      );
+    } catch (cause) {
+      setError(messageFrom(cause, "The logbook PDF could not be created."));
+    }
   }
 
   function closePreview() {

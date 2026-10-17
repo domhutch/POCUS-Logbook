@@ -1,4 +1,7 @@
 import { useState, type ChangeEvent } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Directory, Filesystem } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 import { createBackup, parseBackup } from "../domain/backup";
 import { csvFilename, createCasesCsv } from "../domain/case-csv";
 import type { LogbookCase, Pathway } from "../domain/logbook";
@@ -12,6 +15,58 @@ const MAX_BACKUP_SIZE = 10 * 1024 * 1024;
 
 function messageFrom(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback;
+}
+
+function toBase64(file: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("The export file could not be read for sharing."));
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("The export file could not be prepared for sharing."));
+        return;
+      }
+      resolve(reader.result.slice(reader.result.indexOf(",") + 1));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function deliverExport(file: Blob, filename: string, title: string) {
+  if (Capacitor.isNativePlatform()) {
+    if (!(await Share.canShare()).value) {
+      throw new Error("Sharing is unavailable on this device. Try exporting from the web app instead.");
+    }
+    const saved = await Filesystem.writeFile({
+      path: filename,
+      data: await toBase64(file),
+      directory: Directory.Cache,
+    });
+    await Share.share({
+      title,
+      files: [saved.uri],
+      dialogTitle: `Share ${title}`,
+    });
+    return "shared" as const;
+  }
+
+  const url = URL.createObjectURL(file);
+  try {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  } finally {
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  return "downloaded" as const;
+}
+
+function isShareCancelled(cause: unknown) {
+  return cause instanceof Error &&
+    (cause.name === "AbortError" || /cancel(?:led|ed)?/i.test(cause.message));
 }
 
 interface UseLogbookBackupOptions {
@@ -44,19 +99,17 @@ export function useLogbookBackup({
       const file = new Blob([JSON.stringify(backup, null, 2)], {
         type: "application/json",
       });
-      const url = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.json`;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setStatus(
-        `Backup downloaded with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Save the file somewhere private.`,
-      );
+      const filename = `pocus-logbook-backup-${backup.exportedAt.replace(/[:.]/g, "-")}.json`;
+      const delivery = await deliverExport(file, filename, "POCUS Logbook backup");
+      setStatus(delivery === "shared"
+        ? `Backup prepared for sharing with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Choose a private destination in the share sheet; the app cannot confirm that it was saved.`
+        : `Backup download started with ${storedCases.length} ${storedCases.length === 1 ? "case" : "cases"}. Save the file somewhere private.`);
     } catch (cause) {
-      setError(messageFrom(cause, "A backup could not be created or downloaded."));
+      if (isShareCancelled(cause)) {
+        setStatus("Backup sharing was cancelled. No save was confirmed.");
+      } else {
+        setError(messageFrom(cause, "The backup could not be created or shared. Your cases remain stored on this device."));
+      }
     } finally {
       setIsBusy(false);
     }
@@ -69,17 +122,14 @@ export function useLogbookBackup({
     try {
       const csv = createCasesCsv(cases, pathway);
       const file = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(file);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = csvFilename(pathway);
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setStatus(`CSV exported with ${cases.length} ${cases.length === 1 ? "case" : "cases"}. Review free-text fields for patient-identifying details before sharing.`);
+      const delivery = await deliverExport(file, csvFilename(pathway), `${pathway} logbook CSV`);
+      setStatus(`${delivery === "shared" ? "CSV prepared for sharing" : "CSV download started"} with ${cases.length} ${cases.length === 1 ? "case" : "cases"}. Review free-text fields for patient-identifying details before sharing.`);
     } catch (cause) {
-      setError(messageFrom(cause, "A CSV export could not be created or downloaded."));
+      if (isShareCancelled(cause)) {
+        setStatus("CSV sharing was cancelled. No save was confirmed.");
+      } else {
+        setError(messageFrom(cause, "The CSV export could not be created or shared."));
+      }
     } finally {
       setIsBusy(false);
     }

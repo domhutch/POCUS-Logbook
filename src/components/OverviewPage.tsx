@@ -175,7 +175,7 @@ function OverviewPage({
         <div className="backup-actions">
           <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
           <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
-          <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Download backup</button>
+          <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Export backup</button>
           <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Restore backup</button>
           <input
             ref={backupInputRef}
@@ -188,7 +188,7 @@ function OverviewPage({
         </div>
         <details className="backup-privacy">
           <summary>Backup privacy</summary>
-          <p>The JSON backup is readable and not encrypted. Store it somewhere private; don’t upload it to a shared server until encrypted backup support is available.</p>
+          <p>The JSON backup is readable and not encrypted. Store it somewhere private. On native devices, choose a private destination in the share sheet; the app cannot confirm that it was saved.</p>
         </details>
         {backupStatus && <p className="backup-status" role="status">{backupStatus}</p>}
       </section>

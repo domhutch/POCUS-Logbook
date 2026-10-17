@@ -78,10 +78,10 @@ Other open requests remain listed in their relevant sections below. Update this 
 - [x] Export and restore a complete, versioned JSON backup; restore merges new case IDs, keeps existing cases and preferences on conflicts, validates the entire file, migrates v1 and v2 backups, and is idempotent.
 - [x] Produce a print-ready PDF sheet for an individual case using the browser/device print dialog.
 - [x] Produce a pathway-specific printable PDF logbook/report with the supplied training-logbook table layout, blank rows to the pathway reference, and continuation pages for extra cases.
-- [ ] Use native share/save flows where supported and provide clear errors when an export cannot be created.
+- [x] Use the native share sheet for backup and CSV files where supported, keep browser downloads as the web fallback, and show actionable errors when an export cannot be created or shared.
 - [x] Restrict JSON backups to documented logbook fields and reject unknown fields; remind users that free-text notes must remain de-identified.
 
-**Exit criteria:** exported records can be inspected, and a backup can be restored into a clean installation without data loss. JSON backup/restore is implemented for the web app; native save/share flows remain to be verified.
+**Exit criteria:** exported records can be inspected, and a backup can be restored into a clean installation without data loss. JSON backup/restore is implemented for the web app; native backup and CSV files use the system share sheet. Native device behavior still needs release verification.
 
 ### Stretch goals
 
