@@ -2,13 +2,14 @@ name: Pull request checks
 
 on:
   pull_request:
+  push:
     branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: pull-request-check-${{ github.event.pull_request.number }}
+  group: checks-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

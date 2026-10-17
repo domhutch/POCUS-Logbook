@@ -29,7 +29,6 @@ import { usePathwayMenu } from "./hooks/usePathwayMenu";
 import { useCaseWorkflow } from "./hooks/useCaseWorkflow";
 import { useSampleDataManagement } from "./hooks/useSampleDataManagement";
 import { useSettingsWorkflow } from "./hooks/useSettingsWorkflow";
-import "./styles.css";
 
 function App() {
   const [activePathway, setActivePathway] = useState<Pathway>("heart");

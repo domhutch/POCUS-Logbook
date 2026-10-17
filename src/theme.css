@@ -1,0 +1,32 @@
+/* Shared CritSono palette. Override these tokens to theme every page and pathway. */
+:root {
+  --ink: #1c3030;
+  --muted: #65716b;
+  --teal: #17675d;
+  --teal-dark: #124d46;
+  --teal-wash: #e6f1ed;
+  --line: #e4e9e3;
+  --surface: #fff;
+  --canvas: #f5f7f3;
+  --coral: #ab5b4b;
+  --shadow: 0 14px 38px rgb(31 55 45 / 6%);
+
+  --heading: #243a35;
+  --heading-strong: #294139;
+  --text-strong: #354840;
+  --text-body: #52635a;
+  --text-muted-strong: #748078;
+  --text-muted-soft: #758179;
+  --line-soft: #edf0ec;
+  --line-control: #dce4de;
+  --teal-border: #9dbfae;
+  --text-control-muted: #74857b;
+  --surface-soft: #fcfdfb;
+
+  --success-border: #d6e5d8;
+  --success-surface: #f0f7f3;
+  --success-text: #35634c;
+  --danger-border: #e7c7bf;
+  --danger-surface: #fff8f6;
+  --danger-text: #67392e;
+}

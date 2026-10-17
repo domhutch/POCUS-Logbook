@@ -1,8 +1,8 @@
 :root {
   font-family: "Avenir Next", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  color: #1c3030;
-  background: #f5f7f3;
+  color: var(--ink);
+  background: var(--canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -10,16 +10,6 @@
   font-optical-sizing: auto;
   font-weight: 400;
 
-  --ink: #1c3030;
-  --muted: #65716b;
-  --teal: #17675d;
-  --teal-dark: #124d46;
-  --teal-wash: #e6f1ed;
-  --line: #e4e9e3;
-  --surface: #fff;
-  --canvas: #f5f7f3;
-  --coral: #ab5b4b;
-  --shadow: 0 14px 38px rgb(31 55 45 / 6%);
 }
 
 * {
@@ -82,7 +72,7 @@ button:disabled {
   width: min(100%, 760px);
   gap: 1.2rem;
   padding: clamp(1.25rem, 5vw, 2.7rem);
-  border: 1px solid #e4e9e3;
+  border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -96,7 +86,7 @@ button:disabled {
 
 .welcome-card h1 {
   margin-top: -0.9rem;
-  color: #243a35;
+  color: var(--heading);
   font-size: clamp(2rem, 7vw, 3rem);
   letter-spacing: -0.055em;
 }
@@ -128,7 +118,7 @@ button:disabled {
 
 .welcome-section legend {
   margin-bottom: 0.25rem;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 1rem;
   font-weight: 700;
 }
@@ -179,7 +169,7 @@ button:disabled {
 }
 
 .welcome-module-option strong {
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.82rem;
 }
 
@@ -191,14 +181,14 @@ button:disabled {
 
 .welcome-backup-note {
   padding: 0.9rem 1rem;
-  border-left: 3px solid #9dbfae;
+  border-left: 3px solid var(--teal-border);
   border-radius: 0 8px 8px 0;
   background: #f3f8f5;
 }
 
 .welcome-backup-note h2 {
   margin: 0 0 0.3rem;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 0.9rem;
 }
 
@@ -385,8 +375,8 @@ button:disabled {
 }
 
 .button-secondary {
-  border-color: #dce4de;
-  background: white;
+  border-color: var(--line-control);
+  background: var(--surface);
   color: #334844;
 }
 
@@ -490,7 +480,7 @@ h3 {
   padding: 0.65rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   color: var(--teal-dark);
   cursor: pointer;
   font-size: 0.88rem;
@@ -521,8 +511,8 @@ h3 {
   height: 8px;
   flex: 0 0 auto;
   transform: rotate(45deg) translateY(-2px);
-  border-right: 1.5px solid #74857b;
-  border-bottom: 1.5px solid #74857b;
+  border-right: 1.5px solid var(--text-control-muted);
+  border-bottom: 1.5px solid var(--text-control-muted);
   margin-left: auto;
   transition: transform 140ms ease;
 }
@@ -539,7 +529,7 @@ h3 {
   border: 1px solid #bdd2c8;
   border-top: 0;
   border-radius: 0 0 10px 10px;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 12px 24px rgb(31 55 45 / 12%);
 }
 
@@ -552,8 +542,8 @@ h3 {
   gap: 0.75rem;
   padding: 0.6rem 0.8rem;
   border: 0;
-  border-top: 1px solid #edf0ec;
-  background: white;
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface);
   color: #53645b;
   text-align: left;
   font-size: 0.82rem;
@@ -588,7 +578,7 @@ h3 {
 .section-heading h2,
 .form-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.55rem;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -610,7 +600,7 @@ h3 {
   padding: 0.8rem 0.95rem;
   border: 1px solid var(--line);
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
 }
 
 .mode-switch > span {
@@ -648,7 +638,7 @@ h3 {
   height: 16px;
   margin: 2px;
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgb(22 38 31 / 20%);
   content: "";
   transition: transform 140ms ease;
@@ -681,10 +671,10 @@ summary:focus-visible {
   gap: 1rem;
   margin: 1rem 0;
   padding: 0.9rem 1rem;
-  border: 1px solid #e7c7bf;
+  border: 1px solid var(--danger-border);
   border-radius: 10px;
-  background: #fff8f6;
-  color: #67392e;
+  background: var(--danger-surface);
+  color: var(--danger-text);
 }
 
 .error-banner > div {
@@ -700,10 +690,10 @@ summary:focus-visible {
 .success-banner {
   margin: 0.75rem 0;
   padding: 0.7rem 0.85rem;
-  border: 1px solid #d6e5d8;
+  border: 1px solid var(--success-border);
   border-radius: 8px;
-  background: #f0f7f3;
-  color: #35634c;
+  background: var(--success-surface);
+  color: var(--success-text);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -731,12 +721,12 @@ summary:focus-visible {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: white;
+  background: var(--surface);
 }
 
 .stat-card-featured {
   border-color: #cde0d7;
-  background: #f0f7f3;
+  background: var(--success-surface);
 }
 
 .stat-card-action {
@@ -772,7 +762,7 @@ summary:focus-visible {
 }
 
 .stat-reference {
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.58em;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -781,14 +771,14 @@ summary:focus-visible {
 .stat-note {
   margin-top: auto;
   padding-top: 0.5rem;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.7rem;
   line-height: 1.4;
 }
 
 .source-note {
   margin: 0.8rem 0 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.7rem;
   line-height: 1.5;
 }
@@ -798,7 +788,7 @@ summary:focus-visible {
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
 }
 
 .case-mix-heading {
@@ -814,7 +804,7 @@ summary:focus-visible {
 
 .case-mix-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1rem;
 }
 
@@ -931,7 +921,7 @@ summary:focus-visible {
 
 .about-help-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.55rem;
   letter-spacing: -0.04em;
 }
@@ -945,7 +935,7 @@ summary:focus-visible {
 
 .about-help-page .settings-panel h3 {
   margin: 0;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 0.96rem;
 }
 
@@ -954,7 +944,7 @@ summary:focus-visible {
   gap: 0.5rem;
   margin: 0.75rem 0 0;
   padding-left: 1.3rem;
-  color: #52635a;
+  color: var(--text-body);
   font-size: 0.78rem;
   line-height: 1.55;
 }
@@ -964,12 +954,12 @@ summary:focus-visible {
 }
 
 .about-help-faqs details {
-  border-top: 1px solid #edf0ec;
+  border-top: 1px solid var(--line-soft);
 }
 
 .about-help-faqs summary {
   padding: 0.75rem 0.1rem;
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
@@ -991,7 +981,7 @@ summary:focus-visible {
 
 .settings-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.55rem;
   letter-spacing: -0.04em;
 }
@@ -1008,12 +998,12 @@ summary:focus-visible {
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
 }
 
 .settings-panel-heading h3 {
   margin: 0;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 0.96rem;
 }
 
@@ -1040,13 +1030,13 @@ summary:focus-visible {
   padding: 0.7rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: white;
-  color: #52635a;
+  background: var(--surface);
+  color: var(--text-body);
   text-align: left;
 }
 
 .text-size-option strong {
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.8rem;
 }
 
@@ -1056,9 +1046,9 @@ summary:focus-visible {
 }
 
 .text-size-option.is-active {
-  border-color: #9dbfae;
-  background: #f0f7f3;
-  box-shadow: inset 0 0 0 1px #9dbfae;
+  border-color: var(--teal-border);
+  background: var(--success-surface);
+  box-shadow: inset 0 0 0 1px var(--teal-border);
 }
 
 .supervisor-add-form {
@@ -1076,29 +1066,19 @@ summary:focus-visible {
 }
 
 .settings-field > span {
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.74rem;
   font-weight: 700;
 }
 
-.settings-field input {
-  width: 100%;
-  min-height: 42px;
-  padding: 0.6rem 0.7rem;
-  border: 1px solid #dce3dc;
-  border-radius: 8px;
-  background: #fff;
-  color: #273a33;
-  font-size: 0.82rem;
-}
-
+.settings-field input,
 .settings-field select {
   width: 100%;
   min-height: 42px;
   padding: 0.6rem 0.7rem;
   border: 1px solid #dce3dc;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   color: #273a33;
   font-size: 0.82rem;
 }
@@ -1127,14 +1107,14 @@ summary:focus-visible {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #edf0ec;
+  border: 1px solid var(--line-soft);
   border-radius: 8px;
 }
 
 .module-toggle > span {
   display: grid;
   gap: 0.15rem;
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.8rem;
 }
 
@@ -1160,7 +1140,7 @@ summary:focus-visible {
   justify-content: space-between;
   gap: 0.7rem;
   padding: 0.45rem 0.65rem;
-  border: 1px solid #edf0ec;
+  border: 1px solid var(--line-soft);
   border-radius: 7px;
   color: #40564c;
   font-size: 0.8rem;
@@ -1168,7 +1148,7 @@ summary:focus-visible {
 
 .settings-status {
   margin: 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.7rem;
   line-height: 1.5;
 }
@@ -1191,7 +1171,7 @@ summary:focus-visible {
 
 .metrics-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.55rem;
   letter-spacing: -0.04em;
 }
@@ -1212,10 +1192,10 @@ summary:focus-visible {
 .metrics-demo-notice {
   margin: 0 0 0.9rem;
   padding: 0.7rem 0.85rem;
-  border: 1px solid #d6e5d8;
+  border: 1px solid var(--success-border);
   border-radius: 8px;
-  background: #f0f7f3;
-  color: #35634c;
+  background: var(--success-surface);
+  color: var(--success-text);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -1235,7 +1215,7 @@ summary:focus-visible {
   padding: 0.8rem 1rem;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
 }
 
 .metrics-summary-card > span {
@@ -1253,7 +1233,7 @@ summary:focus-visible {
 }
 
 .metrics-summary-card > small {
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.66rem;
 }
 
@@ -1268,7 +1248,7 @@ summary:focus-visible {
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
   border-radius: 11px;
-  background: white;
+  background: var(--surface);
 }
 
 .metrics-activity {
@@ -1304,7 +1284,7 @@ summary:focus-visible {
 }
 
 .metrics-period-control button.is-active {
-  background: white;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgb(31 55 45 / 8%);
   color: #254a42;
 }
@@ -1312,14 +1292,14 @@ summary:focus-visible {
 .metrics-panel-heading h3,
 .metrics-empty h3 {
   margin: 0;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 0.94rem;
 }
 
 .metrics-panel-heading p,
 .metrics-empty p {
   margin: 0.28rem 0 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.7rem;
   line-height: 1.45;
 }
@@ -1380,7 +1360,7 @@ summary:focus-visible {
 
 .metrics-footnote {
   margin: 0.85rem 0 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.68rem;
   line-height: 1.5;
 }
@@ -1421,7 +1401,7 @@ summary:focus-visible {
   padding: 0 0.8rem;
   border: 1px solid #dfe5df;
   border-radius: 9px;
-  background: white;
+  background: var(--surface);
   color: #829087;
 }
 
@@ -1466,7 +1446,7 @@ summary:focus-visible {
 }
 
 .filter-button.is-active {
-  background: white;
+  background: var(--surface);
   box-shadow: 0 1px 3px rgb(31 55 45 / 8%);
   color: #254a42;
 }
@@ -1475,7 +1455,7 @@ summary:focus-visible {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: white;
+  background: var(--surface);
 }
 
 .case-card {
@@ -1485,7 +1465,7 @@ summary:focus-visible {
   gap: 0.9rem;
   min-height: 94px;
   padding: 1rem 1.1rem;
-  border-bottom: 1px solid #edf0ec;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .case-card:last-child {
@@ -1534,7 +1514,7 @@ summary:focus-visible {
 
 .case-main p {
   margin: 0.32rem 0 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.74rem;
   line-height: 1.4;
 }
@@ -1635,7 +1615,7 @@ summary:focus-visible {
 
 .print-preview-toolbar h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.1rem;
 }
 
@@ -1650,18 +1630,18 @@ summary:focus-visible {
 .pdf-download-error {
   margin: 0;
   padding: 0.6rem 0.8rem;
-  border: 1px solid #d6e5d8;
+  border: 1px solid var(--success-border);
   border-radius: 8px;
-  background: #f0f7f3;
-  color: #35634c;
+  background: var(--success-surface);
+  color: var(--success-text);
   font-size: 0.76rem;
   line-height: 1.45;
 }
 
 .pdf-download-error {
-  border-color: #e7c7bf;
-  background: #fff8f6;
-  color: #67392e;
+  border-color: var(--danger-border);
+  background: var(--danger-surface);
+  color: var(--danger-text);
 }
 
 .print-preview-frame {
@@ -1670,7 +1650,7 @@ summary:focus-visible {
   flex: 1;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
 }
 
 .case-review {
@@ -1687,7 +1667,7 @@ summary:focus-visible {
   padding: 1.25rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: white;
+  background: var(--surface);
 }
 
 .case-review-heading .eyebrow {
@@ -1696,7 +1676,7 @@ summary:focus-visible {
 
 .case-review-heading h2 {
   margin: 0;
-  color: #243a35;
+  color: var(--heading);
   font-size: 1.45rem;
 }
 
@@ -1724,7 +1704,7 @@ summary:focus-visible {
   padding: 1.1rem 1.2rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: white;
+  background: var(--surface);
 }
 
 .review-section h3 {
@@ -1744,13 +1724,13 @@ summary:focus-visible {
 .review-field {
   min-width: 0;
   padding: 0.65rem 0.75rem;
-  border: 1px solid #edf0ec;
+  border: 1px solid var(--line-soft);
   border-radius: 8px;
-  background: #fcfdfb;
+  background: var(--surface-soft);
 }
 
 .review-field dt {
-  color: #758179;
+  color: var(--text-muted-soft);
   font-size: 0.68rem;
   font-weight: 700;
 }
@@ -1771,7 +1751,7 @@ summary:focus-visible {
 
 .review-region {
   padding-top: 0.8rem;
-  border-top: 1px solid #edf0ec;
+  border-top: 1px solid var(--line-soft);
 }
 
 .review-region h4 {
@@ -1785,7 +1765,7 @@ summary:focus-visible {
 }
 
 .review-region h4 span {
-  color: #758179;
+  color: var(--text-muted-soft);
   font-size: 0.68rem;
   font-weight: 500;
 }
@@ -1963,7 +1943,7 @@ summary:focus-visible {
 
 .backup-copy h2 {
   margin: 0;
-  color: #294139;
+  color: var(--heading-strong);
   font-size: 1rem;
   letter-spacing: -0.025em;
 }
@@ -1971,7 +1951,7 @@ summary:focus-visible {
 .backup-copy > p:last-child {
   max-width: 510px;
   margin: 0.35rem 0 0;
-  color: #748078;
+  color: var(--text-muted-strong);
   font-size: 0.74rem;
   line-height: 1.5;
 }
@@ -2017,7 +1997,7 @@ summary:focus-visible {
   padding: 1.35rem;
   border: 1px solid #cbded4;
   border-radius: 13px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -2043,7 +2023,7 @@ summary:focus-visible {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: white;
+  background: var(--surface);
   color: #647168;
   font-size: 1.35rem;
 }
@@ -2070,7 +2050,7 @@ summary:focus-visible {
 }
 
 .form-field > span {
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.74rem;
   font-weight: 700;
 }
@@ -2083,7 +2063,7 @@ summary:focus-visible {
   padding: 0.6rem 0.7rem;
   border: 1px solid #dce3dc;
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
   color: #273a33;
   font-size: 0.78rem;
 }
@@ -2147,7 +2127,7 @@ summary:focus-visible {
   flex: 0 0 auto;
   border: 1px solid #cbd5cd;
   border-radius: 5px;
-  background: white;
+  background: var(--surface);
 }
 
 .supervision-control > input:checked + .check-indicator {
@@ -2178,7 +2158,7 @@ summary:focus-visible {
 }
 
 .supervision-control strong {
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.76rem;
 }
 
@@ -2217,7 +2197,7 @@ summary:focus-visible {
 .structured-details > summary::after {
   margin-left: auto;
   padding-left: 0.7rem;
-  color: #74857b;
+  color: var(--text-control-muted);
   content: "+";
   font-size: 1.15rem;
   font-weight: 400;
@@ -2270,13 +2250,9 @@ summary:focus-visible {
 
 .heart-view-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.25rem 1rem;
   padding-top: 0.65rem;
-}
-
-.heart-view-list {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .check-option {
@@ -2284,7 +2260,7 @@ summary:focus-visible {
   min-height: 33px;
   align-items: center;
   gap: 0.45rem;
-  color: #52635a;
+  color: var(--text-body);
   font-size: 0.71rem;
   cursor: pointer;
 }
@@ -2318,13 +2294,13 @@ summary:focus-visible {
 
 .lung-finding-heading h3 {
   margin: 0;
-  color: #354840;
+  color: var(--text-strong);
   font-size: 0.88rem;
 }
 
 .lung-finding-heading p {
   margin: 0;
-  color: #758179;
+  color: var(--text-muted-soft);
   font-size: 0.68rem;
   line-height: 1.4;
 }
@@ -2357,12 +2333,12 @@ summary:focus-visible {
   padding: 0.5rem 0.6rem;
   border: 1px solid #e7ece7;
   border-radius: 8px;
-  background: #fcfdfb;
+  background: var(--surface-soft);
 }
 
 .lung-region-label {
   min-width: 0;
-  color: #52635a;
+  color: var(--text-body);
   font-size: 0.7rem;
   line-height: 1.3;
 }
@@ -2398,12 +2374,6 @@ summary:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 0.3rem 0.5rem;
-  border: 1px solid #dce4de;
-  border-radius: 6px;
-  background: white;
-  color: #52635a;
-  font-size: 0.7rem;
-  font-weight: 600;
 }
 
 .lung-not-assessed {
@@ -2412,14 +2382,19 @@ summary:focus-visible {
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem 0.5rem;
-  border: 1px solid #dce4de;
-  border-radius: 6px;
-  background: white;
-  color: #52635a;
-  font-size: 0.7rem;
-  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.lung-assessment-option > span,
+.lung-not-assessed,
+.heart-assessment-option {
+  border: 1px solid var(--line-control);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-body);
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .lung-not-assessed input {
@@ -2430,26 +2405,18 @@ summary:focus-visible {
   accent-color: var(--teal);
 }
 
-.lung-not-assessed:has(input:checked) {
+.lung-not-assessed:has(input:checked),
+.lung-assessment-option input:checked + span,
+.heart-assessment-option[aria-pressed="true"] {
   border-color: var(--teal);
   background: var(--teal-wash);
   color: var(--teal-dark);
   box-shadow: inset 0 0 0 1px var(--teal);
 }
 
-.lung-not-assessed:has(input:focus-visible) {
-  outline: 3px solid #7eb6a0;
-  outline-offset: 2px;
-}
-
-.lung-assessment-option input:checked + span {
-  border-color: var(--teal);
-  background: var(--teal-wash);
-  color: var(--teal-dark);
-  box-shadow: inset 0 0 0 1px var(--teal);
-}
-
-.lung-assessment-option input:focus-visible + span {
+.lung-not-assessed:has(input:focus-visible),
+.lung-assessment-option input:focus-visible + span,
+.heart-assessment-option:focus-visible {
   outline: 3px solid #7eb6a0;
   outline-offset: 2px;
 }
@@ -2461,11 +2428,11 @@ summary:focus-visible {
   padding: 0.65rem;
   border: 1px solid #e7ece7;
   border-radius: 8px;
-  background: #fcfdfb;
+  background: var(--surface-soft);
 }
 
 .heart-finding-label {
-  color: #52635a;
+  color: var(--text-body);
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -2483,26 +2450,7 @@ summary:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 0.35rem 0.55rem;
-  border: 1px solid #dce4de;
-  border-radius: 6px;
-  background: white;
-  color: #52635a;
-  font: inherit;
-  font-size: 0.7rem;
-  font-weight: 600;
   white-space: nowrap;
-}
-
-.heart-assessment-option[aria-pressed="true"] {
-  border-color: var(--teal);
-  background: var(--teal-wash);
-  color: var(--teal-dark);
-  box-shadow: inset 0 0 0 1px var(--teal);
-}
-
-.heart-assessment-option:focus-visible {
-  outline: 3px solid #7eb6a0;
-  outline-offset: 2px;
 }
 
 .heart-findings-list {
@@ -2646,9 +2594,11 @@ summary:focus-visible {
 
   .case-actions {
     grid-column: 2 / -1;
+    grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: flex-start;
-    gap: 0.8rem;
-    flex-wrap: wrap;
+    gap: 0.3rem;
   }
 
   .case-review-heading {
@@ -2705,29 +2655,18 @@ summary:focus-visible {
     font-size: 0.68rem;
   }
 
-  .case-actions {
-    grid-row: 3;
-  }
-
   .case-tags {
     grid-column: 2 / -1;
     grid-row: 3;
-  }
-
-  .case-actions {
-    grid-row: 4;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.3rem;
   }
 
   .case-actions .text-button {
     min-width: 44px;
     min-height: 44px;
     padding: 0.5rem;
-    border: 1px solid #e4e9e3;
+    border: 1px solid var(--line);
     border-radius: 7px;
-    background: white;
+    background: var(--surface);
     font-size: 0.75rem;
   }
 

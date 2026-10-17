@@ -6,6 +6,11 @@ const IV_BYTES = 12;
 const MIN_PASSPHRASE_LENGTH = 14;
 const MAX_ENCRYPTED_FILE_SIZE = 15 * 1024 * 1024;
 
+declare const encryptedBackupPayloadBrand: unique symbol;
+export type EncryptedBackupPayload = string & {
+  readonly [encryptedBackupPayloadBrand]: true;
+};
+
 interface EncryptedBackupEnvelope {
   app: typeof ENCRYPTED_BACKUP_APP_ID;
   formatVersion: typeof ENCRYPTED_BACKUP_VERSION;
@@ -71,7 +76,7 @@ async function deriveKey(passphrase: string, salt: Uint8Array) {
   );
 }
 
-export async function encryptBackup(serializedBackup: string, passphrase: string): Promise<string> {
+export async function encryptBackup(serializedBackup: string, passphrase: string): Promise<EncryptedBackupPayload> {
   validatePassphrase(passphrase);
   if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) {
     throw new Error("Secure encryption is unavailable in this browser. Open the app over HTTPS or use a supported browser.");
@@ -103,10 +108,10 @@ export async function encryptBackup(serializedBackup: string, passphrase: string
     new TextEncoder().encode(serializedBackup),
   );
   envelope.ciphertext = encodeBase64(new Uint8Array(ciphertext));
-  return JSON.stringify(envelope, null, 2);
+  return JSON.stringify(envelope, null, 2) as EncryptedBackupPayload;
 }
 
-export function isEncryptedBackupFile(serialized: string): boolean {
+export function isEncryptedBackupFile(serialized: string): serialized is EncryptedBackupPayload {
   try {
     const value: unknown = JSON.parse(serialized);
     return Boolean(

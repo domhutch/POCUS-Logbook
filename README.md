@@ -29,10 +29,13 @@ npm run dev
 - [`src/App.tsx`](./src/App.tsx) connects the main screens and coordinates app state.
 - [`src/components/`](./src/components) contains the interface pieces, including case entry, case review, and the case list.
 - [`src/hooks/`](./src/hooks) contains app behavior that is reused or easier to understand separately, such as loading local data, searching cases, backups, and printing.
+- [`src/services/`](./src/services) contains application workflows that coordinate storage and domain rules. The backup service prepares, encrypts, validates, and restores portable backups before any remote transfer.
 - [`src/domain/`](./src/domain) contains case types and rules, backup validation, metrics, and print formatting. These files should not depend on the React interface or browser storage.
-- [`src/curricula/fusic/`](./src/curricula/fusic/) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support includes Heart, Lung, Abdomen, DVT, HD, and Vascular.
+- [`src/cloud/`](./src/cloud) contains remote transport adapters. Backup providers receive and return opaque encrypted payloads; authentication and provider-specific API details stay in the adapter.
+- [`src/domain/pathway-requirements.ts`](./src/domain/pathway-requirements.ts) is the versioned curriculum catalogue. It records sources, scan targets, supervision, case mix, scan-type quotas, and collection windows; current app support includes Heart, Lung, Abdomen, DVT, HD, and Vascular.
 - [`src/storage/`](./src/storage) reads and writes the on-device IndexedDB database and handles upgrades to saved data.
-- [`src/styles.css`](./src/styles.css) contains the app layout and visual styles.
+- [`src/theme.css`](./src/theme.css) contains the shared palette and semantic color tokens used across pages and pathways. Change these values to recolor the interface consistently.
+- [`src/styles.css`](./src/styles.css) contains the app layout, component styles, and responsive rules.
 
 For a small first change, start with a label or layout in a component. If a change affects what a case means or how it is stored, check the domain model and backup validation as well. Database changes need an upgrade path so existing logbooks continue to open.
 
