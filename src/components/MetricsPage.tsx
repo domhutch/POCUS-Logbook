@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { CaseMetrics, MetricCount } from "../domain/metrics";
-import { summarizeCases } from "../domain/metrics";
+import { summarizeCases, type MetricsPeriod } from "../domain/metrics";
 import type { LogbookCase, Pathway } from "../domain/logbook";
 
 interface MetricsPageProps {
@@ -8,6 +9,7 @@ interface MetricsPageProps {
   isSampleData: boolean;
   canPreviewSamples: boolean;
   onToggleSampleData: () => void;
+  onAddCase: () => void;
 }
 
 function Breakdown({
@@ -45,14 +47,46 @@ function Breakdown({
   );
 }
 
-function Activity({ metrics }: { metrics: CaseMetrics }) {
+function Activity({
+  metrics,
+  period,
+  onPeriodChange,
+}: {
+  metrics: CaseMetrics;
+  period: MetricsPeriod;
+  onPeriodChange: (period: MetricsPeriod) => void;
+}) {
   const maxCount = Math.max(1, ...metrics.monthlyActivity.map((item) => item.count));
 
   return (
     <section className="metrics-panel metrics-activity" aria-labelledby="activity-title">
       <div className="metrics-panel-heading">
-        <h3 id="activity-title">Case activity</h3>
-        <p>Cases recorded per month over the last six months</p>
+        <div>
+          <h3 id="activity-title">Case activity</h3>
+          <p>
+            {period === "calendar_year"
+              ? "Cases recorded per month this calendar year"
+              : "Cases recorded per month over the rolling 12-month period"}
+          </p>
+        </div>
+        <div className="metrics-period-control" role="group" aria-label="Activity period">
+          <button
+            type="button"
+            aria-pressed={period === "rolling_12_months"}
+            className={period === "rolling_12_months" ? "is-active" : ""}
+            onClick={() => onPeriodChange("rolling_12_months")}
+          >
+            Rolling 12 months
+          </button>
+          <button
+            type="button"
+            aria-pressed={period === "calendar_year"}
+            className={period === "calendar_year" ? "is-active" : ""}
+            onClick={() => onPeriodChange("calendar_year")}
+          >
+            Calendar year
+          </button>
+        </div>
       </div>
       <ul className="metrics-breakdown">
         {metrics.monthlyActivity.map((month) => (
@@ -87,8 +121,10 @@ function MetricsPage({
   isSampleData,
   canPreviewSamples,
   onToggleSampleData,
+  onAddCase,
 }: MetricsPageProps) {
-  const metrics = summarizeCases(cases, pathway);
+  const [period, setPeriod] = useState<MetricsPeriod>("rolling_12_months");
+  const metrics = summarizeCases(cases, pathway, new Date(), period);
 
   return (
     <section className="metrics-page" aria-labelledby="metrics-heading">
@@ -122,6 +158,9 @@ function MetricsPage({
         <div className="metrics-empty">
           <h3>No cases to summarize yet</h3>
           <p>Once you have recorded cases, this page will show activity and case-detail patterns.</p>
+          <button className="button button-primary" type="button" onClick={onAddCase}>
+            Add a {pathway === "lung" ? "lung" : "heart"} case
+          </button>
         </div>
       ) : (
         <>
@@ -132,15 +171,17 @@ function MetricsPage({
               <small>{isSampleData ? "Example dataset" : "All recorded cases for this pathway"}</small>
             </article>
             <article className="metrics-summary-card">
-              <span>Recent activity</span>
+              <span>Activity in period</span>
               <strong>
                 {metrics.monthlyActivity.reduce((total, month) => total + month.count, 0)}
               </strong>
-              <small>Cases in the last six months</small>
+              <small>
+                {period === "calendar_year" ? "Cases this calendar year" : "Cases in the rolling 12 months"}
+              </small>
             </article>
           </div>
           <div className="metrics-grid">
-            <Activity metrics={metrics} />
+            <Activity metrics={metrics} period={period} onPeriodChange={setPeriod} />
             <Breakdown
               title={pathway === "lung" ? "Regions attempted" : "Views obtained"}
               description="Number of cases with each region or view recorded"

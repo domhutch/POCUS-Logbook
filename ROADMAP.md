@@ -127,14 +127,14 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - [x] **P2 · Mobile form zoom:** prevent the page from unexpectedly zooming when a text input is focused by keeping mobile text controls at a readable 16px minimum.
 - [x] **P2 · Responsive text and controls:** provide a usable way to scale text up or down on mobile, and ensure form inputs and buttons resize and reflow without clipping or breaking the layout.
 - [x] **P2 · Unsaved case protection:** warn before closing or cancelling a case with unsaved changes, and let the user return to editing without losing the draft.
-- [ ] **P2 · Mobile lung assessment controls:** keep the existing finding-first organization, and improve spacing, grouping, or navigation between findings on narrow screens so region responses remain easy to scan and tap. Do not reorganize the form by region.
-- [ ] **P2 · Mobile case actions:** increase the tap areas and spacing for Review, PDF, Edit, and Delete, and consider placing less-used actions in a menu to make the primary action easier to reach.
-- [ ] **P2 · Case form optional sections:** reduce the initial form length by making optional sections easier to expand on demand, with clear cues about which details are optional.
-- [ ] **P2 · Save confirmation:** show a brief success message after a case is saved so users know the action completed.
-- [ ] **P2 · Mobile pathway context:** keep a concise pathway identifier visible on narrow screens when the pathway description is hidden.
-- [ ] **P2 · Backup restore wording:** clarify on the restore control that restoring merges backup data with the current logbook.
-- [ ] **P3 · Empty metrics action:** offer a direct way to add a case when Metrics has no cases to summarize.
-- [ ] **P3 · Metrics period:** the current activity summary covers six months. Allow users to switch between a rolling 12-month view and a calendar-year view; weekly/daily breakdowns are not requested.
+- [x] **P2 · Mobile lung assessment controls:** keep the existing finding-first organization, and improve spacing, grouping, or navigation between findings on narrow screens so region responses remain easy to scan and tap. Do not reorganize the form by region.
+- [x] **P2 · Mobile case actions:** increase the tap areas and spacing for Review, PDF, Edit, and Delete, and consider placing less-used actions in a menu to make the primary action easier to reach.
+- [x] **P2 · Case form optional sections:** reduce the initial form length by making optional sections easier to expand on demand, with clear cues about which details are optional.
+- [x] **P2 · Save confirmation:** show a brief success message after a case is saved so users know the action completed.
+- [x] **P2 · Mobile pathway context:** keep a concise pathway identifier visible on narrow screens when the pathway description is hidden.
+- [x] **P2 · Backup restore wording:** clarify on the restore control that restoring merges backup data with the current logbook.
+- [x] **P3 · Empty metrics action:** offer a direct way to add a case when Metrics has no cases to summarize.
+- [x] **P3 · Metrics period:** allow users to switch between a rolling 12-month view and a calendar-year view; weekly/daily breakdowns are not requested.
 - [x] **P3 · Pathway ordering:** put FUSIC Heart first in the pathway selector and make it the initial pathway.
 
 ### Nice-to-have features
@@ -147,7 +147,7 @@ Feedback received 16 October 2026. These are requests to triage, not commitments
 - Address print/PDF correctness, date formatting, mobile safe areas, and access to saved scan images as core reliability and data-review concerns.
 - Continue mobile usability work on mobile use of the finding-first lung assessment form. Keep the lung form grouped by finding; improve its mobile usability without switching to region-first grouping. Focus-zoom prevention, text-size controls, and supervisor management are implemented.
 - Verify print/save and safe-area behavior on an iOS Home Screen install.
-- Reconcile the requested metrics periods with the current metrics behavior and tests before changing the range controls.
+- Metrics activity now supports rolling 12-month and calendar-year-to-date views.
 - Keep certificates and exam scans optional and local-first unless a separately reviewed storage and privacy decision changes that direction.
 - The requests for assessment requirements overlap the versioned pathway catalogue and curriculum-source verification work in sections 1 and 3; update those milestones rather than maintaining a second source of truth.
 

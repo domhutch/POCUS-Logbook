@@ -14,7 +14,6 @@ import {
 import { addTimestamps, createDraft } from "./logbook";
 import { PATHWAY_REQUIREMENTS } from "./pathway-requirements";
 
-const ACTIVITY_MONTHS = 6;
 const sampleCasesPerMonth = [2, 3, 4, 2, 5, 3];
 const imageQualities: ImageQuality[] = [
   "good",
@@ -43,6 +42,8 @@ export interface MetricCount {
 export interface MonthlyActivity extends MetricCount {
   key: string;
 }
+
+export type MetricsPeriod = "rolling_12_months" | "calendar_year";
 
 export interface CaseMetrics {
   totalCases: number;
@@ -126,14 +127,28 @@ function monthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function monthLabel(date: Date) {
-  return date.toLocaleDateString(undefined, { month: "short" });
+function monthLabel(date: Date, includeYear: boolean) {
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    ...(includeYear ? { year: "2-digit" as const } : {}),
+  });
 }
 
-function recentMonths(now: Date) {
-  return Array.from({ length: ACTIVITY_MONTHS }, (_, index) => {
-    const month = new Date(now.getFullYear(), now.getMonth() - (ACTIVITY_MONTHS - index - 1), 1);
-    return { key: monthKey(month), label: monthLabel(month) };
+function activityMonths(now: Date, period?: MetricsPeriod) {
+  const length = period === "calendar_year"
+    ? now.getMonth() + 1
+    : period === "rolling_12_months"
+      ? 12
+      : 6;
+  const startMonth = period === "calendar_year"
+    ? 0
+    : now.getMonth() - length + 1;
+  return Array.from({ length }, (_, index) => {
+    const month = new Date(now.getFullYear(), startMonth + index, 1);
+    return {
+      key: monthKey(month),
+      label: monthLabel(month, period === "rolling_12_months"),
+    };
   });
 }
 
@@ -237,9 +252,10 @@ export function summarizeCases(
   cases: LogbookCase[],
   pathway: Pathway,
   now = new Date(),
+  period?: MetricsPeriod,
 ): CaseMetrics {
   const pathwayCases = cases.filter((entry) => entry.pathway === pathway);
-  const activityMonths = recentMonths(now);
+  const months = activityMonths(now, period);
   const activityCounts = pathwayCases.reduce<Record<string, number>>(
     (counts, entry) => {
       const key = entry.date.slice(0, 7);
@@ -282,7 +298,7 @@ export function summarizeCases(
 
   return {
     totalCases: pathwayCases.length,
-    monthlyActivity: activityMonths.map((month) => ({
+    monthlyActivity: months.map((month) => ({
       ...month,
       count: activityCounts[month.key] ?? 0,
     })),

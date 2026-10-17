@@ -59,6 +59,7 @@ function App() {
   const [returnPage, setReturnPage] = useState<Exclude<Page, "form">>("overview");
   const [draft, setDraft] = useState<CaseDraft | null>(null);
   const initialDraftRef = useRef<string | null>(null);
+  const [caseSaveStatus, setCaseSaveStatus] = useState<string | null>(null);
   const [reviewedCase, setReviewedCase] = useState<LogbookCase | null>(null);
   const [isPreviewingSampleMetrics, setIsPreviewingSampleMetrics] =
     useState(false);
@@ -112,7 +113,8 @@ function App() {
   }, [appSettings.textSize, isReady]);
 
   function startNewCase() {
-    setReturnPage(activePage === "cases" ? "cases" : "overview");
+    setCaseSaveStatus(null);
+    setReturnPage(activePage === "form" ? "overview" : activePage);
     const newDraft = createDraft(activePathway);
     initialDraftRef.current = JSON.stringify(newDraft);
     setDraft(newDraft);
@@ -120,6 +122,7 @@ function App() {
   }
 
   function startEditing(entry: LogbookCase) {
+    setCaseSaveStatus(null);
     setReturnPage("cases");
     const editedDraft = { ...entry };
     initialDraftRef.current = JSON.stringify(editedDraft);
@@ -172,6 +175,7 @@ function App() {
       setActivePage("cases");
       setDraft(null);
       initialDraftRef.current = null;
+      setCaseSaveStatus("Case saved successfully.");
       return true;
     } catch (cause) {
       setError(
@@ -438,6 +442,10 @@ function App() {
           </div>
         )}
 
+        {caseSaveStatus && activePage === "cases" && (
+          <p className="success-banner" role="status">{caseSaveStatus}</p>
+        )}
+
         {!isReady && !error && (
           <p className="loading-message" role="status">
             Opening your on-device logbook…
@@ -511,6 +519,7 @@ function App() {
             onToggleSampleData={() =>
               setIsPreviewingSampleMetrics((current) => !current)
             }
+            onAddCase={startNewCase}
           />
         )}
 

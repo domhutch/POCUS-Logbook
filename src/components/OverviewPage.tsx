@@ -176,7 +176,7 @@ function OverviewPage({
           <button className="button button-secondary" onClick={onPrintLogbook} disabled={!isReady}>Print logbook / PDF</button>
           <button className="button button-secondary" onClick={onExportCsv} disabled={isHandlingBackup || !isReady}>Export CSV</button>
           <button className="button button-secondary" onClick={onExportBackup} disabled={isHandlingBackup || !isReady}>Export backup</button>
-          <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Restore backup</button>
+          <button className="button button-primary" onClick={() => backupInputRef.current?.click()} disabled={isHandlingBackup || !isReady}>Merge backup</button>
           <input
             ref={backupInputRef}
             className="sr-only"

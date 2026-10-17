@@ -455,6 +455,17 @@ summary:focus-visible {
   color: #82594f;
 }
 
+.success-banner {
+  margin: 0.75rem 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #d6e5d8;
+  border-radius: 8px;
+  background: #f0f7f3;
+  color: #35634c;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .loading-message {
   padding: 2rem 0;
   color: var(--muted);
@@ -869,6 +880,40 @@ summary:focus-visible {
   grid-column: 1 / -1;
 }
 
+.metrics-activity .metrics-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.metrics-period-control {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eff2ee;
+}
+
+.metrics-period-control button {
+  min-height: 38px;
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #68746d;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.metrics-period-control button.is-active {
+  background: white;
+  box-shadow: 0 1px 3px rgb(31 55 45 / 8%);
+  color: #254a42;
+}
+
 .metrics-panel-heading h3,
 .metrics-empty h3 {
   margin: 0;
@@ -882,6 +927,10 @@ summary:focus-visible {
   color: #748078;
   font-size: 0.7rem;
   line-height: 1.45;
+}
+
+.metrics-empty .button {
+  margin-top: 0.85rem;
 }
 
 .metrics-breakdown {
@@ -1844,6 +1893,18 @@ summary:focus-visible {
   line-height: 1.4;
 }
 
+.lung-finding-guidance {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+}
+
+.lung-finding-guidance > span {
+  color: #527067;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
 .lung-region-responses {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2095,6 +2156,20 @@ summary:focus-visible {
     flex-direction: column;
   }
 
+  .metrics-activity .metrics-panel-heading {
+    flex-direction: column;
+  }
+
+  .metrics-period-control {
+    width: 100%;
+  }
+
+  .metrics-period-control button {
+    min-height: 44px;
+    flex: 1;
+    padding: 0.35rem;
+  }
+
   .metrics-demo-toggle {
     width: 100%;
   }
@@ -2203,6 +2278,23 @@ summary:focus-visible {
 
   .case-actions {
     grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .case-actions .text-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+    border: 1px solid #e4e9e3;
+    border-radius: 7px;
+    background: white;
+    font-size: 0.75rem;
+  }
+
+  .case-actions .text-button-danger {
+    border-color: #edd9d4;
   }
 
   .case-kind {
@@ -2460,31 +2552,52 @@ summary:focus-visible {
     gap: 0.2rem;
   }
 
+  .lung-finding-guidance {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .lung-finding-guidance > span {
+    flex: 0 0 auto;
+    text-align: right;
+  }
+
   .lung-region-responses {
     grid-template-columns: 1fr;
   }
 
   .lung-region-response {
-    align-items: center;
-    gap: 0.3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.45rem;
     padding: 0.4rem;
   }
 
   .lung-assessment-options {
-    gap: 0.2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
   }
 
   .lung-assessment-option > span {
-    min-width: 36px;
-    min-height: 36px;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
     padding: 0.25rem;
-    font-size: 0.68rem;
+    font-size: 0.74rem;
   }
 
   .lung-not-assessed {
-    min-height: 36px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.68rem;
+    min-width: 0;
+    min-height: 44px;
+    justify-content: center;
+    padding: 0.25rem 0.35rem;
+    font-size: 0.7rem;
+    white-space: normal;
   }
 
   .heart-findings-list {

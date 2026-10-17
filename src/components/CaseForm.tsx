@@ -49,6 +49,20 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
   );
   const isNewCase = !("createdAt" in draft);
   const privacyWarnings = findPrivacyWarnings(draft);
+  const hasStructuredDetails =
+    draft.pathway === "lung"
+      ? draft.regions.length > 0 ||
+        draft.ventilatorySupport !== "Not recorded" ||
+        draft.imageQuality !== "not_recorded"
+      : draft.views.length > 0 ||
+        Object.values(draft.findings).some((finding) => finding !== "not_assessed") ||
+        draft.ventilatorySupport !== "Not recorded" ||
+        Boolean(
+          draft.cardiovascularSupport ||
+            draft.heartRate ||
+            draft.bloodPressure ||
+            draft.centralVenousPressure,
+        );
 
   function updateField<K extends keyof LungCaseFields | keyof HeartCaseFields>(
     key: K,
@@ -158,15 +172,12 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
 
         <details
           className="structured-details optional-details"
-          open={
-            isNewCase ||
-            Boolean(
-              draft.indication ||
-                draft.diagnosis ||
-                draft.impressionCategory !== "not_recorded" ||
-                draft.managementImpact !== "not_recorded",
-            )
-          }
+          open={Boolean(
+            draft.indication ||
+              draft.diagnosis ||
+              draft.impressionCategory !== "not_recorded" ||
+              draft.managementImpact !== "not_recorded",
+          )}
         >
           <summary>Case context and review markers <span>Optional</span></summary>
           <div className="form-grid">
@@ -279,7 +290,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
           </div>
         )}
 
-        <details className="structured-details" open={isNewCase}>
+        <details className="structured-details" open={hasStructuredDetails}>
           <summary>Structured scan details <span>Optional</span></summary>
           {draft.pathway === "lung" ? (
             <LungDetails
@@ -302,7 +313,7 @@ function CaseForm({ draft, onChange, onSave, onCancel, supervisors }: CaseFormPr
 
         <details
           className="structured-details optional-details"
-          open={isNewCase || Boolean(draft.summary || draft.reflection)}
+          open={Boolean(draft.summary || draft.reflection)}
         >
           <summary>Notes and reflection <span>Optional</span></summary>
           <div className="form-notes-grid">
@@ -414,9 +425,14 @@ function LungDetails({
           <section className="lung-finding-section" key={key}>
             <div className="lung-finding-heading">
               <h3>{label}</h3>
-              <p id={`lung-${key}-help`}>
-                Choose Yes or No, or leave Not assessed selected.
-              </p>
+              <div className="lung-finding-guidance">
+                <p id={`lung-${key}-help`}>
+                  Choose Yes or No, or leave Not assessed selected.
+                </p>
+                <span>
+                  {LUNG_REGIONS.filter((region) => draft.findings[region][key] !== "not_assessed").length} of {LUNG_REGIONS.length} regions recorded
+                </span>
+              </div>
             </div>
             <div className="lung-region-responses">
               {LUNG_REGIONS.map((region) => {
