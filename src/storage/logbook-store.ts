@@ -29,6 +29,7 @@ export interface AppSettings {
   textScaleVersion: number;
   curriculum: Curriculum;
   enabledModules: Record<Pathway, boolean>;
+  onboardingComplete: boolean;
 }
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -37,6 +38,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
   textScaleVersion: 2,
   curriculum: "fusic",
   enabledModules: DEFAULT_ENABLED_MODULES,
+  onboardingComplete: false,
 };
 
 interface StoredAppSettings extends AppSettings {
@@ -161,6 +163,7 @@ export async function getAppSettings(): Promise<AppSettings> {
     settings.textScaleVersion !== 2 ||
     !settings.curriculum ||
     !settings.enabledModules ||
+    typeof settings.onboardingComplete !== "boolean" ||
     typeof settings.enabledModules.abdomen !== "boolean" ||
     typeof settings.enabledModules.dvt !== "boolean"
   ) {
@@ -178,6 +181,8 @@ export async function getAppSettings(): Promise<AppSettings> {
         abdomen: settings.enabledModules?.abdomen ?? true,
         dvt: settings.enabledModules?.dvt ?? true,
       },
+      // A saved preferences record predating onboarding belongs to an existing user.
+      onboardingComplete: settings.onboardingComplete ?? true,
     };
     await db.put("preferences", { id: "app", ...migrated });
     return migrated;
@@ -188,6 +193,7 @@ export async function getAppSettings(): Promise<AppSettings> {
     textScaleVersion: settings.textScaleVersion,
     curriculum: settings.curriculum,
     enabledModules: settings.enabledModules,
+    onboardingComplete: settings.onboardingComplete,
   };
 }
 

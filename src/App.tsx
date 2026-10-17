@@ -10,6 +10,7 @@ import CaseReview from "./components/CaseReview";
 import MetricsPage from "./components/MetricsPage";
 import OverviewPage from "./components/OverviewPage";
 import SettingsPage from "./components/SettingsPage";
+import WelcomeScreen from "./components/WelcomeScreen";
 import { getCaseSequenceNumbers } from "./domain/case-display";
 import {
   createSampleCases,
@@ -104,8 +105,10 @@ function App() {
     (entry) => entry.managementImpact === "changed",
   ).length;
   useEffect(() => {
-    document.title = pathwayLogbookName;
-  }, [pathwayLogbookName]);
+    document.title = appSettings.onboardingComplete
+      ? pathwayLogbookName
+      : "Welcome · POCUS Logbook";
+  }, [appSettings.onboardingComplete, pathwayLogbookName]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -293,6 +296,38 @@ function App() {
     } finally {
       setIsSavingSettings(false);
     }
+  }
+
+  async function handleOnboardingComplete(nextSettings: AppSettings) {
+    setIsSavingSettings(true);
+    setError(null);
+    try {
+      await saveAppSettings(nextSettings);
+      setAppSettings(nextSettings);
+      const firstEnabledPathway = (Object.keys(PATHWAYS) as Pathway[]).find(
+        (module) => nextSettings.enabledModules[module],
+      );
+      if (firstEnabledPathway) setActivePathway(firstEnabledPathway);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Your setup could not be saved on this device.",
+      );
+    } finally {
+      setIsSavingSettings(false);
+    }
+  }
+
+  if (isReady && !appSettings.onboardingComplete) {
+    return (
+      <WelcomeScreen
+        settings={appSettings}
+        isSaving={isSavingSettings}
+        error={error}
+        onComplete={(nextSettings) => void handleOnboardingComplete(nextSettings)}
+      />
+    );
   }
 
   return (

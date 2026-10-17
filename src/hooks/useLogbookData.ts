@@ -28,6 +28,7 @@ export function useLogbookData() {
     textScaleVersion: 2,
     curriculum: "fusic",
     enabledModules: { heart: true, lung: true, abdomen: true, dvt: true },
+    onboardingComplete: false,
   });
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
